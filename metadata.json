@@ -1,0 +1,6 @@
+{
+  "name": "BloxdUtility",
+  "description": "A comprehensive, feature-rich web tool and hub for Bloxd.io developers, helpers, and players.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

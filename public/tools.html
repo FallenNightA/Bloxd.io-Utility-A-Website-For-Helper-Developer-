@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloxd Utility | Developer Tools</title>
+  <link rel="icon" type="image/png" href="Bloxd Utility Logo.png">
+  
+  <!-- VSCodium Syntax System -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="stylesheet" href="assets/css/editor-theme.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="assets/js/syntax.js"></script>
+  <script src="Prompt.js"></script>
+  
+  <!-- JSZip for Texture Pack Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap');
+    
+    :root { 
+      --bg: #ffffff; --text: #1f2328; --sidebar-bg: #f6f8fa; --border: #d0d7de; 
+      --nav-hover: #ebeff2; --nav-active-bg: #0969da; --nav-active-text: #ffffff; 
+      --card-bg: #ffffff; --input-bg: #ffffff; --muted: #57606a; 
+      --accent: #0969da; --purple: #8250df; --green: #3fb950; --orange: #ea580c; --pink: #ec4899; --gold: #eab308; --cyan: #0ea5e9; --indigo: #6366f1; --rose: #e11d48;
+    }
+    
+    .dark { 
+      --bg: #0d1117; --text: #e6edf3; --sidebar-bg: #161b22; --border: #30363d; 
+      --nav-hover: #21262d; --nav-active-bg: #1f6feb; --nav-active-text: #ffffff; 
+      --card-bg: #161b22; --input-bg: #0d1117; --muted: #8b949e; 
+      --accent: #58a6ff; --purple: #d2a8ff; --green: #3fb950; --orange: #f97316; --pink: #f472b6; --gold: #facc15; --cyan: #38bdf8; --indigo: #818cf8; --rose: #fb7185;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+    
+    /* ===== LAYOUT ===== */
+    .shell { display: flex; height: 100vh; }
+    .left-sidebar { width: 230px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; flex-shrink: 0; }
+    .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; cursor: pointer; }
+    .logo-row img { width: 38px; height: 38px; object-fit: contain; }
+    .logo-row span { font-weight: 800; font-size: 18px; letter-spacing: -0.03em; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; color: var(--text); font-size: 13px; cursor: pointer; transition: 0.15s; margin-bottom: 2px; text-decoration: none; }
+    .nav-item:hover { background: var(--nav-hover); }
+    .nav-item.active { background: var(--nav-active-bg); color: var(--nav-active-text); font-weight: 700; }
+    .nav-item i { width: 14px; text-align: center; opacity: 0.7; }
+    .nav-item.active i { opacity: 1; }
+    .dark-toggle { display: flex; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text); transition: 0.15s; margin-top: auto; }
+    .dark-toggle:hover { background: var(--nav-hover); }
+    .toggle-sw { width: 32px; height: 17px; background: #d0d7de; border-radius: 9px; position: relative; transition: 0.3s; margin-left: auto; }
+    .toggle-sw.on { background: #0969da; }
+    .toggle-knob { width: 11px; height: 11px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s; }
+    .toggle-sw.on .toggle-knob { left: 18px; }
+
+    /* ===== MAIN CONTENT ===== */
+    .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; scroll-behavior: smooth; }
+    .topbar { height: 52px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; position: sticky; top: 0; z-index: 10; }
+    .topbar-title { font-size: 13px; font-weight: 700; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.06em; }
+    .content { padding: 32px; max-width: 1300px; margin: 0 auto; width: 100%; }
+    
+    /* ===== APP LAUNCHER GRID (MCTOOLS STYLE) ===== */
+    .tools-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px; }
+    .app-card { background: var(--card-bg); border: 1px solid var(--border); border-top-width: 4px; border-radius: 12px; padding: 32px 24px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; }
+    .app-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.06); }
+    .app-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--text); }
+    .app-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* Icons */
+    .tool-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; flex-shrink: 0; }
+    .tool-icon.m2b { background: rgba(63,185,80,0.1); color: var(--green); }
+    .tool-icon.merger { background: rgba(130,80,223,0.1); color: var(--purple); }
+    .tool-icon.qte { background: rgba(188,76,0,0.1); color: var(--orange); }
+    .tool-icon.particles { background: rgba(236,72,153,0.1); color: var(--pink); }
+    .tool-icon.gui { background: rgba(234,179,8,0.1); color: var(--gold); }
+    .tool-icon.texture { background: rgba(14,165,233,0.1); color: var(--cyan); }
+    .tool-icon.commands { background: rgba(99,102,241,0.1); color: var(--indigo); }
+    .tool-icon.mobs { background: rgba(225,29,72,0.1); color: var(--rose); }
+
+    /* Tool View Container */
+    .tool-section { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.02); }
+    .tool-section.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Custom Elements */
+    .credit-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; background: var(--nav-hover); font-size: 11px; font-weight: 600; text-decoration: none; color: var(--muted); transition: 0.2s; border: 1px solid var(--border); }
+    .credit-badge:hover { color: var(--text); border-color: var(--accent); }
+    .upload-box { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.2s; background: var(--input-bg); }
+    .upload-box:hover { border-color: var(--accent); background: rgba(9,105,218,0.02); }
+    .upload-box i { font-size: 32px; color: var(--accent); margin-bottom: 12px; display: block; }
+    
+    .form-textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'Fira Code', monospace; font-size: 12px; color: var(--text); outline: none; resize: vertical; transition: 0.2s; }
+    .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(9,105,218,0.1); }
+    .code-box { background: #0d1117; color: #e6edf3; border-color: #30363d; font-size: 13px; }
+    
+    input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent); vertical-align: middle; }
+    input[type="color"] { border: none; border-radius: 4px; width: 36px; height: 36px; cursor: pointer; padding: 0; background: none; }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; transition: 0.2s; }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-purple { background: var(--purple); }
+    .btn-orange { background: var(--orange); }
+    .btn-pink { background: var(--pink); }
+    .btn-gold { background: var(--gold); color: #1f2328; }
+    .btn-cyan { background: var(--cyan); color: white; }
+    .btn-indigo { background: var(--indigo); color: white; }
+    .btn-rose { background: var(--rose); color: white; }
+
+    /* HIDE REALSLOTH'S UGLY DEFAULT INPUT */
+    #file { display: none !important; }
+
+    #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #1f2328; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 9999; pointer-events: none; white-space: nowrap; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    #toast.show { opacity: 1; transform: translate(-50%, -10px); }
+
+    ::-webkit-scrollbar { width: 7px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ===== TEXTURE PAINT STUDIO (ENLARGED) ===== */
+    .paint-canvas-container { display: flex; flex-direction: column; align-items: center; gap: 16px; background: var(--nav-hover); padding: 24px; border-radius: 12px; border: 1px solid var(--border); }
+    .pixel-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 1px; background: var(--border); border: 2px solid var(--border); width: 402px; height: 402px; user-select: none; }
+    .pixel-cell { background: transparent; width: 24px; height: 24px; cursor: crosshair; }
+    .pixel-cell:hover { opacity: 0.8; background: var(--text); }
+    .palette-color { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; transition: transform 0.1s; }
+    .palette-color:hover { transform: scale(1.1); }
+    .palette-color.active { border-color: var(--cyan); transform: scale(1.15); }
+    .paint-tool-btn { background: var(--bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.15s; }
+    .paint-tool-btn.active { background: var(--cyan); color: white; border-color: var(--cyan); }
+
+    /* ===== MODALS ===== */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; width: 400px; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 24px; }
+    .modal-overlay.open { display: flex !important; }
+    
+    .ai-box { border: 2px dashed var(--indigo); background: rgba(99,102,241,0.05); padding: 16px; border-radius: 12px; position: relative; }
+    .ai-badge { position: absolute; top: -12px; left: 16px; background: var(--indigo); color: white; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 12px; text-transform: uppercase; }
+
+    @media (max-width: 1024px) {
+      .left-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: -230px !important;
+        width: 230px !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        transition: left 0.3s ease !important;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.15) !important;
+      }
+      .left-sidebar.mobile-open {
+        left: 0 !important;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 990;
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+      /* Reduce padding in content */
+      .content {
+        padding: 16px !important;
+      }
+      /* Wrap grid cells for builders/tools */
+      .tools-dashboard {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+      .pixel-grid {
+        width: 280px !important;
+        height: 280px !important;
+      }
+      .pixel-cell {
+        width: calc(280px / 16) !important;
+        height: calc(280px / 16) !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Datalist options -->
+<datalist id="icon-options">
+  <option value="Damage"></option><option value="Speed"></option><option value="VoidJump"></option>
+  <option value="Fist"></option><option value="Health"></option><option value="Cross"></option>
+  <option value="fa-solid fa-computer-mouse"></option><option value="fa-solid fa-hand-pointer"></option>
+  <option value="fa-solid fa-star"></option><option value="fa-solid fa-skull"></option>
+  <option value="Diamond Sword"></option><option value="Moonstone Orb"></option><option value="Fireball"></option>
+</datalist>
+
+<datalist id="currency-options">
+  <option value="Gold Coin"></option><option value="Iron Bar"></option>
+  <option value="Diamond"></option><option value="Moonstone"></option>
+</datalist>
+
+<datalist id="bloxd-blocks-autocomplete"></datalist>
+
+<div class="shell">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="left-sidebar">
+    <div class="flex items-center justify-between mb-6 px-2">
+      <div class="logo-row mb-0" onclick="location.href='index.html'">
+        <img src="Bloxd Utility Logo.png" alt="Logo">
+        <span>Bloxd Utility</span>
+      </div>
+      <button onclick="toggleMobileSidebar()" class="lg:hidden text-gray-500 hover:text-black focus:outline-none">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <nav>
+      <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home</a>
+      <a href="docs.html" class="nav-item"><i class="fas fa-book"></i> Documentation</a>
+      <a href="lab.html" class="nav-item"><i class="fas fa-flask"></i> Code Lab</a>
+      <a href="modrinth.html" class="nav-item"><i class="fas fa-store"></i> Bloxd Modrinth</a>
+      <a href="tools.html" class="nav-item active"><i class="fas fa-tools"></i> Developer Tools</a>
+    </nav>
+    <div class="dark-toggle" onclick="toggleDark()">
+      <i class="fas fa-moon" style="width:14px; opacity:0.7"></i>
+      <span>Dark Mode</span>
+      <div class="toggle-sw" id="dark-switch"><div class="toggle-knob"></div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button onclick="toggleMobileSidebar()" class="lg:hidden text-gray-600 hover:text-black focus:outline-none text-xl mr-2">
+        <i class="fas fa-bars"></i>
+      </button>
+      <span class="topbar-title">Developer Tools</span>
+    </div>
+
+    <!-- LAUNCHER DASHBOARD -->
+    <div class="content" id="launcher-view">
+      <h2 style="font-size: 26px; font-weight: 900; color: var(--text);">Developer Toolbox</h2>
+      <p style="color: var(--muted); margin-top: 4px;">Select a tool to build your custom mods and assets.</p>
+      
+      <div class="tools-dashboard">
+        
+        <!-- Command Builder -->
+        <div class="app-card" style="border-top-color: var(--indigo);" onclick="openTool('commands')">
+          <div class="tool-icon commands"><i class="fas fa-terminal"></i></div>
+          <h3>Command Studio <span style="background: var(--indigo); color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; vertical-align: top; margin-left: 4px;">PRO</span></h3>
+          <p>Visually build chat commands with role-based permissions or use the Local Generator to compile them.</p>
+        </div>
+
+        <!-- Mob Maker -->
+        <div class="app-card" style="border-top-color: var(--rose);" onclick="openTool('mobs')">
+          <div class="tool-icon mobs"><i class="fas fa-dragon"></i></div>
+          <h3>Smart Mob Maker</h3>
+          <p>Configure advanced mobs, bosses, and pets with full custom behavior and custom drops.</p>
+        </div>
+
+        <!-- Shop Builder -->
+        <div class="app-card" style="border-top-color: var(--gold);" onclick="openTool('gui')">
+          <div class="tool-icon gui"><i class="fas fa-desktop"></i></div>
+          <h3>GUI & Economy Studio</h3>
+          <p>Build in-game shop interfaces and custom HUD overlays visually.</p>
+        </div>
+
+        <!-- Code Merger -->
+        <div class="app-card" style="border-top-color: var(--purple);" onclick="openTool('merger')">
+          <div class="tool-icon merger"><i class="fas fa-object-group"></i></div>
+          <h3>Code Merger</h3>
+          <p>Intelligently merge tick and chat events from two different scripts safely.</p>
+        </div>
+
+        <!-- QTE Generator -->
+        <div class="app-card" style="border-top-color: var(--orange);" onclick="openTool('qte')">
+          <div class="tool-icon qte"><i class="fas fa-stopwatch"></i></div>
+          <h3>QTE Generator</h3>
+          <p>Easily generate Bloxd Quick Time Event code without writing any JS.</p>
+        </div>
+
+        <!-- Particle Studio -->
+        <div class="app-card" style="border-top-color: var(--pink);" onclick="openTool('particles')">
+          <div class="tool-icon particles"><i class="fas fa-sparkles"></i></div>
+          <h3>VFX Particle Studio</h3>
+          <p>Visually mix colors, physics, and textures to generate magical aura code.</p>
+        </div>
+        
+        <!-- M2B Converter -->
+        <div class="app-card" style="border-top-color: var(--green);" onclick="openTool('m2b')">
+          <div class="tool-icon m2b"><i class="fas fa-cube"></i></div>
+          <h3>M2B Converter</h3>
+          <p>Convert Minecraft .schem files into Bloxd.io structures automatically.</p>
+        </div>
+
+        <!-- Texture Pack Generator (Texture Studio) -->
+        <div class="app-card" style="border-top-color: var(--cyan);" onclick="openTool('texture')">
+          <div class="tool-icon texture"><i class="fas fa-image"></i></div>
+          <h3>Texture Studio</h3>
+          <p>Draw pixel-art textures and compile your custom Bloxd.io .zip pack natively.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ACTIVE TOOL WINDOWS -->
+    <div class="content" id="tool-view" style="display: none;">
+      
+      <button class="btn" style="background: var(--nav-hover); color: var(--text); border: 1px solid var(--border); margin-bottom: 24px;" onclick="closeTool()">
+        <i class="fas fa-arrow-left"></i> Back to Toolbox
+      </button>
+
+      <!-- ============================================== -->
+      <!-- TOOL 0: COMMAND STUDIO -->
+      <!-- ============================================== -->
+      <div id="tool-commands" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--indigo); margin-bottom: 8px;"><i class="fas fa-terminal mr-2"></i> Command Studio</h2>
+        <p style="color: var(--muted); margin-bottom: 24px;">Build custom chat commands with permission checks, or let the Local Generator compile them for you.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+            <!-- Left Panel: Settings & Generator -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                
+                <!-- THE LOCAL QUICK BUILDER BOX -->
+                <div class="ai-box">
+                    <span class="ai-badge" style="background: var(--indigo);"><i class="fas fa-magic"></i> Local Quick Builder</span>
+                    <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-top: 8px; margin-bottom:4px;">Describe your command</label>
+                    <textarea id="ai-cmd-prompt" class="form-textarea" style="min-height: 80px; border-color: var(--indigo);" placeholder="e.g., 'Make a !godmode command for admins that gives 9999 health'"></textarea>
+                    <button class="btn btn-indigo w-full mt-3" onclick="simulateAICommand()">
+                        <i class="fas fa-bolt"></i> Generate Command
+                    </button>
+                </div>
+
+                <!-- Manual Builder -->
+                <div style="background: var(--nav-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 14px; font-weight: 800; color: var(--indigo); margin-bottom: 12px;"><i class="fas fa-cog"></i> Manual Builder</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div>
+                            <label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Command Prefix</label>
+                            <input type="text" id="cmd-prefix" class="form-textarea" style="padding: 8px; min-height: 36px;" value="!" oninput="generateCmdCode()">
+                        </div>
+                        <div>
+                            <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Trigger Word</label>
+                            <input type="text" id="cmd-trigger" class="form-textarea" style="padding: 8px; min-height: 36px;" placeholder="fly">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div>
+                            <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Required Role</label>
+                            <select id="cmd-role" class="form-textarea" style="padding: 8px; min-height: 36px; cursor: pointer;">
+                                <option value="everyone">Everyone</option>
+                                <option value="admin">Admin / Owner Only</option>
+                                <option value="owner">World Owner Only</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Action / Logic</label>
+                            <select id="cmd-action" class="form-textarea" style="padding: 8px; min-height: 36px; cursor: pointer;">
+                                <option value="toggle_fly">Toggle Fly Mode (AirJumps 99)</option>
+                                <option value="heal_self">Heal Self to Max</option>
+                                <option value="clear_inv">Clear Inventory</option>
+                                <option value="teleport_spawn">Teleport to 0, 65, 0 (Spawn)</option>
+                                <option value="godmode">Godmode (9999 HP)</option>
+                                <option value="custom">Blank (I will write the logic later)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                        <div>
+                            <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Admin IDs (comma-separated)</label>
+                            <input type="text" id="cmd-admins" class="form-textarea" style="padding: 8px; min-height: 36px;" placeholder="e.g., 12345, 67890">
+                        </div>
+                        <div>
+                            <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Permission Error Message</label>
+                            <input type="text" id="cmd-error" class="form-textarea" style="padding: 8px; min-height: 36px;" value="❌ Permission Denied!">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-indigo w-full" onclick="addCustomCommand()">
+                        <i class="fas fa-plus"></i> Add Command to System
+                    </button>
+
+                    <!-- List of active commands -->
+                    <div id="cmd-items-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; margin-top: 20px; padding-right: 5px;">
+                        <span style="font-size: 12px; color: var(--muted); font-style: italic;">No commands added yet.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output -->
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 800; color: var(--indigo); text-transform: uppercase;">Generated Command Router</label>
+                <button class="btn btn-indigo" style="padding: 6px 12px; font-size: 11px;" onclick="copyCodeOutput('cmd-output')">
+                  <i class="fas fa-copy"></i> Copy Code
+                </button>
+              </div>
+              <pre id="cmd-display" class="language-javascript code-box" style="flex: 1; min-height: 400px; max-height: 600px;"><code>/* Add commands on the left or use the Local Creator/Generator templates */</code></pre>
+              <textarea id="cmd-output" style="display:none"></textarea>
+            </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: SMART MOB MAKER -->
+      <!-- ============================================== -->
+      <div id="tool-mobs" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--rose); margin-bottom: 8px;"><i class="fas fa-dragon mr-2"></i> Smart Mob Maker</h2>
+        <p style="color: var(--muted); margin-bottom: 24px;">Configure advanced mobs, bosses, and pets with full motion behavior and custom stats.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+            <div style="background: var(--nav-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--rose); margin-bottom: 12px;">1. Identity & Stats</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Mob Type</label>
+                        <select id="mob-type" class="form-textarea" style="padding: 8px; min-height: 36px;">
+                            <option value="Zombie">Zombie</option>
+                            <option value="Draugr Zombie">Draugr Zombie</option>
+                            <option value="Skeleton">Skeleton</option>
+                            <option value="Pig">Pig</option>
+                            <option value="Wolf">Wolf</option>
+                            <option value="Cave Golem">Cave Golem</option>
+                            <option value="NPC">NPC</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Custom Name</label>
+                        <input type="text" id="mob-name" class="form-textarea" style="padding: 8px; min-height: 36px;" placeholder="e.g. The Boss">
+                    </div>
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Health</label>
+                        <input type="number" id="mob-hp" class="form-textarea" style="padding: 8px; min-height: 36px;" value="100">
+                    </div>
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Damage</label>
+                        <input type="number" id="mob-dmg" class="form-textarea" style="padding: 8px; min-height: 36px;" value="15">
+                    </div>
+                </div>
+
+                <div style="height: 1px; background: var(--border); margin-bottom: 16px;"></div>
+                
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--rose); margin-bottom: 12px;">2. Motion & Behavior</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Initial State</label>
+                        <select id="mob-ai" class="form-textarea" style="padding: 8px; min-height: 36px;">
+                            <option value="idle">Idle (Default)</option>
+                            <option value="chasing">Aggressive (Chase Players)</option>
+                            <option value="disabled">Disabled (Statue)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Walking Speed</label>
+                        <input type="number" id="mob-speed" class="form-textarea" style="padding: 8px; min-height: 36px;" value="3.5" step="0.1">
+                    </div>
+                </div>
+
+                <div style="height: 1px; background: var(--border); margin-bottom: 16px;"></div>
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--rose); margin-bottom: 12px;">3. Drops & Extra</h4>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div>
+                        <label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Drop Item on Death</label>
+                        <input type="text" id="mob-drop" class="form-textarea" style="padding: 8px; min-height: 36px;" placeholder="Diamond Sword">
+                    </div>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" id="mob-boss"><b>Make Boss? (Adds glowing aura)</b>
+                    </label>
+                </div>
+
+                <button class="btn btn-rose w-full" onclick="generateMobCode()">
+                    <i class="fas fa-magic"></i> Generate Mob Code
+                </button>
+            </div>
+
+            <!-- Right Panel: Output -->
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 800; color: var(--rose); text-transform: uppercase;">Generated Mob Script</label>
+                <button class="btn btn-rose" style="padding: 6px 12px; font-size: 11px;" onclick="copyCodeOutput('mob-output')">
+                  <i class="fas fa-copy"></i> Copy Code
+                </button>
+              </div>
+              <pre id="mob-display" class="language-javascript code-box" style="flex: 1; min-height: 400px;"><code>/* Configure your mob on the left to generate code */</code></pre>
+              <textarea id="mob-output" style="display:none"></textarea>
+            </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: M2B CONVERTER -->
+      <!-- ============================================== -->
+      <div id="tool-m2b" class="tool-section">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+          <h2 style="font-size: 24px; font-weight: 800; color: var(--green);"><i class="fas fa-cube mr-2"></i> M2B Schematic Converter</h2>
+          <a href="https://github.com/Quentin-X" target="_blank" class="credit-badge"><i class="fab fa-github"></i> Engine by RealSlothuLT3</a>
+        </div>
+        
+        <input type="file" id="m2b-upload" accept=".bloxdschem,.schematic,.schem,.litematic" style="display: none;" onchange="handleFileSelect(event)">
+        <div class="upload-box" onclick="document.getElementById('m2b-upload').click()" style="border-color: var(--green); color: var(--green);">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <h4 style="font-size: 18px; font-weight: 700; color: var(--text);">Click to upload Schematic</h4>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">Supports .bloxdschem, .schematic, .schem, .litematic</p>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: TEXTURE STUDIO -->
+      <!-- ============================================== -->
+      <div id="tool-texture" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--cyan); margin-bottom: 8px;"><i class="fas fa-image mr-2"></i> Texture Studio</h2>
+        <p style="color: var(--muted); margin-bottom: 24px;">Natively paint block textures and edit stylesheets inside your custom pack manager.</p>
+        
+        <div style="display: grid; grid-template-columns: 310px 1fr; gap: 32px;">
+            <div style="background: var(--nav-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button class="btn" style="background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px; font-size: 11px;" onclick="triggerFileImport()"><i class="fas fa-file-import"></i> Import File</button>
+                  <button class="btn" style="background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px; font-size: 11px;" onclick="triggerFolderImport()"><i class="fas fa-folder-open"></i> Import Folder</button>
+                </div>
+                <input type="file" id="tp-import-file" style="display:none" accept=".png,.css" onchange="importFile(event)">
+                <input type="file" id="tp-import-folder" style="display:none" webkitdirectory directory multiple onchange="importFolder(event)">
+                <button class="btn btn-orange w-full" style="height: 44px; font-size: 14px;" onclick="generateTexturePack()">
+                  <i class="fas fa-file-archive"></i> Download Pack
+                </button>
+                <button class="btn w-full" style="background: var(--bg); border: 1px solid var(--border); color: var(--text); height: 38px; font-size: 12px;" onclick="exportSingleActiveFile()">
+                  <i class="fas fa-file-export"></i> Export Selected
+                </button>
+                <div style="height: 1px; background: var(--border);"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase;">Explorer</span>
+                    <div style="display:flex; gap:12px;">
+                        <button onclick="openCreateFileModal()" title="New File" style="cursor:pointer; color:var(--text); font-size: 13px;"><i class="fas fa-file-medical"></i></button>
+                        <button onclick="openCreateFolderModal()" title="New Folder" style="cursor:pointer; color:var(--text); font-size: 13px;"><i class="fas fa-folder-plus"></i></button>
+                    </div>
+                </div>
+                <div id="tp-file-explorer" style="display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto;"></div>
+                <div style="margin-top: auto;">
+                  <label style="font-size:10px; font-weight:800; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:6px;">Pack Settings</label>
+                  <input type="text" id="tp-name" class="form-textarea" style="padding: 6px; min-height: 34px;" value="MyAwesomePack">
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div id="paint-studio-panel" class="paint-canvas-container" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                        <span id="paint-file-title" style="font-size:13px; font-weight:800; color:var(--cyan);">textures/placeholder.png</span>
+                        <div style="display:flex; gap: 8px;">
+                            <button class="paint-tool-btn active" id="btn-tool-pencil" onclick="setPaintTool('pencil')"><i class="fas fa-pencil"></i> Pencil</button>
+                            <button class="paint-tool-btn" id="btn-tool-eraser" onclick="setPaintTool('eraser')"><i class="fas fa-eraser"></i> Eraser</button>
+                            <button class="paint-tool-btn" onclick="clearPaintGrid()"><i class="fas fa-trash"></i> Reset</button>
+                        </div>
+                    </div>
+                    <div class="pixel-grid" id="pixel-grid" style="width:386px; height:386px;"></div>
+                    <div style="display: flex; gap: 10px; align-items: center; width: 100%; justify-content: center; padding: 10px 0;">
+                        <input type="color" id="paint-color-picker" value="#ff5555" oninput="selectPaletteColor(this.value)">
+                        <div style="display: flex; gap: 6px;" id="color-palette-swatches"></div>
+                    </div>
+                </div>
+                <div id="css-studio-panel" style="display: none; flex-direction: column; gap: 12px;">
+                    <div style="font-size:13px; font-weight:800; color:var(--purple); border-bottom: 1px solid var(--border); padding-bottom: 8px;" id="css-file-title">css/style.css</div>
+                    <textarea id="css-code-editor" class="form-textarea code-box" style="min-height: 400px; font-size: 13px;" oninput="saveActiveCssFile()"></textarea>
+                </div>
+                <div id="no-file-screen" style="padding: 100px 20px; text-align: center; border: 2px dashed var(--border); border-radius: 12px; background: var(--nav-hover); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <i class="fas fa-file-image text-5xl text-gray-400 mb-4"></i>
+                    <h4 style="font-size: 15px; font-weight: 700;">No File Selected</h4>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">Open an explorer file, import a file, or create a new file to begin.</p>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: CODE MERGER -->
+      <!-- ============================================== -->
+      <div id="tool-merger" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--purple); margin-bottom: 24px;"><i class="fas fa-object-group mr-2"></i> Code Merger</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block;">Script 1 (Source)</label>
+            <textarea id="merger-s1" class="form-textarea code-box" style="min-height: 250px;" placeholder="/* Paste your first script here... */"></textarea>
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block;">Script 2 (Source)</label>
+            <textarea id="merger-s2" class="form-textarea code-box" style="min-height: 250px;" placeholder="/* Paste your second script here... */"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-purple" style="width: 100%; height: 50px; font-size: 15px;" onclick="runAutoMerger()">
+          <i class="fas fa-magic"></i> Compile & Merge Scripts
+        </button>
+        <div id="merger-result-area" style="display: none; margin-top: 32px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <label style="font-size: 11px; font-weight: 800; color: var(--purple); text-transform: uppercase;">✨ Final Combined Script</label>
+            <button class="btn btn-purple" style="padding: 6px 16px; font-size: 12px;" onclick="copyCodeOutput('merger-output')">
+              <i class="fas fa-copy"></i> Copy Result
+            </button>
+          </div>
+          <pre id="merger-display" class="language-javascript" style="min-height: 250px; max-height: 400px;"><code></code></pre>
+          <textarea id="merger-output" style="display:none"></textarea>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: QTE GENERATOR -->
+      <!-- ============================================== -->
+      <div id="tool-qte" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--orange); margin-bottom: 24px;"><i class="fas fa-stopwatch mr-2"></i> Visual QTE Generator</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+          <div>
+            <div style="margin-bottom: 16px;">
+              <label style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block;">QTE Type</label>
+              <select id="qte-type" class="form-textarea" style="padding: 10px;" onchange="renderQTEParams()">
+                <option value="progressBar">Progress Bar (Spam Click)</option>
+                <option value="timedClick">Timed Click (Reaction)</option>
+                <option value="gravityBar">Gravity Bar (Hold & Release)</option>
+                <option value="precisionBar">Precision Bar (Timing)</option>
+                <option value="rhythmClick">Rhythm Click (Osu! style)</option>
+              </select>
+            </div>
+            <div id="qte-params" style="display: flex; flex-direction: column; gap: 12px; background: var(--nav-hover); padding: 16px; border-radius: 8px; border: 1px solid var(--border);"></div>
+          </div>
+          <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="font-size: 11px; font-weight: 800; color: var(--orange); text-transform: uppercase;">Generated Code</label>
+              <button class="btn btn-orange" style="padding: 6px 12px; font-size: 11px;" onclick="copyCodeOutput('qte-output')"><i class="fas fa-copy"></i> Copy Code</button>
+            </div>
+            <pre id="qte-display" class="language-javascript" style="flex: 1; min-height: 250px;"><code></code></pre>
+            <textarea id="qte-output" style="display:none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: VFX PARTICLE STUDIO -->
+      <!-- ============================================== -->
+      <div id="tool-particles" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--pink); margin-bottom: 24px;"><i class="fas fa-sparkles mr-2"></i> VFX Particle Studio</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+          <div style="background: var(--nav-hover); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="margin-bottom: 12px;">
+              <label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Particle Texture</label>
+              <select id="vfx-texture" class="form-textarea" style="padding: 8px;" onchange="generateVFXCode()">
+                <option value="bubble">bubble (Floating spheres)</option>
+                <option value="soul_0">soul_0 (Magical flame)</option>
+                <option value="critical_hit">critical_hit (Star/Spark)</option>
+                <option value="square_particle">square_particle (Pixel block)</option>
+                <option value="heart">heart (Hearts)</option>
+                <option value="glint">glint (Shiny diamond)</option>
+                <option value="drift">drift (Wind dust)</option>
+              </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Start Color</label>
+                <div style="display: flex; align-items: center; gap: 8px;"><input type="color" id="vfx-color1" value="#ff0000" oninput="generateVFXCode()"><span style="font-size: 12px; font-family: monospace;" id="vfx-hex1">#ff0000</span></div>
+              </div>
+              <div>
+                <label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">End Color</label>
+                <div style="display: flex; align-items: center; gap: 8px;"><input type="color" id="vfx-color2" value="#ffaa00" oninput="generateVFXCode()"><span style="font-size: 12px; font-family: monospace;" id="vfx-hex2">#ffaa00</span></div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Gravity <span id="val-grav" style="color:var(--accent)">-2</span></label><input type="range" id="vfx-gravity" min="-20" max="20" step="1" value="-2" style="width:100%" oninput="updateVfxLabel('vfx-gravity','val-grav')"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Size <span id="val-size" style="color:var(--accent)">0.3</span></label><input type="range" id="vfx-size" min="0.05" max="1.5" step="0.05" value="0.3" style="width:100%" oninput="updateVfxLabel('vfx-size','val-size')"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Lifespan <span id="val-life" style="color:var(--accent)">0.8</span></label><input type="range" id="vfx-life" min="0.1" max="3" step="0.1" value="0.8" style="width:100%" oninput="updateVfxLabel('vfx-life','val-life')"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Amount <span id="val-amount" style="color:var(--accent)">20</span></label><input type="range" id="vfx-amount" min="1" max="100" step="1" value="20" style="width:100%" oninput="updateVfxLabel('vfx-amount','val-amount')"></div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="font-size: 11px; font-weight: 800; color: var(--pink); text-transform: uppercase;">Generated Code</label>
+              <button class="btn btn-pink" style="padding: 6px 12px; font-size: 11px;" onclick="copyCodeOutput('vfx-output')"><i class="fas fa-copy"></i> Copy Code</button>
+            </div>
+            <pre id="vfx-display" class="language-javascript" style="flex: 1; min-height: 250px;"><code></code></pre>
+            <textarea id="vfx-output" style="display:none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: GUI & ECONOMY -->
+      <!-- ============================================== -->
+      <div id="tool-gui" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--gold); margin-bottom: 24px;"><i class="fas fa-desktop mr-2"></i> GUI & Economy Studio</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+          <!-- Left: Shop Builder -->
+          <div style="background: var(--nav-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <h4 style="font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 12px;"><i class="fas fa-shopping-cart"></i> The Shop Builder</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Category ID</label><input type="text" id="shop-cat-id" class="form-textarea" value="weapons_shop" oninput="generateShopCode()"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Display Title</label><input type="text" id="shop-cat-name" class="form-textarea" value="Weapons" oninput="generateShopCode()"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; border-left: 3px solid var(--gold); padding-left: 12px;">
+              <div><label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Item Name</label><input type="text" id="shop-item-name" class="form-textarea" placeholder="Diamond Sword"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Icon / Image</label><input type="text" id="shop-item-image" list="icon-options" class="form-textarea" placeholder="Diamond Sword"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Cost</label><input type="number" id="shop-item-cost" class="form-textarea" value="10"></div>
+              <div><label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">Currency</label><input type="text" id="shop-item-currency" list="currency-options" class="form-textarea" value="Gold Coin"></div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;"><input type="checkbox" id="shop-item-sell"><b>Is "Sell" item?</b></label>
+              <button class="btn btn-gold" onclick="addShopItem()"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+            <div id="shop-items-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; margin-top: 20px;"></div>
+            <div style="margin-top: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase;">Shop Code</label>
+                <button class="btn btn-gold" style="padding: 4px 10px; font-size: 11px;" onclick="copyCodeOutput('shop-output')"><i class="fas fa-copy"></i></button>
+              </div>
+              <pre id="shop-display" class="language-javascript" style="min-height: 120px; max-height: 200px;"><code></code></pre>
+              <textarea id="shop-output" style="display:none"></textarea>
+            </div>
+          </div>
+
+          <!-- Right: HUD Generator -->
+          <div style="background: var(--nav-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <h4 style="font-size: 14px; font-weight: 800; color: #58a6ff; margin-bottom: 16px;"><i class="fas fa-window-maximize"></i> The HUD Generator</h4>
+            <div style="margin-bottom: 16px;">
+              <label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">UI Element Type</label>
+              <select id="hud-type" class="form-textarea" style="padding: 8px;" onchange="renderHUDParams()">
+                <option value="topRight">Top Right Alert Box</option>
+                <option value="centerText">Center Screen Text</option>
+                <option value="middleBar">Middle Progress Bar</option>
+              </select>
+            </div>
+            <div id="hud-params" style="display: flex; flex-direction: column; gap: 12px; border-left: 3px solid #58a6ff; padding-left: 12px; margin-bottom: 24px;"></div>
+            <div style="margin-top: auto;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 800; color: #58a6ff; text-transform: uppercase;">HUD Code</label>
+                <button class="btn" style="background:#58a6ff; color:#0d1117; padding: 4px 10px; font-size: 11px;" onclick="copyCodeOutput('hud-output')"><i class="fas fa-copy"></i></button>
+              </div>
+              <pre id="hud-display" class="language-javascript" style="min-height: 120px; max-height: 200px;"><code></code></pre>
+              <textarea id="hud-output" style="display:none"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- NEW FILE CREATION MODAL -->
+<div class="modal-overlay" id="create-file-modal">
+    <div class="modal" style="width: 380px;">
+        <button class="modal-close" onclick="closeModal('create-file-modal')">✕</button>
+        <h3 class="font-extrabold text-lg mb-4 text-cyan-500"><i class="fas fa-file-medical"></i> Create New File</h3>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 20px;">
+            <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">File Name</label><input type="text" id="new-file-name" list="bloxd-blocks-autocomplete" class="form-textarea" style="padding:8px; min-height:36px;" placeholder="e.g. stone"></div>
+            <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Destination Folder</label><select id="new-file-folder" class="form-textarea" style="padding:8px; min-height:36px; cursor: pointer;"></select></div>
+            <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">File Type</label><select id="new-file-type" class="form-textarea" style="padding:8px; min-height:36px; cursor: pointer;"><option value="png">Texture Map (.png)</option><option value="css">Stylesheet Styles (.css)</option></select></div>
+        </div>
+        <div style="display: flex; gap: 8px;"><button class="btn btn-cyan flex-1" onclick="confirmCreateFile()">Create</button><button class="btn" style="background: var(--nav-hover); color: var(--text); border:1px solid var(--border);" onclick="closeModal('create-file-modal')">Cancel</button></div>
+    </div>
+</div>
+
+<!-- NEW FOLDER CREATION MODAL -->
+<div class="modal-overlay" id="create-folder-modal">
+    <div class="modal" style="width: 380px;">
+        <button class="modal-close" onclick="closeModal('create-folder-modal')">✕</button>
+        <h3 class="font-extrabold text-lg mb-4 text-yellow-500"><i class="fas fa-folder-plus"></i> Create New Folder</h3>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 20px;">
+            <div><label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">Folder Name</label><input type="text" id="new-folder-name" class="form-textarea" style="padding:8px; min-height:36px;" placeholder="e.g. models"></div>
+        </div>
+        <div style="display: flex; gap: 8px;"><button class="btn btn-gold flex-1" onclick="confirmCreateFolder()">Create</button><button class="btn" style="background: var(--nav-hover); color: var(--text); border:1px solid var(--border);" onclick="closeModal('create-folder-modal')">Cancel</button></div>
+    </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="confirm-delete-modal">
+    <div class="modal" style="width: 340px; text-align: center;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 40px; color: #cf222e; margin-bottom: 16px;"></i>
+        <h3 class="font-extrabold text-xl mb-2" style="color: #cf222e;">Delete File?</h3>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 24px;" id="delete-file-msg">Are you sure you want to delete this file?</p>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn flex-1" style="background: var(--nav-hover); color: var(--text); border:1px solid var(--border);" onclick="closeModal('confirm-delete-modal')">Cancel</button>
+            <button class="btn flex-1" style="background: #cf222e; color: white;" onclick="executeDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ========================================== -->
+<!-- 1. Load the Compiled M2B Engine from Webpack -->
+<!-- ========================================== -->
+<script src="dist/bundle.js"></script>
+
+<!-- ========================================== -->
+<!-- 2. Logic for the Tools Page                -->
+<!-- ========================================== -->
+<script>
+  /* ===== APP LAUNCHER NAVIGATION ===== */
+  function openTool(toolId) {
+    document.getElementById('launcher-view').style.display = 'none';
+    document.getElementById('tool-view').style.display = 'block';
+    document.querySelectorAll('.tool-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('tool-' + toolId).classList.add('active');
+  }
+
+  function closeTool() {
+    document.getElementById('tool-view').style.display = 'none';
+    document.getElementById('launcher-view').style.display = 'block';
+  }
+
+  /* ===== TOAST NOTIFICATIONS ===== */
+  let toastTimer;
+  window.showToast = function(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; 
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  /* ===== DARK MODE ===== */
+  let isDark = localStorage.getItem('darkMode') === 'true';
+  function applyDark() {
+    document.documentElement.classList.toggle('dark', isDark);
+    const sw = document.getElementById('dark-switch');
+    if (sw) sw.classList.toggle('on', isDark);
+  }
+  function toggleDark() { isDark = !isDark; localStorage.setItem('darkMode', isDark); applyDark(); }
+  applyDark();
+
+  function copyCodeOutput(elementId) {
+    const out = document.getElementById(elementId);
+    out.style.display = "block"; out.select(); document.execCommand('copy'); out.style.display = "none";
+    window.showToast("📋 Code copied to clipboard!");
+  }
+
+  function openCreateFileModal() {
+    document.getElementById('new-file-name').value = '';
+    const folderSelect = document.getElementById('new-file-folder');
+    folderSelect.innerHTML = '';
+    createdFolders.forEach(folder => {
+        folderSelect.innerHTML += `<option value="${folder}">${folder}/</option>`;
+    });
+    document.getElementById('create-file-modal').classList.add('open');
+  }
+
+  function openCreateFolderModal() {
+    document.getElementById('new-folder-name').value = '';
+    document.getElementById('create-folder-modal').classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  /* ===== COMMAND STUDIO LOGIC ===== */
+  let cmdList = [];
+  let cmdCounter = 1;
+
+  function addCustomCommand() {
+    const trigger = document.getElementById('cmd-trigger').value.trim().toLowerCase();
+    const role = document.getElementById('cmd-role').value;
+    const action = document.getElementById('cmd-action').value;
+    
+    if (!trigger) { window.showToast("⚠ Please enter a command trigger (e.g. fly)"); return; }
+    
+    cmdList.push({ id: 'cmd_' + cmdCounter++, trigger, role, action });
+    document.getElementById('cmd-trigger').value = '';
+    renderCmdList();
+    generateCmdCode();
+    window.showToast("✅ Command added!");
+  }
+
+  function removeCommandItem(index) {
+    cmdList.splice(index, 1);
+    renderCmdList();
+    generateCmdCode();
+  }
+
+  function renderCmdList() {
+    const list = document.getElementById('cmd-items-list');
+    list.innerHTML = '';
+    if (cmdList.length === 0) { list.innerHTML = '<span style="font-size: 12px; color: var(--muted); font-style: italic;">No commands added yet.</span>'; return; }
+    
+    cmdList.forEach((cmd, i) => {
+        list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <div style="width: 32px; height: 32px; background: var(--bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid var(--border); color: var(--indigo);"><i class="fas fa-terminal"></i></div>
+                <div>
+                    <div style="font-size:13px; font-weight:700; color:var(--text);">!${cmd.trigger}</div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:2px;">
+                        Role: <b>${cmd.role.toUpperCase()}</b>
+                    </div>
+                </div>
+            </div>
+            <button onclick="removeCommandItem(${i})" style="background:none; border:none; color:#cf222e; cursor:pointer; font-size: 14px; padding: 6px;"><i class="fas fa-trash"></i></button>
+        </div>`;
+    });
+  }
+
+  function generateCmdCode() {
+    const prefixEl = document.getElementById('cmd-prefix');
+    const prefix = prefixEl ? prefixEl.value : "!";
+    const errorMsgEl = document.getElementById('cmd-error');
+    const errorMsg = errorMsgEl ? errorMsgEl.value : "❌ Permission Denied!";
+    const adminsEl = document.getElementById('cmd-admins');
+    const adminsRaw = adminsEl ? adminsEl.value.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    const adminsStr = JSON.stringify(adminsRaw);
+
+    let code = `/* === BLOXD COMMAND & PERMISSIONS SYSTEM === */\n`;
+    code += `const PREFIX = "${prefix}";\n`;
+    code += `const ADMIN_IDS = ${adminsStr};\n`;
+    code += `const ERROR_MSG = "${errorMsg}";\n\n`;
+
+    code += `onPlayerChat = (playerId, message) => {\n`;
+    code += `    if (!message.startsWith(PREFIX)) return true; // Let normal chat pass\n\n`;
+    code += `    const args = message.slice(PREFIX.length).trim().split(" ");\n`;
+    code += `    const cmd = args.shift().toLowerCase();\n`;
+    code += `    const isOwner = api.ownerDbId === api.getPlayerDbId(playerId);\n`;
+    code += `    const isAdmin = isOwner || ADMIN_IDS.includes(api.getPlayerDbId(playerId));\n\n`;
+    
+    code += `    /* COMMAND ROUTER */\n`;
+
+    cmdList.forEach(cmd => {
+        code += `    if (cmd === "${cmd.trigger}") {\n`;
+        
+        // Permission check
+        if (cmd.role === "owner") {
+            code += `        if (!isOwner) { api.sendMessage(playerId, ERROR_MSG, {color: "red"}); return false; }\n`;
+        } else if (cmd.role === "admin") {
+            code += `        if (!isAdmin) { api.sendMessage(playerId, ERROR_MSG, {color: "red"}); return false; }\n`;
+        }
+
+        // Actions
+        if (cmd.action === "toggle_fly") {
+            code += `        const current = api.getClientOption(playerId, "airJumpCount");\n`;
+            code += `        api.setClientOption(playerId, "airJumpCount", current > 0 ? 0 : 99);\n`;
+            code += `        api.sendMessage(playerId, "Fly mode toggled!", {color: "yellow"});\n`;
+        } else if (cmd.action === "heal_self") {
+            code += `        const max = api.getMaxHealth(playerId);\n`;
+            code += `        api.setHealth(playerId, max);\n`;
+            code += `        api.sendMessage(playerId, "You have been fully healed!", {color: "green"});\n`;
+        } else if (cmd.action === "clear_inv") {
+            code += `        api.clearInventory(playerId);\n`;
+            code += `        api.sendMessage(playerId, "Inventory cleared.", {color: "gray"});\n`;
+        } else if (cmd.action === "teleport_spawn") {
+            code += `        api.setPosition(playerId, 0, 65, 0);\n`;
+            code += `        api.sendMessage(playerId, "Teleported to spawn.", {color: "aqua"});\n`;
+        } else if (cmd.action === "godmode") {
+            code += `        api.setHealth(playerId, 9999);\n`;
+            code += `        api.sendMessage(playerId, "Godmode Activated!", {color: "gold"});\n`;
+        } else {
+            code += `        // Add your custom logic here for ${cmd.trigger}\n`;
+        }
+        
+        code += `        return false; // Prevent command from showing in public chat\n`;
+        code += `    }\n\n`;
+    });
+
+    code += `    // Command not found\n`;
+    code += `    api.sendMessage(playerId, "❓ Unknown command.", {color: "gray"});\n`;
+    code += `    return false;\n`;
+    code += `};\n`;
+
+    document.getElementById('cmd-output').value = code;
+    const display = document.getElementById('cmd-display').querySelector('code');
+    display.textContent = code;
+    if (typeof window.refreshSyntax === 'function') window.refreshSyntax();
+  }
+
+  // Quick Compiler Command Simulator using Actual CodexMind AI
+  async function simulateAICommand() {
+    const promptEl = document.getElementById('ai-cmd-prompt');
+    const prompt = promptEl ? promptEl.value.trim() : '';
+    if (!prompt) { window.showToast("⚠ Please describe your command first!"); return; }
+    
+    const display = document.getElementById('cmd-display').querySelector('code');
+    const outputTextarea = document.getElementById('cmd-output');
+    if (!display || !outputTextarea) return;
+
+    // Show initial compilation status
+    display.textContent = `/* ⚙️ CodexMind starting compilation loop for: "${prompt}"... */\n`;
+    outputTextarea.value = display.textContent;
+    if (typeof window.refreshSyntax === 'function') window.refreshSyntax();
+
+    try {
+      // Build context and developer instruction
+      const aiPrompt = `The developer wants a Bloxd.io custom chat command system with the following details:\n"${prompt}"\n\nWrite a fully complete, professional JavaScript script using the Bloxd.io APIs. Provide only valid, working JavaScript code containing appropriate comments (/* comment */ format) explaining the logic. Do not write any markdown prose or markdown fences in your final output, write raw code only.`;
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: aiPrompt }],
+          model: 'CodexMind',
+          systemPrompt: typeof localPromptData !== 'undefined' ? localPromptData : 'You are CodexMind, an expert programmer for Bloxd.io.'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Connection failed');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let fullCode = '';
+      let buffer = '';
+
+      display.textContent = ''; // Clear for stream
+      outputTextarea.value = '';
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          buffer += decoder.decode(value, { stream: !done });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('data: ')) {
+              const data = trimmed.slice(6);
+              if (data === '[DONE]') {
+                done = true;
+                break;
+              } else if (data) {
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.delta) {
+                    fullCode += parsed.delta;
+                    
+                    // Clean code representation (strip markdown formatting code blocks if any)
+                    let clean = fullCode;
+                    clean = clean.replace(/<command[^>]*>([\s\S]*?)<\/command>/g, '$1');
+                    clean = clean.replace(/```(?:javascript|js)?\n([\s\S]*?)```/g, '$1');
+                    clean = clean.replace(/```/g, '');
+                    
+                    display.textContent = clean;
+                    outputTextarea.value = clean;
+                    if (typeof window.refreshSyntax === 'function') window.refreshSyntax();
+                  }
+                } catch(e) {
+                  console.error("Delta parsing error inside simulateAICommand:", e);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      window.showToast("⚙️ Command successfully compiled by CodexMind AI!");
+      if (promptEl) promptEl.value = '';
+
+    } catch (err) {
+      console.error(err);
+      display.textContent = `/* 🚨 Compilation Error: ${err.message || 'Unable to load response'} */`;
+      outputTextarea.value = display.textContent;
+    }
+  }
+
+  const prefixInput = document.getElementById('cmd-prefix');
+  const errorInput = document.getElementById('cmd-error');
+  const adminsInput = document.getElementById('cmd-admins');
+  if (prefixInput) prefixInput.addEventListener('input', generateCmdCode);
+  if (errorInput) errorInput.addEventListener('input', generateCmdCode);
+  if (adminsInput) adminsInput.addEventListener('input', generateCmdCode);
+
+  /* ===== SMART MOB MAKER LOGIC ===== */
+  function generateMobCode() {
+    const type = document.getElementById('mob-type').value;
+    const name = document.getElementById('mob-name').value.trim();
+    const hp = document.getElementById('mob-hp').value || 100;
+    const dmg = document.getElementById('mob-dmg').value || 10;
+    const speed = document.getElementById('mob-speed').value || 3.5;
+    const aiState = document.getElementById('mob-ai').value;
+    const drop = document.getElementById('mob-drop').value.trim();
+    const isBoss = document.getElementById('mob-boss').checked;
+
+    let code = `/* === SMART MOB MAKER: ${type.toUpperCase()} === */\n`;
+    code += `let [x, y, z] = thisPos;\n\n`;
+    
+    code += `const mobId = api.attemptSpawnMob("${type}", x, y+1, z, {\n`;
+    if (name) code += `    name: "${name}",\n`;
+    code += `    variation: "default",\n`;
+    code += `    playSoundOnSpawn: true\n`;
+    code += `});\n\n`;
+
+    code += `if (mobId) {\n`;
+    code += `    /* --- STATS --- */\n`;
+    code += `    api.setMobSetting(mobId, "maxHealth", ${hp});\n`;
+    code += `    api.setMobSetting(mobId, "initialHealth", ${hp});\n`;
+    code += `    api.setMobSetting(mobId, "attackDamage", ${dmg});\n`;
+    code += `    api.setMobSetting(mobId, "baseWalkingSpeed", ${speed});\n`;
+    code += `    api.setMobSetting(mobId, "baseRunningSpeed", ${parseFloat(speed) + 1.0});\n\n`;
+
+    code += `    /* --- CUSTOM BEHAVIOR --- */\n`;
+    if (aiState === "idle" || aiState === "disabled") {
+        code += `    api.setMobAiState(mobId, "${aiState}", null);\n`;
+    } else if (aiState === "chasing") {
+        code += `    // Note: Chasing requires a target. Setting aggressive hostilty radius instead.\n`;
+        code += `    api.setMobSetting(mobId, "hostilityRadius", 16);\n`;
+        code += `    api.setMobSetting(mobId, "chaseRadius", 12);\n`;
+    }
+
+    if (drop) {
+        code += `\n    /* --- LOOT --- */\n`;
+        code += `    api.setMobSetting(mobId, "onDeathItemDrops", [\n`;
+        code += `        { itemName: "${drop}", probabilityOfDrop: 1, dropMinAmount: 1, dropMaxAmount: 1 }\n`;
+        code += `    ]);\n`;
+    }
+
+    if (isBoss) {
+        code += `\n    /* --- BOSS MECHANICS --- */\n`;
+        code += `    // Add glowing particle aura\n`;
+        code += `    api.playParticleEffect({\n`;
+        code += `        presetId: "aura",\n`;
+        code += `        lineToEId: mobId,\n`;
+        code += `        meshOffset: [0, 1, 0]\n`;
+        code += `    });\n`;
+        code += `    api.broadcastMessage("⚠ ${name || 'A Boss'} has spawned!", { color: "red" });\n`;
+    }
+
+    code += `} else {\n`;
+    code += `    api.log("Failed to spawn mob. Too many entities or blocked area.");\n`;
+    code += `}\n`;
+
+    document.getElementById('mob-output').value = code;
+    const display = document.getElementById('mob-display').querySelector('code');
+    display.textContent = code;
+    if (typeof window.refreshSyntax === 'function') window.refreshSyntax();
+    window.showToast("🧟 Mob script generated!");
+  }
+
+  /* ===== M2B CONVERTER UPLOAD HANDLER ===== */
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      if (typeof window.convertSchematicFile === 'function') {
+        window.convertSchematicFile(file);
+      } else {
+        window.showToast("⚠ Error: bundle.js is not loaded correctly.");
+      }
+    }
+    event.target.value = '';
+  }
+
+  /* ===== TEXTURE STUDIO ENGINE ===== */
+  let activeStudioFile = null;
+  let packFiles = [];
+  let createdFolders = ["textures", "css"];
+  let currentColor = "#ff5555";
+  let paintTool = "pencil";
+  let isPainting = false;
+
+  const defaultPalette = ["#ff5555", "#ffb86c", "#f1fa8c", "#50fa7b", "#8be9fd", "#bd93f9", "#ff79c6", "#ffffff", "#000000", "transparent"];
+
+  function initPalette() {
+    const container = document.getElementById("color-palette-swatches");
+    container.innerHTML = "";
+    defaultPalette.forEach(color => {
+        const swatch = document.createElement("div");
+        swatch.className = "palette-color" + (color === currentColor ? " active" : "");
+        swatch.style.background = color === "transparent" ? "repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 50% / 8px 8px" : color;
+        swatch.onclick = () => {
+            currentColor = color;
+            document.getElementById("paint-color-picker").value = color === "transparent" ? "#000000" : color;
+            document.querySelectorAll(".palette-color").forEach(el => el.classList.remove("active"));
+            swatch.classList.add("active");
+        };
+        container.appendChild(swatch);
+    });
+  }
+
+  function selectPaletteColor(hex) { currentColor = hex; initPalette(); }
+  function setPaintTool(tool) { paintTool = tool; document.getElementById("btn-tool-pencil").classList.toggle("active", tool === "pencil"); document.getElementById("btn-tool-eraser").classList.toggle("active", tool === "eraser"); }
+
+  function buildPaintGrid() {
+    const grid = document.getElementById("pixel-grid"); grid.innerHTML = "";
+    grid.addEventListener("mousedown", () => isPainting = true); window.addEventListener("mouseup", () => isPainting = false);
+
+    for (let i = 0; i < 256; i++) {
+        const cell = document.createElement("div"); cell.className = "pixel-cell"; cell.dataset.index = i; cell.style.background = "transparent";
+        const paintCell = (el) => { el.style.background = paintTool === "pencil" ? (currentColor === "transparent" ? "transparent" : currentColor) : "transparent"; saveActiveCanvasData(); };
+        cell.addEventListener("mousedown", (e) => { e.preventDefault(); paintCell(cell); });
+        cell.addEventListener("mouseenter", () => { if (isPainting) paintCell(cell); });
+        grid.appendChild(cell);
+    }
+  }
+
+  function clearPaintGrid() { document.querySelectorAll(".pixel-cell").forEach(cell => cell.style.background = "transparent"); saveActiveCanvasData(); }
+
+  // Custom Delete UI Logic
+  let fileToDelete = null;
+  function deleteFileFromTree(fileName) {
+    fileToDelete = fileName;
+    document.getElementById('delete-file-msg').textContent = `Are you sure you want to delete ${fileName}? This cannot be undone.`;
+    document.getElementById('confirm-delete-modal').classList.add('open');
+  }
+
+  function executeDelete() {
+    if (!fileToDelete) return;
+    packFiles = packFiles.filter(f => f.name !== fileToDelete);
+    if (activeStudioFile === fileToDelete) {
+        activeStudioFile = null;
+        document.getElementById("paint-studio-panel").style.display = "none";
+        document.getElementById("css-studio-panel").style.display = "none";
+        document.getElementById("no-file-screen").style.display = "flex";
+    }
+    renderFileTree();
+    closeModal('confirm-delete-modal');
+    window.showToast("🗑 File deleted from pack.");
+    fileToDelete = null;
+  }
+
+  function renderFileTree() {
+    const tree = document.getElementById("tp-file-explorer");
+    tree.innerHTML = "";
+
+    if (createdFolders.length === 0 && packFiles.length === 0) {
+        tree.innerHTML = '<span style="font-size: 11px; color: var(--muted); font-style: italic; padding: 4px;">No files or folders created yet.</span>';
+        return;
+    }
+
+    createdFolders.forEach(folder => {
+        const folderDiv = document.createElement("div");
+        folderDiv.style = "margin-bottom: 6px;";
+        folderDiv.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; padding:4px 6px; font-size:12px; font-weight:700; color:var(--text); cursor:pointer;" onclick="toggleFolderCollapse('${folder}')">
+                <i class="fas fa-folder-open text-yellow-500" style="font-size:11px;"></i>
+                <span>${folder}</span>
+            </div>
+            <div id="folder-contents-${folder}" style="display:flex; flex-direction:column; gap:4px; padding-left:14px; margin-top:4px;">
+            </div>`;
+        tree.appendChild(folderDiv);
+
+        const folderFiles = packFiles.filter(f => f.name.startsWith(folder + "/"));
+        const contentsDiv = document.getElementById(`folder-contents-${folder}`);
+
+        if (folderFiles.length === 0) {
+            contentsDiv.innerHTML = '<span style="font-size:11px; color:var(--muted); font-style:italic; padding-left:6px;">Empty Folder</span>';
+        } else {
+            folderFiles.forEach(file => {
+                const item = document.createElement("div");
+                item.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px; background:var(--bg); border: 1px solid var(--border); transition:0.1s;";
+                if (activeStudioFile === file.name) { item.style.borderColor = "var(--cyan)"; item.style.background = "rgba(14,165,233,0.05)"; }
+
+                const icon = file.type === "png" ? "fa-file-image text-cyan-500" : "fa-file-code text-purple-500";
+                const shortName = file.name.substring(folder.length + 1);
+
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden;" onclick="selectFileToEdit('${file.name}')">
+                        <i class="fas ${icon}" style="font-size:10px;"></i>
+                        <span style="font-family: monospace; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${shortName}</span>
+                    </div>
+                    <button onclick="deleteFileFromTree('${file.name}')" style="background:none; border:none; color:#cf222e; cursor:pointer; font-size:10px; padding:2px;">
+                        <i class="fas fa-trash"></i>
+                    </button>`;
+                contentsDiv.appendChild(item);
+            });
+        }
+    });
+  }
+
+  function toggleFolderCollapse(folder) {
+    const contents = document.getElementById(`folder-contents-${folder}`);
+    contents.style.display = contents.style.display === "none" ? "flex" : "none";
+  }
+
+  function selectFileToEdit(fileName) {
+    const file = packFiles.find(f => f.name === fileName);
+    if (!file) return;
+
+    activeStudioFile = file.name;
+    renderFileTree();
+    document.getElementById("no-file-screen").style.display = "none";
+    
+    if (file.type === "png") {
+        document.getElementById("css-studio-panel").style.display = "none";
+        document.getElementById("paint-studio-panel").style.display = "flex";
+        document.getElementById("paint-file-title").textContent = file.name;
+        
+        const cells = document.querySelectorAll(".pixel-cell");
+        cells.forEach((cell, idx) => { cell.style.background = file.data[idx] || "transparent"; });
+    } else {
+        document.getElementById("paint-studio-panel").style.display = "none";
+        document.getElementById("css-studio-panel").style.display = "flex";
+        document.getElementById("css-file-title").textContent = file.name;
+        document.getElementById("css-code-editor").value = file.data;
+    }
+  }
+
+  function saveActiveCanvasData() {
+    if (!activeStudioFile) return;
+    const file = packFiles.find(f => f.name === activeStudioFile);
+    if (file && file.type === "png") {
+        const cells = document.querySelectorAll(".pixel-cell");
+        cells.forEach((cell, idx) => { file.data[idx] = cell.style.background; });
+    }
+  }
+
+  function saveActiveCssFile() {
+    if (!activeStudioFile) return;
+    const file = packFiles.find(f => f.name === activeStudioFile);
+    if (file && file.type === "css") {
+        file.data = document.getElementById("css-code-editor").value;
+    }
+  }
+
+  function triggerFileImport() { document.getElementById('tp-import-file').click(); }
+  function triggerFolderImport() { document.getElementById('tp-import-folder').click(); }
+
+  function readPngPixels(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas'); canvas.width = 16; canvas.height = 16;
+                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, 16, 16);
+                const imgData = ctx.getImageData(0, 0, 16, 16).data;
+                const colors = [];
+                for (let i = 0; i < imgData.length; i += 4) {
+                    const r = imgData[i]; const g = imgData[i+1]; const b = imgData[i+2]; const a = imgData[i+3];
+                    colors.push(a === 0 ? "transparent" : `rgb(${r},${g},${b})`);
+                }
+                resolve(colors);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+  }
+
+  async function importFile(event) {
+    const file = event.target.files[0]; if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    let folder = ext === "png" ? "textures" : "css";
+    const fullName = folder + "/" + file.name;
+    if (packFiles.find(f => f.name === fullName)) { window.showToast("⚠ This file already exists inside the explorer."); return; }
+
+    let fileData = ext === "png" ? await readPngPixels(file) : await file.text();
+    packFiles.push({ name: fullName, type: ext, data: fileData });
+    renderFileTree(); selectFileToEdit(fullName); window.showToast(`📥 Imported: ${file.name}`);
+    event.target.value = ''; 
+  }
+
+  async function importFolder(event) {
+    const files = event.target.files; if (files.length === 0) return;
+    let importCount = 0;
+    for (let file of files) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext !== "png" && ext !== "css") continue; 
+
+        let relativePath = file.webkitRelativePath || "";
+        let pathParts = relativePath.split('/');
+        let folder = ext === "png" ? "textures" : "css";
+        if (pathParts.length > 2) { folder = pathParts[pathParts.length - 2]; }
+        if (!createdFolders.includes(folder)) { createdFolders.push(folder); }
+
+        const fullName = folder + "/" + file.name;
+        if (packFiles.find(f => f.name === fullName)) continue;
+
+        let fileData = ext === "png" ? await readPngPixels(file) : await file.text();
+        packFiles.push({ name: fullName, type: ext, data: fileData });
+        importCount++;
+    }
+    renderFileTree(); if (packFiles.length > 0 && !activeStudioFile) { selectFileToEdit(packFiles[0].name); }
+    window.showToast(`📂 Imported ${importCount} files!`); event.target.value = '';
+  }
+
+  function convertCanvasToBlob(colorData) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement("canvas"); canvas.width = 16; canvas.height = 16;
+        const ctx = canvas.getContext("2d");
+        colorData.forEach((color, idx) => {
+            if (color !== "transparent" && color !== "") {
+                ctx.fillStyle = color; ctx.fillRect(idx % 16, Math.floor(idx / 16), 1, 1);
+            }
+        });
+        canvas.toBlob(resolve, "image/png");
+    });
+  }
+
+  async function generateTexturePack() {
+    if (typeof JSZip === 'undefined') { window.showToast("⚠ Error: JSZip library not loaded."); return; }
+    const packName = document.getElementById('tp-name').value.trim() || 'MyTexturePack';
+    if (packFiles.length === 0) { window.showToast("⚠ Please build or add at least one file before downloading!"); return; }
+
+    window.showToast("⏳ Compiling Texture Pack .zip...");
+    const zip = new JSZip(); const root = zip.folder(packName);
+    for (let file of packFiles) {
+        if (file.type === "png") { const blob = await convertCanvasToBlob(file.data); root.file(file.name, blob); } 
+        else { root.file(file.name, file.data); }
+    }
+    try {
+        const content = await zip.generateAsync({type:"blob"});
+        const a = document.createElement("a"); a.href = URL.createObjectURL(content); a.download = packName + ".zip"; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000); window.showToast("✅ Texture Pack downloaded successfully!");
+    } catch(err) { window.showToast("⚠ Failed to compile .zip file."); }
+  }
+
+  /* ===== CODE MERGER SYSTEM ===== */
+  function runAutoMerger() {
+    let s1 = document.getElementById('merger-s1').value.trim();
+    let s2 = document.getElementById('merger-s2').value.trim();
+
+    if (!s1 || !s2) { window.showToast("⚠ Please paste code into both Script 1 and Script 2!"); return; }
+
+    const junkRegexes = [ /\/\* === BLOXD VFX PARTICLE SCRIPT === \*\/\n?/g, /\/\* Paste inside an event like onPlayerClick or tick \*\/\n?/g, /\/\* === QTE GENERATOR SCRIPT === \*\/\n?/g, /\/\* Store the qteId if you want to cancel it later \*\/\n?/g ];
+    junkRegexes.forEach(r => { s1 = s1.replace(r, ''); s2 = s2.replace(r, ''); });
+
+    let topDeclarations = "";
+    const posRegex = /(?:let|const|var)\s+\[x,\s*y,\s*z\]\s*=\s*(?:thisPos|api\.getPosition\(playerId\));\s*(?:\/\/.*)?\n?/g;
+    
+    if (posRegex.test(s1) || posRegex.test(s2)) {
+        s1 = s1.replace(posRegex, ''); s2 = s2.replace(posRegex, '');
+        topDeclarations += `let playerPos = typeof playerId !== 'undefined' ? api.getPosition(playerId) : thisPos;\nlet x = playerPos[0];\nlet y = playerPos[1];\nlet z = playerPos[2];\n\n`;
+    }
+
+    s1 = s1.replace(/function\s+([a-zA-Z0-9_]+)\s*\(/g, "$1 = function(");
+    s2 = s2.replace(/function\s+([a-zA-Z0-9_]+)\s*\(/g, "$1 = function(");
+
+    const callbacks = ["tick", "onClose", "onPlayerJoin", "onPlayerLeave", "onPlayerJump", "onRespawnRequest", "playerCommand", "onPlayerChat", "onPlayerChangeBlock", "onPlayerDropItem", "onPlayerPickedUpItem", "onPlayerSelectInventorySlot", "onBlockStand", "onPlayerAttemptCraft", "onPlayerCraft", "onPlayerAttemptOpenChest", "onPlayerOpenedChest", "onPlayerMoveItemOutOfInventory", "onPlayerMoveInvenItem", "onPlayerMoveItemIntoIdxs", "onPlayerSwapInvenSlots", "onPlayerMoveInvenItemWithAmt", "onPlayerAttemptAltAction", "onPlayerAltAction", "onPlayerClick", "onPlayerClickUp", "onClientOptionUpdated", "onMobSettingUpdated", "onInventoryUpdated", "onChestUpdated", "onWorldChangeBlock", "onCreateBloxdMeshEntity", "onEntityCollision", "onPlayerAttemptSpawnMob", "onWorldAttemptSpawnMob", "onPlayerSpawnMob", "onWorldSpawnMob", "onWorldAttemptDespawnMob", "onMobDespawned", "onPlayerAttack", "onPlayerDamagingOtherPlayer", "onPlayerDamagingMob", "onMobDamagingPlayer", "onMobDamagingOtherMob", "onAttemptKillPlayer", "onPlayerKilledOtherPlayer", "onMobKilledPlayer", "onPlayerKilledMob", "onMobKilledOtherMob", "onPlayerPotionEffect", "onPlayerDamagingMeshEntity", "onPlayerBreakMeshEntity", "onPlayerUsedThrowable", "onPlayerThrowableHitTerrain", "onTouchscreenActionButton", "onTaskClaimed", "onChunkLoaded", "onPlayerRequestChunk", "onItemDropCreated", "onPlayerStartChargingItem", "onPlayerFinishChargingItem", "onPlayerFinishQTE", "onPlayerToggledShopMenu", "onPlayerBoughtShopItem", "doPeriodicSave"];
+    let safeS1 = s1.trim(); let safeS2 = s2.trim(); let wrappers = []; let hasOverlappingEvents = false;
+
+    callbacks.forEach(cb => {
+        const regex = new RegExp(`\\b${cb}\\s*=`, "g");
+        const inS1 = regex.test(s1); const inS2 = regex.test(s2);
+
+        if (inS1 && inS2) {
+            hasOverlappingEvents = true;
+            safeS1 = safeS1.replace(regex, `globalThis._s1_${cb} =`);
+            safeS2 = safeS2.replace(regex, `globalThis._s2_${cb} =`);
+            let wrapper = `${cb} = (...args) => {\n    let r1, r2;\n    if(typeof globalThis._s1_${cb} === 'function') r1 = globalThis._s1_${cb}(...args);\n    if(typeof globalThis._s2_${cb} === 'function') r2 = globalThis._s2_${cb}(...args);\n    return r1 !== undefined ? r1 : r2;\n};`;
+            wrappers.push(wrapper);
+        }
+    });
+
+    let finalCode = "";
+    if (topDeclarations) finalCode += topDeclarations;
+
+    if (hasOverlappingEvents) {
+        finalCode += `// Note: Scoped closures used to prevent variable collisions in overlapping events\n`;
+        finalCode += `(() => {\n${safeS1}\n})();\n\n(() => {\n${safeS2}\n})();\n\n${wrappers.join("\n\n")}`;
+    } else {
+        const dedupRegex = /^(?:let|const|var)\s+([^=]+)\s*=/gm;
+        let match; let varsInS1 = [];
+        while ((match = dedupRegex.exec(safeS1)) !== null) varsInS1.push(match[1].trim());
+
+        safeS2 = safeS2.split('\n').map(line => {
+            let isDuplicate = false;
+            varsInS1.forEach(v => { if (line.trim().startsWith(`let ${v}`) || line.trim().startsWith(`const ${v}`) || line.trim().startsWith(`var ${v}`)) isDuplicate = true; });
+            return isDuplicate ? `// Duplicate declaration removed: ${line.trim()}` : line;
+        }).join('\n');
+        finalCode += `${safeS1}\n\n${safeS2}`;
+    }
+
+    document.getElementById('merger-output').value = finalCode;
+    const display = document.getElementById('merger-display').querySelector('code');
+    display.textContent = finalCode;
+    if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
+    document.getElementById('merger-result-area').style.display = 'block';
+    window.showToast("✨ Scripts successfully merged!");
+  }
+
+  /* ===== QTE GENERATOR ===== */
+  const qteConfigs = {
+    progressBar: [
+      { id: "progressStartValue", label: "Start Value (0-100)", type: "number", value: 30 },
+      { id: "progressDecreasePerTick", label: "Drain Speed (Per Tick)", type: "number", value: 0.075 },
+      { id: "progressPerClick", label: "Gain Speed (Per Click)", type: "number", value: 5 },
+      { id: "canFail", label: "Can Fail if hits 0?", type: "checkbox", value: false },
+      { id: "description", label: "Prompt Text", type: "text", value: "Click repeatedly to complete!" },
+      { id: "clickIcon", label: "Icon", type: "text", value: "fa-solid fa-computer-mouse" }
+    ],
+    timedClick: [
+      { id: "timeWindow", label: "Time Window (ms)", type: "number", value: 3000 },
+      { id: "label", label: "Prompt Text", type: "text", value: "Click to complete the QTE!" },
+      { id: "icon", label: "Icon", type: "text", value: "fa-solid fa-bolt" },
+      { id: "showTimer", label: "Show Timer?", type: "checkbox", value: true },
+      { id: "breatheCenter", label: "Breathing Animation?", type: "checkbox", value: false }
+    ],
+    gravityBar: [
+      { id: "catchZoneSize", label: "Catch Zone Size (0.1 - 1.0)", type: "number", value: 0.25 },
+      { id: "moverSpeed", label: "Mover Speed", type: "number", value: 3 },
+      { id: "moverErraticness", label: "Mover Erraticness", type: "number", value: 0.8 },
+      { id: "gravity", label: "Gravity (Down Pull)", type: "number", value: 1 },
+      { id: "riseSpeed", label: "Rise Speed (Up Push)", type: "number", value: 1.5 },
+      { id: "canFail", label: "Can Fail if hits 0?", type: "checkbox", value: false },
+      { id: "description", label: "Prompt Text", type: "text", value: "Hold to catch!" },
+      { id: "icon", label: "Icon (Mover)", type: "text", value: "Moonfish" }
+    ],
+    precisionBar: [
+      { id: "speed", label: "Marker Speed", type: "number", value: 0.5 },
+      { id: "successZoneSize", label: "Success Zone Size (0.1 - 1.0)", type: "number", value: 0.15 },
+      { id: "label", label: "Prompt Text", type: "text", value: "Click when in the green zone!" },
+      { id: "icon", label: "Icon (Marker)", type: "text", value: "fa-solid fa-crosshairs" }
+    ],
+    rhythmClick: [
+      { id: "requiredSuccesses", label: "Required Successes", type: "number", value: 5 },
+      { id: "shrinkDurationMs", label: "Shrink Speed (ms)", type: "number", value: 1200 },
+      { id: "toleranceFraction", label: "Tolerance (0.1 - 1.0)", type: "number", value: 0.15 },
+      { id: "maxMisses", label: "Max Misses", type: "number", value: 3 },
+      { id: "label", label: "Prompt Text", type: "text", value: "Click when the circles align!" },
+      { id: "icon", label: "Icon", type: "text", value: "fa-solid fa-bullseye" }
+    ]
+  };
+
+  function renderQTEParams() {
+    const type = document.getElementById("qte-type").value;
+    const container = document.getElementById("qte-params");
+    container.innerHTML = "";
+    qteConfigs[type].forEach(param => {
+      let html = "";
+      if (param.type === "checkbox") {
+        html = `<label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;"><input type="checkbox" id="qte_${param.id}" ${param.value ? 'checked' : ''} onchange="generateQTECode()"><b>${param.label}</b></label>`;
+      } else {
+        const listAttr = param.id.toLowerCase().includes("icon") ? `list="icon-options"` : ``;
+        html = `<label style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:4px;">${param.label}</label><input type="${param.type}" id="qte_${param.id}" value="${param.value}" ${listAttr} class="form-textarea" style="padding:8px;" oninput="generateQTECode()">`;
+      }
+      const div = document.createElement("div"); div.innerHTML = html; container.appendChild(div);
+    });
+    generateQTECode(); 
+  }
+
+  function generateQTECode() {
+    const type = document.getElementById("qte-type").value;
+    let paramsCode = ``;
+    qteConfigs[type].forEach((param, i) => {
+      const el = document.getElementById(`qte_${param.id}`);
+      let valCode = param.type === "checkbox" ? el.checked : (param.type === "number" ? (el.value || 0) : ((param.id === "description" || param.id === "label") ? `[{ str: "${el.value.replace(/"/g, '\\"')}" }]` : `"${el.value.replace(/"/g, '\\"')}"`));
+      paramsCode += `        ${param.id}: ${valCode}${i < qteConfigs[type].length - 1 ? ',\n' : ''}`;
+    });
+
+    const finalCode = `/* === QTE GENERATOR SCRIPT === */\nconst qteId = api.addQTE(playerId, {\n    type: "${type}",\n    parameters: {\n${paramsCode}\n    }\n});`;
+    document.getElementById("qte-output").value = finalCode;
+    const display = document.getElementById('qte-display').querySelector('code');
+    display.textContent = finalCode;
+    if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
+  }
+
+  /* ===== VFX PARTICLE STUDIO ===== */
+  function hexToRgb(hex) { const bigint = parseInt(hex.slice(1), 16); return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255]; }
+  function updateVfxLabel(inputId, labelId) { document.getElementById(labelId).textContent = document.getElementById(inputId).value; generateVFXCode(); }
+
+  function generateVFXCode() {
+    const tex = document.getElementById("vfx-texture").value;
+    const c1 = document.getElementById("vfx-color1").value;
+    const c2 = document.getElementById("vfx-color2").value;
+    document.getElementById("vfx-hex1").textContent = c1;
+    document.getElementById("vfx-hex2").textContent = c2;
+    const rgb1 = hexToRgb(c1); const rgb2 = hexToRgb(c2);
+    const grav = document.getElementById("vfx-gravity").value;
+    const size = document.getElementById("vfx-size").value;
+    const life = document.getElementById("vfx-life").value;
+    const amt = document.getElementById("vfx-amount").value;
+
+    const finalCode = `/* === BLOXD VFX PARTICLE SCRIPT === */
+let [x, y, z] = thisPos; // Or use api.getPosition(playerId)
+
+api.playParticleEffect({
+    texture: "${tex}",
+    pos1: [x, y+1, z],
+    pos2: [x+1, y+2, z+1],
+    dir1: [-1, -1, -1],
+    dir2: [1, 1, 1],
+    minSize: ${size},
+    maxSize: ${(parseFloat(size) + 0.1).toFixed(2)},
+    minLifeTime: ${life},
+    maxLifeTime: ${(parseFloat(life) + 0.2).toFixed(2)},
+    gravity: [0, ${grav}, 0],
+    minEmitPower: 1.5,
+    maxEmitPower: 2.5,
+    manualEmitCount: ${amt},
+    blendMode: 1,
+    velocityGradients: [
+        { timeFraction: 0, factor: 1, factor2: 1 }
+    ],
+    colorGradients: [
+        {
+            timeFraction: 0,
+            minColor: [${rgb1[0]}, ${rgb1[1]}, ${rgb1[2]}, 1],
+            maxColor: [${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}, 1]
+        }
+    ]
+});`;
+
+    document.getElementById("vfx-output").value = finalCode;
+    const display = document.getElementById('vfx-display').querySelector('code');
+    display.textContent = finalCode;
+    if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
+  }
+
+  /* ===== SHOP BUILDER ===== */
+  let shopItems = [];
+  let shopItemCounter = 1;
+
+  function addShopItem() {
+    const title = document.getElementById('shop-item-name').value.trim() || 'New Item';
+    const image = document.getElementById('shop-item-image').value.trim() || title;
+    const cost = document.getElementById('shop-item-cost').value || 10;
+    const currency = document.getElementById('shop-item-currency').value.trim() || 'Gold Coin';
+    const isSell = document.getElementById('shop-item-sell').checked;
+
+    shopItems.push({ id: 'item_' + shopItemCounter++, title, image, cost, currency, isSell });
+    document.getElementById('shop-item-name').value = ''; document.getElementById('shop-item-image').value = '';
+    document.getElementById('shop-item-cost').value = '10'; document.getElementById('shop-item-sell').checked = false;
+    
+    renderShopItems(); generateShopCode();
+    window.showToast("🛒 Item added to Shop Cart!");
+  }
+
+  function removeShopItem(index) {
+    shopItems.splice(index, 1);
+    renderShopItems(); generateShopCode();
+  }
+
+  function renderShopItems() {
+    const list = document.getElementById('shop-items-list'); list.innerHTML = '';
+    if(shopItems.length === 0) { list.innerHTML = '<span style="font-size: 12px; color: var(--muted); font-style: italic;">No items added yet.</span>'; return; }
+    shopItems.forEach((item, i) => {
+        const typeColor = item.isSell ? '#cf222e' : '#1a7f37';
+        const typeText = item.isSell ? 'Sells for' : 'Costs';
+        list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <div style="width: 32px; height: 32px; background: var(--bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid var(--border);"><i class="fas fa-cube text-gray-400"></i></div>
+                <div>
+                    <div style="font-size:13px; font-weight:700; color:var(--text);">${item.title}</div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:2px;">
+                        <span style="color:${typeColor}; font-weight:700;">${typeText}</span> ${item.cost} ${item.currency}
+                    </div>
+                </div>
+            </div>
+            <button onclick="removeShopItem(${i})" style="background:none; border:none; color:#cf222e; cursor:pointer; font-size: 14px; padding: 6px;"><i class="fas fa-trash"></i></button>
+        </div>`;
+    });
+  }
+
+  function generateShopCode() {
+    const catId = document.getElementById('shop-cat-id').value.trim() || 'custom_shop';
+    const catName = document.getElementById('shop-cat-name').value.trim() || 'My Shop';
+
+    let code = `/* === BLOXD SHOP SCRIPT === */\napi.configureShopCategory("${catId}", {\n    customTitle: "${catName}",\n    autoSelectCategory: true\n});\n\n`;
+
+    if (shopItems.length > 0) {
+        shopItems.forEach(item => {
+            code += `api.createShopItem("${catId}", "${item.id}", {\n    customTitle: "${item.title}",\n    image: "${item.image}",\n    cost: ${item.cost},\n    currency: "${item.currency}",\n    sell: ${item.isSell},\n    buyButtonText: "${item.isSell ? 'Sell' : 'Buy'}"\n});\n\n`;
+        });
+    } else {
+        code += `/* Add items using the visual builder to see the code here! */\n`;
+    }
+    document.getElementById('shop-output').value = code;
+    const display = document.getElementById('shop-display').querySelector('code');
+    display.textContent = code;
+    if (typeof window.refreshSyntax === 'function') window.refreshSyntax();
+  }
+
+  /* ===== HUD GENERATOR ===== */
+  const hudConfigs = {
+    topRight: [
+      { id: "text", label: "Message Text", type: "text", value: "Objective Complete!" },
+      { id: "icon", label: "Icon", type: "text", value: "fa-solid fa-star" },
+      { id: "duration", label: "Duration (Seconds)", type: "number", value: 5 },
+      { id: "width", label: "Width (px)", type: "number", value: 300 },
+      { id: "height", label: "Height (px)", type: "number", value: 80 },
+      { id: "bgColor", label: "Background Color", type: "color", value: "#333333" },
+      { id: "textColor", label: "Text Color", type: "color", value: "#ffffff" }
+    ],
+    centerText: [
+      { id: "upperText", label: "Upper Text (Large)", type: "text", value: "BOSS INCOMING!" },
+      { id: "lowerText", label: "Lower Text (Small)", type: "text", value: "Prepare your weapons" }
+    ],
+    middleBar: [
+      { id: "duration", label: "Fill Duration (ms)", type: "number", value: 2000 },
+      { id: "autoExpire", label: "Hide when full?", type: "checkbox", value: true }
+    ]
+  };
+
+  function renderHUDParams() {
+    const type = document.getElementById("hud-type").value;
+    const container = document.getElementById("hud-params");
+    container.innerHTML = "";
+    hudConfigs[type].forEach(param => {
+      let html = "";
+      if (param.type === "checkbox") {
+        html = `<label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;"><input type="checkbox" id="hud_${param.id}" ${param.value ? 'checked' : ''} onchange="generateHUDCode()"><b>${param.label}</b></label>`;
+      } else if (param.type === "color") {
+        html = `<div><label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">${param.label}</label><div style="display: flex; align-items: center; gap: 8px;"><input type="color" id="hud_${param.id}" value="${param.value}" oninput="generateHUDCode()"></div></div>`;
+      } else {
+        const listAttr = param.id.toLowerCase().includes("icon") ? `list="icon-options"` : ``;
+        html = `<label style="font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; display:block; margin-bottom:4px;">${param.label}</label><input type="${param.type}" id="hud_${param.id}" value="${param.value}" ${listAttr} class="form-textarea" style="padding: 8px;" oninput="generateHUDCode()">`;
+      }
+      const div = document.createElement("div"); div.innerHTML = html; container.appendChild(div);
+    });
+    generateHUDCode(); 
+  }
+
+  function generateHUDCode() {
+    const type = document.getElementById("hud-type").value;
+    const vals = {};
+    hudConfigs[type].forEach(p => { const el = document.getElementById(`hud_${p.id}`); vals[p.id] = p.type === 'checkbox' ? el.checked : (p.type === 'number' ? Number(el.value) : el.value); });
+
+    let code = "/* === CUSTOM HUD SCRIPT === */\n";
+    if (type === "topRight") {
+      const r = parseInt(vals.bgColor.slice(1,3), 16); const g = parseInt(vals.bgColor.slice(3,5), 16); const b = parseInt(vals.bgColor.slice(5,7), 16);
+      code += `api.sendTopRightHelper(playerId, "${vals.icon}", "${vals.text.replace(/"/g, '\\"')}", {\n    duration: ${vals.duration},\n    width: ${vals.width},\n    height: ${vals.height},\n    color: "rgb(${r}, ${g}, ${b})",\n    textAndIconColor: "${vals.textColor}"\n});`;
+    } else if (type === "centerText") {
+      code += `api.setClientOptions(playerId, {\n    middleTextUpper: "${vals.upperText.replace(/"/g, '\\"')}",\n    middleTextLower: "${vals.lowerText.replace(/"/g, '\\"')}"\n});`;
+    } else if (type === "middleBar") {
+      code += `api.initiateMiddleScreenBar(playerId, ${vals.duration}, ${vals.autoExpire});\n/* api.progressBarUpdate(playerId, 0.5, 500); */`;
+    }
+
+    document.getElementById("hud-output").value = code;
+    const display = document.getElementById('hud-display').querySelector('code'); display.textContent = code;
+    if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
+  }
+
+  /* ===== ON-LOAD INITS ===== */
+  window.addEventListener('DOMContentLoaded', () => {
+    renderQTEParams(); generateVFXCode(); generateShopCode(); renderHUDParams();
+    initPalette(); buildPaintGrid(); 
+
+    // Dynamically inject all official Bloxd Block names into the New File autocomplete datalist!
+    const autocompleteList = document.getElementById("bloxd-blocks-autocomplete");
+    if (autocompleteList && window.idToName) {
+        autocompleteList.innerHTML = "";
+        Object.values(window.idToName).forEach(blockName => {
+            const cleanName = blockName.split("|")[0].replace(/_|\s+Top|\s+Head/g, "").toLowerCase();
+            const option = document.createElement("option");
+            option.value = cleanName;
+            autocompleteList.appendChild(option);
+        });
+    }
+    
+    // Command Studio Init
+    generateCmdCode();
+  });
+
+  /* ===== MOBILE SIDEBAR TOGGLE ===== */
+  function toggleMobileSidebar() {
+    const sb = document.querySelector('.left-sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sb) sb.classList.toggle('mobile-open');
+    if (overlay) overlay.classList.toggle('active');
+  }
+
+</script>
+
+<!-- Client Support Integration -->
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="evtdw1gZsxBaNm9xBhBLQ";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+</body>
+</html>
