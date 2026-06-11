@@ -2212,8 +2212,8 @@ async function sendAiMessage() {
   }
   
   try {
-    if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io')) {
-      throw new Error('AI Chat requires a Node.js backend to connect to Gemini. It will not work on file:// or GitHub Pages.');
+    if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io') || window.location.port === '5500') {
+      throw new Error('AI Chat requires a Node.js backend server. It will not work on file://, GitHub Pages, or basic static servers (like Live Server). You need to run the app using its backend server.');
     }
     const response = await fetch('/api/chat', {
       method: 'POST',

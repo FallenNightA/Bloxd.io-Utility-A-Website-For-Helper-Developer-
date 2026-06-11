@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build:webpack": "webpack",
     "build": "webpack && next build",
-    "start": "next start",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "clean": "next clean"
   },
