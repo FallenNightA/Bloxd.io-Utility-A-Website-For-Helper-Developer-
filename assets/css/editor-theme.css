@@ -1,0 +1,33 @@
+/* Bloxd Utility - VSCodium Dark+ Syntax Theme */
+code[class*="language-"], pre[class*="language-"] {
+    color: #9cdcfe; /* Variables/Light Blue */
+    background: none;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    text-align: left;
+    white-space: pre;
+    line-height: 1.5;
+    tab-size: 4;
+}
+
+pre[class*="language-"] {
+    padding: 16px;
+    margin: 12px 0;
+    overflow: auto;
+    background: #0d1117 !important; /* GitHub/VS Darker Background */
+    border-radius: 10px;
+    border: 1px solid #30363d;
+}
+
+/* Tokens mapping to VS Code Dark+ */
+.token.comment { color: #6a9955; font-style: italic; } /* Green */
+.token.keyword { color: #c586c0; } /* Purple (if, else, return) */
+.token.operator { color: #d4d4d4; } /* White/Grey */
+.token.punctuation { color: #d4d4d4; }
+.token.function { color: #dcdcaa; } /* Yellow (api.sendMessage) */
+.token.string { color: #ce9178; } /* Orange/Terracotta */
+.token.number { color: #b5cea8; } /* Light Green */
+.token.boolean { color: #569cd6; } /* Blue */
+.token.class-name { color: #4ec9b0; } /* Teal */
+.token.regex { color: #d16969; }
+.token.variable { color: #9cdcfe; }

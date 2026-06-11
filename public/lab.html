@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloxd Utility | Code Lab</title>
+  <link rel="icon" type="image/png" href="Bloxd Utility Logo.png">
+  <!-- Syntax System -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="stylesheet" href="assets/css/editor-theme.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="assets/js/syntax.js"></script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/editor/editor.main.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap');
+
+    :root {
+      --bg: #ffffff;
+      --text: #1f2328;
+      --sidebar-bg: #f6f8fa;
+      --border: #d0d7de;
+      --nav-hover: #ebeff2;
+      --nav-active-bg: #0969da;
+      --nav-active-text: #ffffff;
+      --panel-bg: #f6f8fa;
+      --tab-active: #0969da;
+      --snippet-bg: #ffffff;
+    }
+
+    .dark {
+      --bg: #0d1117;
+      --text: #e6edf3;
+      --sidebar-bg: #161b22;
+      --border: #30363d;
+      --nav-hover: #21262d;
+      --nav-active-bg: #1f6feb;
+      --nav-active-text: #ffffff;
+      --panel-bg: #161b22;
+      --tab-active: #1f6feb;
+      --snippet-bg: #161b22;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      width: 240px;
+      flex-shrink: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), padding 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .sidebar.collapsed {
+      width: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      border-right: none !important;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 6px;
+      color: var(--text);
+      transition: 0.2s;
+      cursor: pointer;
+      margin-bottom: 3px;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .nav-item:hover { background-color: var(--nav-hover); }
+    .nav-item.active { background-color: var(--nav-active-bg); color: var(--nav-active-text); font-weight: 600; }
+
+    /* Dark toggle */
+    .dark-toggle {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; cursor: pointer; border-radius: 6px;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      transition: background 0.2s; margin-bottom: 4px;
+    }
+    .dark-toggle:hover { background-color: var(--nav-hover); }
+    .toggle-switch { width: 34px; height: 18px; background: #d0d7de; border-radius: 9px; position: relative; transition: background 0.3s; }
+    .toggle-switch.on { background: #0969da; }
+    .toggle-knob { width: 12px; height: 12px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.3s; }
+    .toggle-switch.on .toggle-knob { left: 19px; }
+
+    /* Main layout */
+    .app-layout { display: flex; height: 100vh; }
+    .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+    
+    /* ===== AI SIDEBAR ===== */
+    .ai-editor-sidebar {
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      background: var(--sidebar-bg);
+      color: var(--text);
+      transition: width 0.3s ease, border-left-width 0.3s ease;
+      overflow: hidden;
+      width: 350px;
+      flex-shrink: 0;
+    }
+    .ai-editor-sidebar.collapsed {
+      width: 0 !important;
+      border-left-width: 0 !important;
+      border-left: none !important;
+    }
+    .ai-message {
+      padding: 10px 12px;
+      border-radius: 8px;
+      line-height: 1.5;
+      font-size: 13px;
+      word-break: break-word;
+    }
+    .ai-message.user {
+      background: var(--nav-hover);
+      align-self: flex-end;
+      border: 1px solid var(--border);
+      max-width: 90%;
+    }
+    .ai-message.assistant {
+      background: var(--bg);
+      align-self: flex-start;
+      border: 1px solid var(--border);
+      max-width: 90%;
+    }
+    .ai-code-block {
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 11.5px;
+      overflow-x: auto;
+      margin: 8px 0;
+      border: 1px solid #30363d;
+      position: relative;
+    }
+    .ai-apply-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.15s;
+    }
+    .ai-apply-btn:hover {
+      background: #2ea043;
+    }
+
+    /* Header */
+    .topbar {
+      height: 52px; display: flex; align-items: center; padding: 0 20px;
+      border-bottom: 1px solid var(--border); background: var(--bg);
+      gap: 12px; flex-shrink: 0;
+    }
+    .topbar-title { font-size: 13px; font-weight: 700; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* Tab bar */
+    .tab-bar {
+      display: flex; align-items: center; gap: 2px;
+      padding: 0 16px; border-bottom: 1px solid var(--border);
+      background: var(--sidebar-bg); flex-shrink: 0; overflow-x: auto;
+    }
+    .tab {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border-bottom: 2px solid transparent;
+      color: var(--text); opacity: 0.5; white-space: nowrap;
+      transition: 0.2s; user-select: none;
+    }
+    .tab:hover { opacity: 0.8; }
+    .tab.active { opacity: 1; border-bottom-color: var(--tab-active); color: var(--tab-active); }
+    .tab .close-tab {
+      width: 16px; height: 16px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 10px;
+      opacity: 0; transition: 0.15s; background: transparent; border: none;
+      color: var(--text); cursor: pointer;
+    }
+    .tab:hover .close-tab { opacity: 0.6; }
+    .tab .close-tab:hover { opacity: 1; background: var(--nav-hover); }
+    .new-tab-btn {
+      padding: 6px 10px; font-size: 16px; cursor: pointer;
+      color: var(--text); opacity: 0.4; border: none; background: none;
+      transition: 0.15s; border-radius: 4px;
+    }
+    .new-tab-btn:hover { opacity: 0.8; background: var(--nav-hover); }
+
+    /* Editor area */
+    .editor-wrapper {
+      flex: 1 1 0%;
+      min-height: 100px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #editor-container {
+      flex: 1 1 0%;
+      min-height: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Bottom panel */
+    .bottom-panel {
+      height: 220px; flex-shrink: 0; display: flex; flex-direction: column;
+      border-top: 1px solid var(--border); background: var(--bg);
+      transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .bottom-panel.collapsed {
+      height: 38px !important;
+    }
+    .bottom-panel.collapsed .panel-content {
+      display: none !important;
+    }
+    .panel-tabs {
+      display: flex; gap: 0; border-bottom: 1px solid var(--border);
+      background: var(--sidebar-bg); flex-shrink: 0;
+    }
+    .panel-tab {
+      padding: 7px 16px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border-right: 1px solid var(--border);
+      color: var(--text); opacity: 0.5; transition: 0.15s;
+    }
+    .panel-tab:hover { opacity: 0.8; }
+    .panel-tab.active { opacity: 1; background: var(--bg); }
+    .panel-content { flex: 1; overflow: hidden; }
+    .panel-view { height: 100%; overflow-y: auto; padding: 10px 16px; display: none; }
+    .panel-view.active { display: block; }
+
+    /* Console */
+    .console-line {
+      font-family: 'Fira Code', monospace; font-size: 12px;
+      padding: 2px 0; display: flex; gap: 10px; align-items: flex-start;
+      border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 2px;
+    }
+    .console-time { color: #57606a; flex-shrink: 0; font-size: 11px; margin-top: 1px; }
+    .console-line.error .console-msg { color: #cf222e; }
+    .console-line.warn .console-msg { color: #9a6700; }
+    .console-line.success .console-msg { color: #1a7f37; }
+    .console-line.info .console-msg { color: #0969da; }
+    .console-msg { word-break: break-all; }
+    .console-empty { color: #57606a; font-size: 13px; font-style: italic; padding: 8px 0; }
+
+    /* Snippets panel */
+    .snippet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .snippet-card {
+      background: var(--snippet-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; cursor: pointer;
+      transition: 0.2s;
+    }
+    .snippet-card:hover { border-color: #0969da; background: var(--nav-hover); }
+    .snippet-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+    .snippet-desc { font-size: 11px; color: #57606a; }
+    .snippet-tag {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 1px 6px; border-radius: 10px; margin-top: 4px;
+    }
+    .tag-world { background: #ddf4ff; color: #0969da; }
+    .tag-block { background: #fff8c5; color: #9a6700; }
+    .tag-util { background: #dafbe1; color: #1a7f37; }
+
+    /* Validator panel */
+    .validator-result { padding: 4px 0; }
+    .validator-ok { color: #1a7f37; font-size: 13px; font-weight: 600; }
+    .validator-warn { color: #9a6700; font-size: 13px; }
+    .validator-err { color: #cf222e; font-size: 13px; }
+    .validator-item { display: flex; gap: 8px; align-items: center; padding: 3px 0; font-size: 12px; }
+    .validator-icon { flex-shrink: 0; width: 16px; text-align: center; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap;
+    }
+    .toolbar-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--border); background: var(--bg);
+      color: var(--text); transition: 0.15s; white-space: nowrap;
+    }
+    .toolbar-btn:hover { background: var(--nav-hover); }
+    .toolbar-btn.primary { background: #0969da; color: white; border-color: #0969da; }
+    .toolbar-btn.primary:hover { background: #0860c0; }
+    .toolbar-btn.danger:hover { background: #fee2e2; color: #cf222e; border-color: #fca5a5; }
+    .toolbar-btn.success { background: #1a7f37; color: white; border-color: #1a7f37; }
+    .toolbar-btn.success:hover { background: #15672e; }
+    .toolbar-sep { width: 1px; height: 24px; background: var(--border); margin: 0 2px; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; align-items: center; gap: 16px;
+      padding: 4px 16px; font-size: 11px; background: var(--sidebar-bg);
+      border-top: 1px solid var(--border); flex-shrink: 0; color: #57606a;
+    }
+    .stats-bar span { display: flex; align-items: center; gap: 4px; }
+    .stats-bar b { color: var(--text); }
+    .char-pill {
+      margin-left: auto; font-size: 11px; font-weight: 700;
+      padding: 2px 10px; border-radius: 10px;
+      background: var(--nav-hover); color: var(--text); border: 1px solid var(--border);
+    }
+    .char-pill.warn { background: #fff8c5; color: #9a6700; border-color: #f0cf6a; }
+    .char-pill.danger { background: #fee2e2; color: #cf222e; border-color: #fca5a5; }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; display: none;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; width: 480px; max-height: 80vh;
+      overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+    .modal-close {
+      float: right; cursor: pointer; background: none; border: none;
+      font-size: 18px; color: var(--text); opacity: 0.5;
+    }
+    .modal-close:hover { opacity: 1; }
+
+    /* Find & Replace */
+    .find-bar {
+      position: absolute; top: 8px; right: 80px; z-index: 100;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; display: none;
+      gap: 8px; flex-direction: column; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      min-width: 300px;
+    }
+    .find-bar.open { display: flex; }
+    .find-input {
+      width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 13px; background: var(--bg);
+      color: var(--text); outline: none; font-family: 'Fira Code', monospace;
+    }
+    .find-input:focus { border-color: #0969da; }
+    .find-row { display: flex; gap: 6px; align-items: center; }
+    .find-count { font-size: 11px; color: #57606a; white-space: nowrap; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      background: #1f2328; color: white; padding: 10px 20px;
+      border-radius: 8px; font-size: 13px; font-weight: 700;
+      opacity: 0; transition: opacity 0.25s; z-index: 9999;
+      pointer-events: none;
+    }
+
+    /* Sidebar section label */
+    .sidebar-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #57606a; padding: 4px 14px;
+      margin-top: 16px; margin-bottom: 4px;
+    }
+
+    /* Sidebar mini-stats */
+    .mini-stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 4px 14px; font-size: 12px;
+    }
+    .mini-stat-label { color: #57606a; }
+    .mini-stat-val { font-weight: 700; color: var(--text); }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: -240px !important;
+        width: 240px !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        transition: left 0.3s ease !important;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.15) !important;
+      }
+      .sidebar.mobile-open {
+        left: 0 !important;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 990;
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+      /* Ensure toolbar is clean, horizontally scrollable on narrow screens to save valuable vertical coding space */
+      .toolbar {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding: 6px 12px !important;
+        gap: 6px !important;
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+      .toolbar::-webkit-scrollbar {
+        display: none !important;
+      }
+      .toolbar-btn {
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+      }
+      /* Tablet/Mobile specific Console Bottom Panel constraint */
+      .bottom-panel {
+        height: 160px !important; /* Cap expanded height on tablet/mobile screens */
+      }
+      .bottom-panel.collapsed {
+        height: 38px !important;
+      }
+    }
+  </style>
+  <!-- Optional: JSZip for downloading all scripts at once -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <script>
+      if (localStorage.getItem('sidebar-collapsed') === 'true' && window.innerWidth > 1024) {
+        document.querySelector('.sidebar').classList.add('collapsed');
+      }
+    </script>
+    <div class="flex items-center justify-between mb-6 px-2">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+        <img src="Bloxd Utility Logo.png" alt="Logo" class="w-10 h-10 object-contain">
+        <h1 class="font-bold text-xl tracking-tighter">Bloxd Utility</h1>
+      </div>
+      <button onclick="toggleMobileSidebar()" class="lg:hidden text-gray-500 hover:text-black focus:outline-none">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <nav>
+      <div class="nav-item" onclick="location.href='index.html'">
+        <i class="fas fa-home mr-3 opacity-40" style="width:14px"></i> Home
+      </div>
+      <div class="nav-item" onclick="location.href='docs.html'">
+        <i class="fas fa-book mr-3 opacity-40" style="width:14px"></i> Documentation
+      </div>
+      <div class="nav-item active" onclick="location.href='lab.html'">
+        <i class="fas fa-flask mr-3" style="width:14px"></i> Code Lab
+      </div>
+      <div class="nav-item" onclick="location.href='modrinth.html'">
+        <i class="fas fa-store mr-3 opacity-40" style="width:14px"></i> Bloxd Modrinth
+      </div>
+      <div class="nav-item" onclick="location.href='tools.html'">
+        <i class="fas fa-tools mr-3 opacity-40" style="width:14px"></i> Developer Tools
+      </div>
+
+
+      <div class="dark-toggle mt-2" onclick="toggleDark()">
+        <i class="fas fa-moon" style="width:14px"></i>
+        <span>Dark Mode</span>
+        <div class="toggle-switch ml-auto" id="dark-switch"><div class="toggle-knob"></div></div>
+      </div>
+
+      <div class="sidebar-label mt-4">Lab Info</div>
+      <div class="mini-stat-row"><span class="mini-stat-label">World Code max</span><span class="mini-stat-val">16k chars</span></div>
+      <div class="mini-stat-row"><span class="mini-stat-label">Code Block max</span><span class="mini-stat-val">500 lines</span></div>
+      <div class="mini-stat-row"><span class="mini-stat-label">Tick rate</span><span class="mini-stat-val">20/sec</span></div>
+      <div class="mini-stat-row"><span class="mini-stat-label">API Functions</span><span class="mini-stat-val" id="sb-funcs">—</span></div>
+      <div class="mini-stat-row"><span class="mini-stat-label">Blocks / Items</span><span class="mini-stat-val" id="sb-bi">—</span></div>
+
+      <div class="sidebar-label">Quick Insert</div>
+      <div class="nav-item text-xs" onclick="insertSnippetByKey('playerJoin')" style="font-size:12px">
+        <i class="fas fa-plus mr-2 opacity-40" style="width:14px"></i>onPlayerJoin
+      </div>
+      <div class="nav-item text-xs" onclick="insertSnippetByKey('tick')" style="font-size:12px">
+        <i class="fas fa-plus mr-2 opacity-40" style="width:14px"></i>tick callback
+      </div>
+      <div class="nav-item text-xs" onclick="insertSnippetByKey('giveItem')" style="font-size:12px">
+        <i class="fas fa-plus mr-2 opacity-40" style="width:14px"></i>giveItem
+      </div>
+      <div class="nav-item text-xs" onclick="insertSnippetByKey('teleport')" style="font-size:12px">
+        <i class="fas fa-plus mr-2 opacity-40" style="width:14px"></i>Teleport player
+      </div>
+      <div class="nav-item text-xs" onclick="insertSnippetByKey('broadcast')" style="font-size:12px">
+        <i class="fas fa-plus mr-2 opacity-40" style="width:14px"></i>broadcastMessage
+      </div>
+
+      <div class="sidebar-label">External</div>
+      <a href="https://github.com/Bloxdy/code-api" class="nav-item" target="_blank" style="font-size:13px">
+        <i class="fab fa-github mr-3 opacity-40" style="width:14px"></i> Official API
+      </a>
+      <a href="https://bloxd-io.fandom.com/wiki/Code_Block" class="nav-item" target="_blank" style="font-size:13px">
+        <i class="fas fa-book-open mr-3 opacity-40" style="width:14px"></i> Fandom Wiki
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main-area">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <button onclick="toggleSidebar()" class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white focus:outline-none text-xl mr-2 cursor-pointer" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+      <span class="topbar-title">⚗️ Code Lab</span>
+      <div style="flex:1"></div>
+      <div id="char-count-top" class="char-pill">0 / 16,000</div>
+      <div id="line-count" style="font-size:11px; color:#57606a">Ln 1, Col 1</div>
+      <div id="validate-badge" style="font-size:11px; color:#1a7f37; font-weight:700; cursor:pointer" onclick="runValidator()">✓ Valid</div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar" id="tab-bar">
+      <!-- tabs injected here -->
+      <button class="new-tab-btn" onclick="newTab()" title="New tab">+</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="toolbar-btn primary" onclick="copyCode()">
+        <i class="fas fa-copy"></i> Copy
+      </button>
+      <button class="toolbar-btn" onclick="formatCode()">
+        <i class="fas fa-magic"></i> Format
+      </button>
+      <button class="toolbar-btn" onclick="runValidator()">
+        <i class="fas fa-check-circle"></i> Validate
+      </button>
+      <button class="toolbar-btn" onclick="toggleFindBar()">
+        <i class="fas fa-search"></i> Find
+      </button>
+      <button class="toolbar-btn" onclick="toggleConsoleFromToolbar()" id="toolbar-console-btn" title="Toggle Console Panel">
+        <i class="fas fa-terminal text-indigo-500"></i> Console
+      </button>
+      <button class="toolbar-btn" onclick="toggleAISidebar()" id="toolbar-ai-btn" style="color: var(--purple) !important; border-color: var(--purple) !important; font-weight: 700;">
+        <i class="fas fa-robot text-purple-500"></i> CodexMind AI
+      </button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="openSnippetsModal()">
+        <i class="fas fa-puzzle-piece"></i> Snippets
+      </button>
+      <button class="toolbar-btn" onclick="openSaveModal()">
+        <i class="fas fa-save"></i> Save Local
+      </button>
+      <button class="toolbar-btn" onclick="loadSaved()">
+        <i class="fas fa-folder-open"></i> Load
+      </button>
+      <button class="toolbar-btn" onclick="exportProject()" style="color: #2da44e; border-color: #2da44e;">
+        <i class="fas fa-file-export"></i> Export ZIP
+      </button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="wrapSelection('/* ', ' */')">
+        <i class="fas fa-comment"></i> Comment
+      </button>
+      <button class="toolbar-btn" onclick="increaseFontSize()">A+</button>
+      <button class="toolbar-btn" onclick="decreaseFontSize()">A-</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn danger" onclick="clearCode()">
+        <i class="fas fa-trash"></i> Clear
+      </button>
+    </div>
+
+    <!-- Find bar -->
+    <div class="find-bar" id="find-bar" style="position:relative; top:auto; right:auto; margin:0; border-radius:0; border-left:none; border-right:none; border-top:none;">
+      <div class="find-row">
+        <input type="text" class="find-input" id="find-input" placeholder="Find..." oninput="doFind()">
+        <input type="text" class="find-input" id="replace-input" placeholder="Replace..." style="flex:1">
+        <button class="toolbar-btn" onclick="doReplace()">Replace</button>
+        <button class="toolbar-btn" onclick="doReplaceAll()">All</button>
+        <span class="find-count" id="find-count"></span>
+        <button class="toolbar-btn" onclick="toggleFindBar()" style="padding:4px 8px">✕</button>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor-wrapper">
+      <div id="editor-container"></div>
+    </div>
+
+    <!-- Bottom panel -->
+    <div class="bottom-panel">
+      <script>
+        if (localStorage.getItem('bottom-panel-collapsed') === 'true') {
+          document.querySelector('.bottom-panel').classList.add('collapsed');
+        }
+      </script>
+      <div class="panel-tabs">
+        <div class="panel-tab active" onclick="switchPanel('console')" id="ptab-console">Console</div>
+        <div class="panel-tab" onclick="switchPanel('snippets')" id="ptab-snippets">Snippets</div>
+        <div class="panel-tab" onclick="switchPanel('validator')" id="ptab-validator">Validator</div>
+        <div class="panel-tab" onclick="switchPanel('saved')" id="ptab-saved">Saved Scripts</div>
+        <div style="margin-left:auto; display:flex; align-items:center; padding-right:8px; gap:6px;">
+          <button class="toolbar-btn primary" style="padding:3px 8px; font-size:11px" onclick="fixCode()">
+            <i class="fas fa-wrench"></i> Fix Code
+          </button>
+          <button class="toolbar-btn success" style="padding:3px 8px; font-size:11px" onclick="testCode()">
+            <i class="fas fa-play"></i> Test Code
+          </button>
+          <button class="toolbar-btn" style="padding:3px 8px; font-size:11px" onclick="clearConsole()">Clear</button>
+          <button class="toolbar-btn" style="padding:3px 8px; font-size:11px" onclick="toggleBottomPanel()" id="bottom-panel-toggle-btn" title="Collapse Console">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+      </div>
+      <div class="panel-content">
+        <!-- Console -->
+        <div class="panel-view active" id="panel-console">
+          <div id="console-output">
+            <div class="console-empty">Console output will appear here. Use api.log() or console.log() in your code.</div>
+          </div>
+        </div>
+        <!-- Snippets -->
+        <div class="panel-view" id="panel-snippets">
+          <div style="margin-bottom:8px; display:flex; gap:8px; align-items:center;">
+            <input type="text" id="snippet-search" placeholder="Search snippets..." oninput="filterSnippets(this.value)"
+              style="padding:5px 10px; border:1px solid var(--border); border-radius:6px; font-size:12px; background:var(--bg); color:var(--text); outline:none; width:200px;">
+          </div>
+          <div class="snippet-grid" id="snippet-grid"></div>
+        </div>
+        <!-- Validator -->
+        <div class="panel-view" id="panel-validator">
+          <div id="validator-output">
+            <div class="console-empty">Click "Validate" in the toolbar to analyze your code.</div>
+          </div>
+        </div>
+        <!-- Saved Scripts -->
+        <div class="panel-view" id="panel-saved">
+          <div id="saved-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <span><i class="fas fa-code" style="font-size:10px"></i> <b id="sb-lines">1</b> lines</span>
+      <span><i class="fas fa-i-cursor" style="font-size:10px"></i> <b id="sb-sel">0</b> selected</span>
+      <span>JS · Bloxd.io</span>
+      <span id="sb-font">14px</span>
+      <div class="char-pill" id="char-count" style="margin-left:auto">0 / 16,000 chars</div>
+    </div>
+  </div>
+
+  <!-- ===== AI SIDEBAR (Right) ===== -->
+  <aside class="ai-editor-sidebar" id="ai-editor-sidebar">
+    <!-- AI Sidebar Header -->
+    <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 16px;">🤖</span>
+        <span style="font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--purple);">CodexMind AI Dev</span>
+      </div>
+      <button onclick="toggleAISidebar()" class="toolbar-btn" style="padding: 4px 8px; font-size: 11px; font-weight: bold; cursor: pointer;">✕</button>
+    </div>
+    
+    <!-- AI Chat Messages Scrollbox -->
+    <div id="ai-chat-messages" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px;" class="custom-scroll">
+      <!-- Welcome message -->
+      <div style="background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; line-height: 1.5;">
+        <p style="font-weight: 700; margin-bottom: 6px; color: var(--tab-active);">What shall we build in Bloxd.io?</p>
+        <p style="color: var(--text); opacity: 0.8; margin-bottom: 10px; font-size: 12px;">I can write commands, create custom game elements, or explain official APIs first hand. Tell me your project requirements!</p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button onclick="setAiPrompt('Write a basic fly command for admins only')" style="background: var(--nav-hover); border: 1px solid var(--border); border-radius: 4px; padding: 6px 8px; text-align: left; cursor: pointer; font-size: 11px; color: var(--text);">✈️ Admin Fly Command</button>
+          <button onclick="setAiPrompt('Write a game loop that counts seconds and shows progress')" style="background: var(--nav-hover); border: 1px solid var(--border); border-radius: 4px; padding: 6px 8px; text-align: left; cursor: pointer; font-size: 11px; color: var(--text);">⏱️ Timer Game Loop</button>
+          <button onclick="setAiPrompt('Explain how I can use globalThis to pass variables to Code Blocks')" style="background: var(--nav-hover); border: 1px solid var(--border); border-radius: 4px; padding: 6px 8px; text-align: left; cursor: pointer; font-size: 11px; color: var(--text);">💡 Variables & Scope</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Context Indicator -->
+    <div id="ai-context-indicator" style="padding: 8px 12px; font-size: 11px; background: var(--bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <span style="color: #1a7f37; font-weight: 600; display: flex; align-items: center; gap: 4px;"><i class="fas fa-link"></i> Editor Code Linked</span>
+      <span style="font-size: 10px; color: var(--muted);">Auto context</span>
+    </div>
+
+    <!-- AI Chat Input Box -->
+    <div style="padding: 12px; border-top: 1px solid var(--border); background: var(--bg); display: flex; flex-direction: column; gap: 8px;">
+      <textarea id="ai-chat-input" placeholder="Type prompt here... (Enter to send, Shift+Enter for new line)" style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--sidebar-bg); color: var(--text); font-size: 12px; line-height: 1.4; resize: none; outline: none;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <select id="ai-model-selector" style="font-size: 11px; padding: 4px; background: var(--sidebar-bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; outline: none; cursor: pointer;">
+          <option value="CodexMind">CodexMind (Coding Expert)</option>
+          <option value="MindChat">MindChat (Explanation Mode)</option>
+          <option value="AgentMind">AgentMind (File Expert)</option>
+        </select>
+        <button id="ai-send-btn" onclick="sendAiMessage()" style="background: var(--purple); color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+          <i class="fas fa-paper-plane"></i> Send
+        </button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ===== SNIPPETS MODAL ===== -->
+<div class="modal-overlay" id="snippets-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('snippets-modal')">✕</button>
+    <h3>📦 Code Snippets</h3>
+    <input type="text" id="modal-snippet-search" placeholder="Search snippets..." oninput="filterModalSnippets(this.value)"
+      style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; margin-bottom:12px;
+      font-size:13px; background:var(--bg); color:var(--text); outline:none;">
+    <div id="modal-snippet-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+  </div>
+</div>
+
+<!-- ===== SAVE MODAL ===== -->
+<div class="modal-overlay" id="save-modal">
+  <div class="modal" style="width:360px">
+    <button class="modal-close" onclick="closeModal('save-modal')">✕</button>
+    <h3>💾 Save Script</h3>
+    <input type="text" id="save-name" placeholder="Script name..." maxlength="40"
+      style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; margin-bottom:12px;
+      font-size:13px; background:var(--bg); color:var(--text); outline:none;">
+    <div style="display:flex; gap:8px;">
+      <button class="toolbar-btn success" style="flex:1" onclick="confirmSave()">
+        <i class="fas fa-save mr-1"></i> Save
+      </button>
+      <button class="toolbar-btn" onclick="closeModal('save-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script src="Prompt.js"></script>
+<script src="assets/js/api-data.js"></script>
+<script>
+/* ===================================================
+   DATA
+=================================================== */
+const apiData = typeof API_DATA !== 'undefined' ? API_DATA : { functions:{}, blocks:[], items:[], commonVariables:[] };
+const API_FUNCTIONS = apiData.functions || {};
+const BLOCKS = apiData.blocks || [];
+const ITEMS = apiData.items || [];
+const COMMON_VARS_RAW = apiData.commonVariables || [];
+
+const CALLBACKS = [
+  'tick','onClose','onPlayerJoin','onPlayerLeave','doPeriodicSave',
+  'onPlayerJump','onRespawnRequest','playerCommand','onPlayerChat',
+  'onPlayerChangeBlock','onPlayerDropItem','onPlayerPickedUpItem',
+  'onPlayerSelectInventorySlot','onPlayerMoveItemOutOfInventory','onPlayerMoveInvenItem',
+  'onPlayerMoveItemIntoIdxs','onPlayerSwapInvenSlots','onPlayerMoveInvenItemWithAmt',
+  'onPlayerAttemptAltAction','onPlayerAltAction','onPlayerClick',
+  'onClientOptionUpdated','onMobSettingUpdated','onInventoryUpdated','onChestUpdated',
+  'onWorldChangeBlock','onCreateBloxdMeshEntity','onEntityCollision',
+  'onPlayerAttemptSpawnMob','onWorldAttemptSpawnMob','onPlayerSpawnMob',
+  'onWorldSpawnMob','onWorldAttemptDespawnMob','onMobDespawned','onPlayerAttack',
+  'onPlayerDamagingOtherPlayer','onPlayerDamagingMob','onMobDamagingPlayer',
+  'onMobDamagingOtherMob','onAttemptKillPlayer','onPlayerKilledOtherPlayer',
+  'onMobKilledPlayer','onPlayerKilledMob','onMobKilledOtherMob','onPlayerPotionEffect',
+  'onPlayerDamagingMeshEntity','onPlayerBreakMeshEntity','onPlayerUsedThrowable',
+  'onPlayerThrowableHitTerrain','onTouchscreenActionButton','onTaskClaimed',
+  'onChunkLoaded','onPlayerRequestChunk','onItemDropCreated',
+  'onPlayerStartChargingItem','onPlayerFinishChargingItem'
+];
+
+/* ===================================================
+   SNIPPETS LIBRARY (FULL OFFICIAL API)
+=================================================== */
+const SNIPPETS = [
+  // ==========================================
+  // CORE & GAME LOOP CALLBACKS
+  // ==========================================
+  {
+    key: 'tick', name: 'tick', tag: 'world',
+    desc: 'Called every tick, 20 times per second.',
+    code: `tick = (ms) => {\n    /* ms is the fixed timestep */\n};`
+  },
+  {
+    key: 'doPeriodicSave', name: 'doPeriodicSave', tag: 'world',
+    desc: 'Called every so often. Save custom db values/s3 objects here.',
+    code: `doPeriodicSave = () => {\n    api.log("Periodic save running...");\n};`
+  },
+  {
+    key: 'onClose', name: 'onClose', tag: 'world',
+    desc: 'Called when the lobby is shutting down.',
+    code: `onClose = (serverIsShuttingDown) => {\n    // cleanup\n};`
+  },
+  {
+    key: 'onChunkLoaded', name: 'onChunkLoaded', tag: 'world',
+    desc: 'Called when a chunk is first loaded.',
+    code: `onChunkLoaded = (chunkId, chunk, wasPersistedChunk) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerRequestChunk', name: 'onPlayerRequestChunk', tag: 'world',
+    desc: 'Called when a player requests a chunk.',
+    code: `onPlayerRequestChunk = (playerId, chunkX, chunkY, chunkZ, chunkId) => {\n    \n};`
+  },
+
+  // ==========================================
+  // PLAYER CONNECTION CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerJoin', name: 'onPlayerJoin', tag: 'world',
+    desc: 'Called when a player joins the lobby.',
+    code: `onPlayerJoin = (playerId, fromGameReset) => {\n    api.sendMessage(playerId, "Welcome to the game!", { color: "green" });\n};`
+  },
+  {
+    key: 'onPlayerLeave', name: 'onPlayerLeave', tag: 'world',
+    desc: 'Called when a player leaves the lobby.',
+    code: `onPlayerLeave = (playerId, serverIsShuttingDown) => {\n    api.broadcastMessage(playerId + " left the game.");\n};`
+  },
+  {
+    key: 'onRespawnRequest', name: 'onRespawnRequest', tag: 'world',
+    desc: 'Called when a player requests to respawn. Return true to handle yourself, or [x,y,z].',
+    code: `onRespawnRequest = (playerId) => {\n    return [0, 65, 0]; /* return respawn coordinates */\n};`
+  },
+
+  // ==========================================
+  // CHAT & COMMAND CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerChat', name: 'onPlayerChat', tag: 'world',
+    desc: 'Called when a player sends a chat message. Return false to prevent broadcast.',
+    code: `onPlayerChat = (playerId, chatMessage, channelName) => {\n    if (chatMessage.startsWith("!")) return false;\n    return true;\n};`
+  },
+  {
+    key: 'playerCommand', name: 'playerCommand', tag: 'world',
+    desc: 'Called when a player sends a command.',
+    code: `playerCommand = (playerId, command) => {\n    return true;\n};`
+  },
+
+  // ==========================================
+  // PLAYER INTERACTION CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerJump', name: 'onPlayerJump', tag: 'world',
+    desc: 'Called when a player jumps.',
+    code: `onPlayerJump = (playerId) => {\n    \n};`
+  },
+  {
+    key: 'onBlockStand', name: 'onBlockStand', tag: 'world',
+    desc: 'Called when a player stands on a block.',
+    code: `onBlockStand = (playerId, x, y, z, blockName) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerClick', name: 'onPlayerClick', tag: 'world',
+    desc: 'Called when a player clicks.',
+    code: `onPlayerClick = (playerId, wasAltClick, x, y, z, block, targetEId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerClickUp', name: 'onPlayerClickUp', tag: 'world',
+    desc: 'Called when a player releases a click.',
+    code: `onPlayerClickUp = (playerId, wasAltClick, x, y, z, block, targetEId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerAltAction', name: 'onPlayerAltAction', tag: 'world',
+    desc: 'Called when player completes an alt action (right click).',
+    code: `onPlayerAltAction = (playerId, x, y, z, block, targetEId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerAttemptAltAction', name: 'onPlayerAttemptAltAction', tag: 'world',
+    desc: 'Called when player attempts alt action. Return "preventAction" to block.',
+    code: `onPlayerAttemptAltAction = (playerId, x, y, z, block, targetEId) => {\n    return "preventAction";\n};`
+  },
+  {
+    key: 'onTouchscreenActionButton', name: 'onTouchscreenActionButton', tag: 'world',
+    desc: 'Called when a player presses the touchscreen action button.',
+    code: `onTouchscreenActionButton = (playerId, touchDown) => {\n    \n};`
+  },
+
+  // ==========================================
+  // BLOCK BUILDING CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerChangeBlock', name: 'onPlayerChangeBlock', tag: 'world',
+    desc: 'Called when a player changes a block. Return "preventChange" or "preventDrop".',
+    code: `onPlayerChangeBlock = (playerId, x, y, z, fromBlock, toBlock, droppedItem, fromBlockInfo, toBlockInfo) => {\n    return true;\n};`
+  },
+  {
+    key: 'onWorldChangeBlock', name: 'onWorldChangeBlock', tag: 'world',
+    desc: 'Called when a block is changed by the world (e.g. sapling grows).',
+    code: `onWorldChangeBlock = (x, y, z, fromBlock, toBlock, initiatorDbId, extraInfo) => {\n    \n};`
+  },
+
+  // ==========================================
+  // INVENTORY & ITEM CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerDropItem', name: 'onPlayerDropItem', tag: 'world',
+    desc: 'Called when a player drops an item.',
+    code: `onPlayerDropItem = (playerId, x, y, z, itemName, itemAmount, fromIdx) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerPickedUpItem', name: 'onPlayerPickedUpItem', tag: 'world',
+    desc: 'Called when a player picks up an item.',
+    code: `onPlayerPickedUpItem = (playerId, itemName, itemAmount) => {\n    \n};`
+  },
+  {
+    key: 'onItemDropCreated', name: 'onItemDropCreated', tag: 'world',
+    desc: 'Called when an item drop is created.',
+    code: `onItemDropCreated = (itemEId, itemName, itemAmount, x, y, z) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerSelectInventorySlot', name: 'onPlayerSelectInventorySlot', tag: 'world',
+    desc: 'Called when a player selects a different inventory slot.',
+    code: `onPlayerSelectInventorySlot = (playerId, slotIndex) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerMoveInvenItem', name: 'onPlayerMoveInvenItem', tag: 'world',
+    desc: 'Called for all types of inventory item movement.',
+    code: `onPlayerMoveInvenItem = (playerId, fromIdx, toStartIdx, toEndIdx, amt) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerMoveItemIntoIdxs', name: 'onPlayerMoveItemIntoIdxs', tag: 'world',
+    desc: 'Called when an item moves into a range of inventory slots.',
+    code: `onPlayerMoveItemIntoIdxs = (playerId, start, end, moveIdx, itemAmount) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerSwapInvenSlots', name: 'onPlayerSwapInvenSlots', tag: 'world',
+    desc: 'Called when inventory slots are swapped.',
+    code: `onPlayerSwapInvenSlots = (playerId, i, j) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerMoveInvenItemWithAmt', name: 'onPlayerMoveInvenItemWithAmt', tag: 'world',
+    desc: 'Called when inventory item is moved with specific amount.',
+    code: `onPlayerMoveInvenItemWithAmt = (playerId, i, j, amt) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerMoveItemOutOfInventory', name: 'onPlayerMoveItemOutOfInventory', tag: 'world',
+    desc: 'Called when an item moves out of inventory.',
+    code: `onPlayerMoveItemOutOfInventory = (playerId, itemName, itemAmount, fromIdx, movementType) => {\n    \n};`
+  },
+  {
+    key: 'onInventoryUpdated', name: 'onInventoryUpdated', tag: 'world',
+    desc: 'Called when a player\'s inventory is updated.',
+    code: `onInventoryUpdated = (playerId) => {\n    \n};`
+  },
+
+  // ==========================================
+  // CRAFTING & CHESTS CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerAttemptCraft', name: 'onPlayerAttemptCraft', tag: 'world',
+    desc: 'Called when a player attempts to craft. Return "preventCraft" to block.',
+    code: `onPlayerAttemptCraft = (playerId, itemName, craftingIdx, craftTimes) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerCraft', name: 'onPlayerCraft', tag: 'world',
+    desc: 'Called when a player successfully crafts an item.',
+    code: `onPlayerCraft = (playerId, itemName, craftingIdx, recipe, craftTimes) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerAttemptOpenChest', name: 'onPlayerAttemptOpenChest', tag: 'world',
+    desc: 'Return "preventOpen" to prevent opening chest.',
+    code: `onPlayerAttemptOpenChest = (playerId, x, y, z, isMoonstoneChest, isIronChest) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerOpenedChest', name: 'onPlayerOpenedChest', tag: 'world',
+    desc: 'Called when a player opens a chest.',
+    code: `onPlayerOpenedChest = (playerId, x, y, z, isMoonstoneChest, isIronChest) => {\n    \n};`
+  },
+  {
+    key: 'onChestUpdated', name: 'onChestUpdated', tag: 'world',
+    desc: 'Called when a chest is updated by a player.',
+    code: `onChestUpdated = (initiatorEId, isMoonstoneChest, x, y, z) => {\n    \n};`
+  },
+
+  // ==========================================
+  // COMBAT & DAMAGE CALLBACKS
+  // ==========================================
+  {
+    key: 'onAttemptKillPlayer', name: 'onAttemptKillPlayer', tag: 'world',
+    desc: 'Called when a player is about to be killed. Return "preventDeath" to block.',
+    code: `onAttemptKillPlayer = (killedPlayer, attackingLifeform) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerAttack', name: 'onPlayerAttack', tag: 'world',
+    desc: 'Called when a player attacks another player.',
+    code: `onPlayerAttack = (playerId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerDamagingOtherPlayer', name: 'onPlayerDamagingOtherPlayer', tag: 'world',
+    desc: 'Return "preventDamage" or a number to change damage dealt.',
+    code: `onPlayerDamagingOtherPlayer = (attackingPlayer, damagedPlayer, damageDealt, withItem, bodyPartHit, damagerDbId) => {\n    return damageDealt;\n};`
+  },
+  {
+    key: 'onPlayerDamagingMob', name: 'onPlayerDamagingMob', tag: 'world',
+    desc: 'Called when a player damages a mob.',
+    code: `onPlayerDamagingMob = (playerId, mobId, damageDealt, withItem, damagerDbId) => {\n    return damageDealt;\n};`
+  },
+  {
+    key: 'onMobDamagingPlayer', name: 'onMobDamagingPlayer', tag: 'world',
+    desc: 'Called when a mob damages a player.',
+    code: `onMobDamagingPlayer = (attackingMob, damagedPlayer, damageDealt, withItem) => {\n    return damageDealt;\n};`
+  },
+  {
+    key: 'onMobDamagingOtherMob', name: 'onMobDamagingOtherMob', tag: 'world',
+    desc: 'Called when a mob damages another mob.',
+    code: `onMobDamagingOtherMob = (attackingMob, damagedMob, damageDealt, withItem) => {\n    return damageDealt;\n};`
+  },
+  {
+    key: 'onPlayerKilledOtherPlayer', name: 'onPlayerKilledOtherPlayer', tag: 'world',
+    desc: 'Called when a player kills another player. Return "keepInventory" to not drop.',
+    code: `onPlayerKilledOtherPlayer = (attackingPlayer, killedPlayer, damageDealt, withItem) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerKilledMob', name: 'onPlayerKilledMob', tag: 'world',
+    desc: 'Called when a player kills a mob.',
+    code: `onPlayerKilledMob = (playerId, mobId, damageDealt, withItem) => {\n    \n};`
+  },
+  {
+    key: 'onMobKilledPlayer', name: 'onMobKilledPlayer', tag: 'world',
+    desc: 'Called when a mob kills a player.',
+    code: `onMobKilledPlayer = (attackingMob, killedPlayer, damageDealt, withItem) => {\n    \n};`
+  },
+  {
+    key: 'onMobKilledOtherMob', name: 'onMobKilledOtherMob', tag: 'world',
+    desc: 'Called when a mob kills another mob.',
+    code: `onMobKilledOtherMob = (attackingMob, killedMob, damageDealt, withItem) => {\n    \n};`
+  },
+
+  // ==========================================
+  // MOB & ENTITY CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerAttemptSpawnMob', name: 'onPlayerAttemptSpawnMob', tag: 'world',
+    desc: 'Return "preventSpawn" to stop mob spawning from eggs/orbs.',
+    code: `onPlayerAttemptSpawnMob = (playerId, mobType, x, y, z) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerSpawnMob', name: 'onPlayerSpawnMob', tag: 'world',
+    desc: 'Called when a player successfully spawns a mob.',
+    code: `onPlayerSpawnMob = (playerId, mobId, mobType, x, y, z, mobHerdId, playSoundOnSpawn) => {\n    \n};`
+  },
+  {
+    key: 'onWorldAttemptSpawnMob', name: 'onWorldAttemptSpawnMob', tag: 'world',
+    desc: 'Called when the world natural attempts to spawn a mob.',
+    code: `onWorldAttemptSpawnMob = (mobType, x, y, z) => {\n    \n};`
+  },
+  {
+    key: 'onWorldSpawnMob', name: 'onWorldSpawnMob', tag: 'world',
+    desc: 'Called when a mob is spawned naturally by the world.',
+    code: `onWorldSpawnMob = (mobId, mobType, x, y, z, mobHerdId, playSoundOnSpawn) => {\n    \n};`
+  },
+  {
+    key: 'onWorldAttemptDespawnMob', name: 'onWorldAttemptDespawnMob', tag: 'world',
+    desc: 'Return "preventDespawn" to keep mob alive.',
+    code: `onWorldAttemptDespawnMob = (mobId) => {\n    \n};`
+  },
+  {
+    key: 'onMobDespawned', name: 'onMobDespawned', tag: 'world',
+    desc: 'Called when a mob is despawned.',
+    code: `onMobDespawned = (mobId) => {\n    \n};`
+  },
+  {
+    key: 'onCreateBloxdMeshEntity', name: 'onCreateBloxdMeshEntity', tag: 'world',
+    desc: 'Called when a custom mesh entity is created.',
+    code: `onCreateBloxdMeshEntity = (eId, type, initiatorId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerBreakMeshEntity', name: 'onPlayerBreakMeshEntity', tag: 'world',
+    desc: 'Called when a player breaks a mesh entity.',
+    code: `onPlayerBreakMeshEntity = (playerId, entityId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerDamagingMeshEntity', name: 'onPlayerDamagingMeshEntity', tag: 'world',
+    desc: 'Called when a player damages a mesh entity.',
+    code: `onPlayerDamagingMeshEntity = (playerId, damagedId, damageDealt, withItem) => {\n    \n};`
+  },
+  {
+    key: 'onEntityCollision', name: 'onEntityCollision', tag: 'world',
+    desc: 'Called when an entity collides with another.',
+    code: `onEntityCollision = (eId, otherEId) => {\n    \n};`
+  },
+
+  // ==========================================
+  // WEAPONS / THROWABLES / CHARGE CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerUsedThrowable', name: 'onPlayerUsedThrowable', tag: 'world',
+    desc: 'Called when a player throws a projectile/throwable.',
+    code: `onPlayerUsedThrowable = (playerId, throwableName, thrownEntityId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerThrowableHitTerrain', name: 'onPlayerThrowableHitTerrain', tag: 'world',
+    desc: 'Called when a thrown projectile hits terrain.',
+    code: `onPlayerThrowableHitTerrain = (playerId, throwableName, thrownEntityId) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerStartChargingItem', name: 'onPlayerStartChargingItem', tag: 'world',
+    desc: 'Called when a player starts drawing a bow/crossbow.',
+    code: `onPlayerStartChargingItem = (playerId, itemName) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerFinishChargingItem', name: 'onPlayerFinishChargingItem', tag: 'world',
+    desc: 'Called when a player finishes charging an item.',
+    code: `onPlayerFinishChargingItem = (playerId, used, itemName, duration) => {\n    \n};`
+  },
+
+  // ==========================================
+  // MISCELLANEOUS / SYSTEM CALLBACKS
+  // ==========================================
+  {
+    key: 'onClientOptionUpdated', name: 'onClientOptionUpdated', tag: 'world',
+    desc: 'Called when a client option is updated.',
+    code: `onClientOptionUpdated = (playerId, option, value) => {\n    \n};`
+  },
+  {
+    key: 'onMobSettingUpdated', name: 'onMobSettingUpdated', tag: 'world',
+    desc: 'Called when a mob setting is updated.',
+    code: `onMobSettingUpdated = (mobId, setting, value) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerPotionEffect', name: 'onPlayerPotionEffect', tag: 'world',
+    desc: 'Called when a player receives a potion effect. Return "preventEffect" to block.',
+    code: `onPlayerPotionEffect = (initiatorId, targetId, effectName) => {\n    \n};`
+  },
+  {
+    key: 'onTaskClaimed', name: 'onTaskClaimed', tag: 'world',
+    desc: 'Called when a player claims a task.',
+    code: `onTaskClaimed = (playerId, taskId, isPromoTask, claimedRewards) => {\n    \n};`
+  },
+
+  // ==========================================
+  // QTE & SHOP CALLBACKS
+  // ==========================================
+  {
+    key: 'onPlayerFinishQTE', name: 'onPlayerFinishQTE', tag: 'world',
+    desc: 'Triggered when a Quick Time Event ends.',
+    code: `onPlayerFinishQTE = (playerId, qteId, result) => {\n    api.sendMessage(playerId, result ? "QTE Success!" : "QTE Failed!");\n};`
+  },
+  {
+    key: 'onPlayerToggledShopMenu', name: 'onPlayerToggledShopMenu', tag: 'world',
+    desc: 'Called when a player opens or closes the shop menu.',
+    code: `onPlayerToggledShopMenu = (playerId, isOpen) => {\n    \n};`
+  },
+  {
+    key: 'onPlayerBoughtShopItem', name: 'onPlayerBoughtShopItem', tag: 'world',
+    desc: 'Called after a player successfully buys a shop item.',
+    code: `onPlayerBoughtShopItem = (playerId, categoryKey, itemKey, item, userInput) => {\n    \n};`
+  },
+
+  // ==========================================
+  // CRITICAL APIS & FEATURES
+  // ==========================================
+  {
+    key: 'giveItem', name: 'api.giveItem', tag: 'util',
+    desc: 'Give a specific item to a player.',
+    code: `api.giveItem(myId, "Diamond Sword", 1);`
+  },
+  {
+    key: 'setBlock', name: 'api.setBlock', tag: 'util',
+    desc: 'Place a single block.',
+    code: `api.setBlock(0, 64, 0, "Stone");`
+  },
+  {
+    key: 'setBlockRect', name: 'api.setBlockRect', tag: 'util',
+    desc: 'Fill a region with a specific block.',
+    code: `api.setBlockRect([0, 60, 0], [10, 65, 10], "Stone Bricks");`
+  },
+  {
+    key: 'playSound', name: 'api.playSound', tag: 'util',
+    desc: 'Play a sound for a specific player.',
+    code: `api.playSound(myId, "cashRegister", 1, 1);`
+  },
+  {
+    key: 'broadcastSound', name: 'api.broadcastSound', tag: 'util',
+    desc: 'Play a sound for everyone.',
+    code: `api.broadcastSound("exp_levelup", 1, 1);`
+  },
+  {
+    key: 'playParticleEffect', name: 'api.playParticleEffect', tag: 'util',
+    desc: 'Trigger custom 3D particles.',
+    code: `api.playParticleEffect({\n    presetId: "aura",\n    pos1: [0, 65, 0],\n    pos2: [1, 66, 1]\n});`
+  },
+  {
+    key: 'setClientOption', name: 'api.setClientOption', tag: 'util',
+    desc: 'Change a players settings (speed, jump, etc).',
+    code: `api.setClientOption(myId, "speedMultiplier", 1.5);\napi.setClientOption(myId, "airJumpCount", 2);`
+  },
+  {
+    key: 'addQTE_progressBar', name: 'QTE: Progress Bar', tag: 'util',
+    desc: 'Rapid click QTE.',
+    code: `api.addQTE(myId, "my_qte_1", {\n    type: "progressBar",\n    parameters: {\n        progressDecreasePerTick: 0.075,\n        progressPerClick: 5,\n        canFail: true,\n        description: [{ str: "Mash click!" }],\n        clickIcon: "fa-solid fa-computer-mouse"\n    }\n});`
+  },
+  {
+    key: 'addQTE_timedClick', name: 'QTE: Timed Click', tag: 'util',
+    desc: 'Click within a time window.',
+    code: `api.addQTE(myId, "my_qte_2", {\n    type: "timedClick",\n    parameters: {\n        timeWindow: 3000,\n        icon: "fa-solid fa-bolt",\n        label: [{ str: "Click fast!" }],\n        showTimer: true\n    }\n});`
+  },
+  {
+    key: 'addQTE_precisionBar', name: 'QTE: Precision Bar', tag: 'util',
+    desc: 'Timing minigame QTE.',
+    code: `api.addQTE(myId, "my_qte_3", {\n    type: "precisionBar",\n    parameters: {\n        speed: 0.5,\n        successZoneSize: 0.15,\n        label: [{ str: "Hit the green zone!" }]\n    }\n});`
+  },
+  {
+    key: 'addQTE_rhythmClick', name: 'QTE: Rhythm Click', tag: 'util',
+    desc: 'Rhythm matching QTE.',
+    code: `api.addQTE(myId, "my_qte_4", {\n    type: "rhythmClick",\n    parameters: {\n        requiredSuccesses: 5,\n        shrinkDurationMs: 1200,\n        toleranceFraction: 0.15,\n        maxMisses: 3,\n        label: [{ str: "Align the circles!" }]\n    }\n});`
+  },
+  {
+    key: 'addQTE_gravityBar', name: 'QTE: Gravity Bar', tag: 'util',
+    desc: 'Hold/Release tracking QTE.',
+    code: `api.addQTE(myId, "my_qte_5", {\n    type: "gravityBar",\n    parameters: {\n        catchZoneSize: 0.25,\n        moverSpeed: 3,\n        moverErraticness: 0.8,\n        gravity: 1,\n        riseSpeed: 1.5,\n        progressGainPerSecond: 8,\n        progressDrainPerSecond: 4,\n        description: [{ str: "Hold to catch!" }]\n    }\n});`
+  },
+  {
+    key: 'createMesh_Person', name: 'Create Mesh: Person', tag: 'util',
+    desc: 'Spawn an NPC mesh entity.',
+    code: `const npcId = api.attemptCreateMeshEntity("Person", {\n    pose: "standing",\n    textures: { head: "trader_black" }\n}, "Merchant");\nif (npcId) api.setPosition(npcId, 0, 65, 0);`
+  },
+  {
+    key: 'createMesh_Block', name: 'Create Mesh: Block', tag: 'util',
+    desc: 'Spawn a 3D block mesh entity.',
+    code: `api.attemptCreateMeshEntity("BloxdBlock", {\n    blockName: "Diamond Block",\n    size: 1\n});`
+  },
+  {
+    key: 'createThrowable', name: 'Create Throwable', tag: 'util',
+    desc: 'Spawn a projectile with physics.',
+    code: `const { dir } = api.getPlayerFacingInfo(myId);\nconst pos = api.getPosition(myId);\napi.attemptCreateThrowable(myId, "Fireball", [pos[0], pos[1] + 1.5, pos[2]], dir, 2, 1.5, 1);`
+  },
+  {
+    key: 'attachNodeMesh', name: 'Attach Node Mesh', tag: 'util',
+    desc: 'Attach a mesh to a player (e.g. block on head).',
+    code: `api.updateEntityNodeMeshAttachment(myId, "HeadMesh", "Box", {\n    width: 0.5, height: 0.5, depth: 0.5, diffuseColor: [255, 0, 0]\n}, [0, 0.5, 0], [0, 0, 0]);`
+  },
+  {
+    key: 'changeSkin', name: 'Change Skin / Pose', tag: 'util',
+    desc: 'Change player pose or skin.',
+    code: `api.setPlayerPose(myId, "zombie");\napi.changePlayerIntoSkin(myId, "head", "zombie");`
+  },
+  {
+    key: 'applyEffect', name: 'api.applyEffect', tag: 'util',
+    desc: 'Apply a buff/debuff effect.',
+    code: `api.applyEffect(myId, "Speed", 10000, { icon: "Speed", displayName: "Zoom!" });`
+  },
+  {
+    key: 'dbValues', name: 'Database DB Values', tag: 'util',
+    desc: 'Save and get persisted database values.',
+    code: `api.setPlayerDbValue(myId, "coins", 100);\nconst coins = api.getPlayerDbValue(myId, "coins");\n\napi.setLobbyDbValue("highscore", 500);\nconst hs = api.getLobbyDbValue("highscore");`
+  },
+  {
+    key: 'sendUI', name: 'UI & Helpers', tag: 'util',
+    desc: 'Flying text, hitmarkers, top right UI, and progress bars.',
+    code: `api.sendFlyingMiddleMessage(myId, ["LEVEL UP!"], 100);\napi.sendHitmarker(myId, true);\napi.sendTopRightHelper(myId, "fa-solid fa-star", "Objective Complete", { duration: 5, color: "rgb(255,215,0)" });\napi.progressBarUpdate(myId, 1.0, 500);`
+  },
+  {
+    key: 'delegator', name: 'Delegator Pattern', tag: 'world',
+    desc: 'Pattern to change event callbacks via Code Blocks dynamically.',
+    code: `globalThis.handlers = {};\nonPlayerJoin = (id) => {\n    if (globalThis.handlers.join) globalThis.handlers.join(id);\n};\n/* In Code Block: globalThis.handlers.join = (id) => { ... } */`
+  }
+];
+
+/* ===================================================
+   TABS SYSTEM
+=================================================== */
+let tabs = [
+  { id: 1, name: 'main.js', content: '/* Welcome to Bloxd.io Code Lab! */\n/* Type api. for autocomplete */\n\nonPlayerJoin = (playerId) => {\n    api.sendMessage(playerId, "Welcome!", { color: "green" });\n};\n' }
+];
+let activeTab = 1;
+let tabCounter = 2;
+
+function renderTabs() {
+  const bar = document.getElementById('tab-bar');
+  const newBtn = bar.querySelector('.new-tab-btn');
+  bar.innerHTML = '';
+  tabs.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (t.id === activeTab ? ' active' : '');
+    el.innerHTML = `<i class="fas fa-file-code" style="font-size:11px; opacity:0.6"></i>
+      <span>${t.name}</span>
+      <button class="close-tab" onclick="closeTab(event,${t.id})">✕</button>`;
+    el.onclick = (e) => { if (!e.target.classList.contains('close-tab')) switchTab(t.id); };
+    bar.appendChild(el);
+  });
+  bar.appendChild(newBtn);
+}
+
+function switchTab(id) {
+  if (window.editor) {
+    const cur = tabs.find(t => t.id === activeTab);
+    if (cur) cur.content = window.editor.getValue();
+  }
+  activeTab = id;
+  const t = tabs.find(t => t.id === id);
+  if (t && window.editor) window.editor.setValue(t.content);
+  renderTabs();
+}
+
+function newTab() {
+  tabs.push({ id: tabCounter, name: `script${tabCounter}.js`, content: '/* New script */\n' });
+  switchTab(tabCounter);
+  tabCounter++;
+}
+
+function closeTab(e, id) {
+  e.stopPropagation();
+  if (tabs.length === 1) { showToast('Cannot close the last tab'); return; }
+  tabs = tabs.filter(t => t.id !== id);
+  if (activeTab === id) switchTab(tabs[tabs.length - 1].id);
+  else renderTabs();
+}
+
+/* AI Workspace Helpers */
+function aiCreateOrUpdateTab(name, content) {
+  let t = tabs.find(t => t.name.toLowerCase() === name.toLowerCase());
+  if (t) {
+    t.content = content.trim();
+    switchTab(t.id);
+  } else {
+    tabs.push({ id: tabCounter, name: name, content: content.trim() });
+    switchTab(tabCounter);
+    tabCounter++;
+  }
+}
+
+function aiDeleteTab(name) {
+  let t = tabs.find(t => t.name.toLowerCase() === name.toLowerCase());
+  if (t) {
+    if (tabs.length === 1) { showToast('AI tried to close the last tab, ignored.'); return; }
+    tabs = tabs.filter(tab => tab.id !== t.id);
+    if (activeTab === t.id) switchTab(tabs[tabs.length - 1].id);
+    else renderTabs();
+    showToast('AI closed tab: ' + name);
+  }
+}
+
+/* ===================================================
+   DARK MODE
+=================================================== */
+let isDark = localStorage.getItem('darkMode') === 'true';
+let fontSize = parseInt(localStorage.getItem('fontSize') || '14');
+
+function applyDark() {
+  document.documentElement.classList.toggle('dark', isDark);
+  const sw = document.getElementById('dark-switch');
+  if (sw) sw.classList.toggle('on', isDark);
+  if (window.editor) monaco.editor.setTheme(isDark ? 'bloxd-dark' : 'bloxd-light');
+}
+function toggleDark() {
+  isDark = !isDark;
+  localStorage.setItem('darkMode', isDark);
+  applyDark();
+}
+
+function increaseFontSize() {
+  fontSize = Math.min(fontSize + 1, 24);
+  localStorage.setItem('fontSize', fontSize);
+  if (window.editor) window.editor.updateOptions({ fontSize });
+  document.getElementById('sb-font').textContent = fontSize + 'px';
+}
+function decreaseFontSize() {
+  fontSize = Math.max(fontSize - 1, 10);
+  localStorage.setItem('fontSize', fontSize);
+  if (window.editor) window.editor.updateOptions({ fontSize });
+  document.getElementById('sb-font').textContent = fontSize + 'px';
+}
+
+applyDark();
+
+/* ===================================================
+   MONACO EDITOR
+=================================================== */
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' } });
+
+require(['vs/editor/editor.main'], function () {
+  monaco.editor.defineTheme('bloxd-dark', {
+    base: 'vs-dark', inherit: true,
+    rules: [
+      { token: 'string', foreground: 'a5d6ff' },
+      { token: 'keyword', foreground: 'ff7b72' },
+      { token: 'number', foreground: '79c0ff' },
+      { token: 'comment', foreground: '8b949e', fontStyle: 'italic' },
+      { token: 'identifier', foreground: 'e6edf3' },
+    ],
+    colors: {
+      'editor.background': '#0d1117',
+      'editor.foreground': '#e6edf3',
+      'editorLineNumber.foreground': '#484f58',
+      'editor.lineHighlightBackground': '#161b22',
+      'editorCursor.foreground': '#e6edf3',
+      'editor.selectionBackground': '#264f78',
+      'editorIndentGuide.background': '#21262d',
+    }
+  });
+
+  monaco.editor.defineTheme('bloxd-light', {
+    base: 'vs', inherit: true, rules: [],
+    colors: { 'editor.background': '#ffffff', 'editor.foreground': '#1f2328' }
+  });
+
+  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+    target: monaco.languages.typescript.ScriptTarget.ES6,
+    allowNonTsExtensions: true,
+    lib: ['es6']
+  });
+
+  const editor = monaco.editor.create(document.getElementById('editor-container'), {
+    value: tabs[0].content,
+    language: 'javascript',
+    theme: isDark ? 'bloxd-dark' : 'bloxd-light',
+    automaticLayout: true,
+    minimap: { enabled: true },
+    fontSize: fontSize,
+    wordWrap: 'on',
+    hover: { enabled: true },
+    suggestOnTriggerCharacters: true,
+    quickSuggestions: true,
+    lineNumbers: 'on',
+    scrollBeyondLastLine: false,
+    smoothScrolling: true,
+    cursorBlinking: 'smooth',
+    formatOnPaste: true,
+    bracketPairColorization: { enabled: true },
+    guides: { bracketPairs: true },
+    renderWhitespace: 'selection',
+    folding: true,
+    glyphMargin: false,
+    lineDecorationsWidth: 8,
+    lineNumbersMinChars: 3,
+  });
+
+  window.editor = editor;
+  document.getElementById('sb-font').textContent = fontSize + 'px';
+
+  /* Live stats */
+  editor.onDidChangeModelContent(() => updateStats());
+  editor.onDidChangeCursorPosition(e => {
+    document.getElementById('line-count').textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+  });
+  editor.onDidChangeCursorSelection(() => {
+    const sel = editor.getSelection();
+    const txt = editor.getModel().getValueInRange(sel);
+    document.getElementById('sb-sel').textContent = txt.length;
+  });
+
+  updateStats();
+
+  /* Completions */
+  const mappedCommonVars = COMMON_VARS_RAW.map(v => ({
+    label: v.label, detail: v.detail, insertText: v.insertText,
+    kind: monaco.languages.CompletionItemKind.Variable
+  }));
+
+  const allSuggestions = [
+    { label: 'api', kind: monaco.languages.CompletionItemKind.Module, insertText: 'api', detail: 'Bloxd.io API' },
+    ...Object.entries(API_FUNCTIONS).map(([name, data]) => ({
+      label: name, kind: monaco.languages.CompletionItemKind.Function,
+      insertText: name, detail: data.description,
+      documentation: { value: `**${name}**\n\n${data.description}\n\n\`\`\`js\n${data.example}\n\`\`\`` }
+    })),
+    ...BLOCKS.map(b => ({ label: b, kind: monaco.languages.CompletionItemKind.EnumMember, insertText: `"${b}"`, detail: 'Block name' })),
+    ...ITEMS.map(i => ({ label: i, kind: monaco.languages.CompletionItemKind.EnumMember, insertText: `"${i}"`, detail: 'Item name' })),
+    ...CALLBACKS.map(cb => ({ label: cb, kind: monaco.languages.CompletionItemKind.Event, insertText: cb, detail: 'Bloxd.io Callback' })),
+    ...mappedCommonVars
+  ];
+
+  monaco.languages.registerCompletionItemProvider('javascript', {
+    provideCompletionItems: (model, position) => {
+      const line = model.getLineContent(position.lineNumber);
+      const text = line.substring(0, position.column - 1);
+      if (text.endsWith('api.')) {
+        return {
+          suggestions: Object.keys(API_FUNCTIONS).map(name => ({
+            label: name, kind: monaco.languages.CompletionItemKind.Function,
+            insertText: name, detail: API_FUNCTIONS[name].description,
+            documentation: { value: `**${name}**\n\n${API_FUNCTIONS[name].description}\n\n\`\`\`js\n${API_FUNCTIONS[name].example}\n\`\`\`` }
+          }))
+        };
+      }
+      return { suggestions: allSuggestions };
+    },
+    triggerCharacters: ['.', '"', 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+  });
+
+  /* Keyboard shortcuts */
+  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => openSaveModal());
+  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, () => toggleFindBar());
+  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => runValidator());
+
+  /* Sidebar counts */
+  document.getElementById('sb-funcs').textContent = Object.keys(API_FUNCTIONS).length;
+  document.getElementById('sb-bi').textContent = (BLOCKS.length + ITEMS.length).toLocaleString();
+
+  renderTabs();
+  buildSnippetGrid();
+  buildModalSnippetList(SNIPPETS);
+  refreshSavedList();
+});
+
+/* ===================================================
+   STATS UPDATE
+=================================================== */
+function updateStats() {
+  if (!window.editor) return;
+  const val = window.editor.getValue();
+  const len = val.length;
+  const lines = val.split('\n').length;
+
+  /* char count */
+  const cc = document.getElementById('char-count');
+  const cct = document.getElementById('char-count-top');
+  const pill = len > 15000 ? 'danger' : len > 12000 ? 'warn' : '';
+  cc.className = 'char-pill ' + pill;
+  cc.textContent = `${len.toLocaleString()} / 16,000 chars`;
+  cct.className = 'char-pill ' + pill;
+  cct.textContent = `${len.toLocaleString()} / 16,000`;
+
+  document.getElementById('sb-lines').textContent = lines;
+
+  /* validate badge quick update */
+  const hasDoubleSlash = /(?<![:"'])\/\//.test(val);
+  const badge = document.getElementById('validate-badge');
+  if (hasDoubleSlash) {
+    badge.textContent = '⚠ Warning';
+    badge.style.color = '#9a6700';
+  } else if (len > 16000) {
+    badge.textContent = '✗ Over limit';
+    badge.style.color = '#cf222e';
+  } else {
+    badge.textContent = '✓ Valid';
+    badge.style.color = '#1a7f37';
+  }
+}
+
+/* ===================================================
+   TOOLBAR ACTIONS
+=================================================== */
+function copyCode() {
+  if (!window.editor) return;
+  navigator.clipboard.writeText(window.editor.getValue());
+  showToast('✅ Code copied!');
+  logToConsole('Code copied to clipboard.', 'info');
+}
+
+function clearCode() {
+  if (!window.editor) return;
+  if (confirm('Clear all code in this tab?')) {
+    window.editor.setValue('');
+    logToConsole('Editor cleared.', 'warn');
+  }
+}
+
+function formatCode() {
+  if (!window.editor) return;
+  window.editor.getAction('editor.action.formatDocument').run();
+  logToConsole('Code formatted.', 'success');
+}
+
+function wrapSelection(before, after) {
+  if (!window.editor) return;
+  const sel = window.editor.getSelection();
+  const txt = window.editor.getModel().getValueInRange(sel);
+  window.editor.executeEdits('wrap', [{
+    range: sel,
+    text: before + txt + after
+  }]);
+}
+
+function insertText(code) {
+  if (!window.editor) return;
+  const pos = window.editor.getPosition();
+  window.editor.executeEdits('snippet', [{ range: new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column), text: code }]);
+  window.editor.focus();
+}
+
+function insertSnippetByKey(key) {
+  const s = SNIPPETS.find(s => s.key === key);
+  if (s) {
+    insertText('\n' + s.code + '\n');
+    logToConsole(`Inserted snippet: ${s.name}`, 'success');
+    showToast('✅ Snippet inserted');
+  }
+}
+
+/* ===================================================
+   FIND & REPLACE
+=================================================== */
+let findBarOpen = false;
+
+function toggleFindBar() {
+  findBarOpen = !findBarOpen;
+  const bar = document.getElementById('find-bar');
+  bar.style.display = findBarOpen ? 'flex' : 'none';
+  if (findBarOpen) document.getElementById('find-input').focus();
+}
+
+function doFind() {
+  if (!window.editor) return;
+  const q = document.getElementById('find-input').value;
+  if (!q) { document.getElementById('find-count').textContent = ''; return; }
+  const matches = window.editor.getModel().findMatches(q, false, false, false, null, false);
+  document.getElementById('find-count').textContent = `${matches.length} match${matches.length !== 1 ? 'es' : ''}`;
+  if (matches.length > 0) window.editor.revealLineInCenter(matches[0].range.startLineNumber);
+}
+
+function doReplace() {
+  if (!window.editor) return;
+  const find = document.getElementById('find-input').value;
+  const rep = document.getElementById('replace-input').value;
+  if (!find) return;
+  const matches = window.editor.getModel().findMatches(find, false, false, false, null, false);
+  if (matches.length > 0) {
+    window.editor.executeEdits('replace', [{ range: matches[0].range, text: rep }]);
+  }
+}
+
+function doReplaceAll() {
+  if (!window.editor) return;
+  const find = document.getElementById('find-input').value;
+  const rep = document.getElementById('replace-input').value;
+  if (!find) return;
+  const matches = window.editor.getModel().findMatches(find, false, false, false, null, false);
+  window.editor.executeEdits('replaceAll', matches.map(m => ({ range: m.range, text: rep })));
+  logToConsole(`Replaced ${matches.length} occurrence(s) of "${find}"`, 'info');
+  doFind();
+}
+
+/* ===================================================
+   BOTTOM PANEL
+=================================================== */
+function switchPanel(name) {
+  const panel = document.querySelector('.bottom-panel');
+  if (panel && panel.classList.contains('collapsed')) {
+    toggleBottomPanel();
+  }
+  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('ptab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+/* ===================================================
+   CONSOLE & TESTING ENGINE
+=================================================== */
+function logToConsole(msg, type = 'log', customColor = null) {
+  const out = document.getElementById('console-output');
+  const empty = out.querySelector('.console-empty');
+  if (empty) empty.remove();
+  const now = new Date();
+  const time = now.toLocaleTimeString('en', { hour12: false });
+  const icons = { error: '✗', warn: '⚠', success: '✓', info: 'ℹ', log: '›' };
+  const line = document.createElement('div');
+  line.className = `console-line ${type}`;
+  
+  // Clean the message so HTML characters don't break the console
+  const safeMsg = String(msg).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // If a custom color is passed, apply it to the text!
+  const colorStyle = customColor ? `style="color: ${customColor}; text-shadow: 0 0 2px rgba(0,0,0,0.5);"` : '';
+
+  line.innerHTML = `<span class="console-time">${time}</span>
+    <span style="opacity:0.5">${icons[type] || '›'}</span>
+    <span class="console-msg" ${colorStyle}>${safeMsg}</span>`;
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+}
+
+function clearConsole() {
+  document.getElementById('console-output').innerHTML = '<div class="console-empty">Console cleared.</div>';
+}
+
+function testCode() {
+  if (!window.editor) return;
+  switchPanel('console');
+  const code = window.editor.getValue();
+  
+  clearConsole();
+  logToConsole("Starting simulation test...", "info");
+
+  // Mock the Bloxd API so it can print results to our console WITH colors
+  const mockApi = {
+    sendMessage: (playerId, msg, style) => {
+      const color = style && style.color ? style.color : null;
+      logToConsole(`[To ${playerId}]: ${msg}`, "info", color);
+    },
+    broadcastMessage: (msg, style) => {
+      const color = style && style.color ? style.color : null;
+      logToConsole(`[Broadcast]: ${msg}`, "info", color);
+    },
+    giveItem: (playerId, item, amt) => logToConsole(`Gave ${amt}x ${item} to ${playerId}`, "success"),
+    setBlock: (x, y, z, block) => logToConsole(`Placed ${block} at ${x}, ${y}, ${z}`, "log"),
+    setPosition: (id, x, y, z) => logToConsole(`Teleported ${id} to ${x}, ${y}, ${z}`, "log"),
+    log: (...args) => logToConsole(`[api.log]: ${args.join(" ")}`, "log"),
+    applyEffect: (id, effect) => logToConsole(`Applied ${effect} effect to ${id}`, "success")
+  };
+
+  try {
+    // Run the code in a fake Sandbox environment
+    const sandbox = new Function('api', 'myId', 'playerId', 'thisPos', `
+      try {
+        ${code}
+        
+        // Return callbacks so we can trigger them
+        return {
+          onPlayerJoin: typeof onPlayerJoin !== 'undefined' ? onPlayerJoin : null,
+          tick: typeof tick !== 'undefined' ? tick : null,
+          onPlayerChat: typeof onPlayerChat !== 'undefined' ? onPlayerChat : null
+        };
+      } catch(e) {
+        throw e;
+      }
+    `);
+
+    const callbacks = sandbox(mockApi, "TestPlayer", "TestPlayer", [0, 65, 0]);
+    logToConsole("Code was successfully tested", "success");
+
+    // Automatically simulate game events if the user wrote them
+    if (callbacks.onPlayerJoin) {
+      logToConsole("--- Simulating Player Join ---", "log");
+      callbacks.onPlayerJoin("TestPlayer");
+    }
+    
+  } catch (err) {
+    // Catch syntax errors and typos
+    logToConsole(`Simulation Error: ${err.message}`, "error");
+  }
+}
+
+function fixCode() {
+  if (!window.editor) return;
+  let code = window.editor.getValue();
+  let originalCode = code;
+
+  // 1. Fix Single-line comments (// comment -> /* comment */)
+  code = code.replace(/(?<![:"'])\/\/(.*)/g, '/* $1 */');
+
+  // 2. Fix variable declarations (let/var -> globalThis)
+  code = code.replace(/^(let|var)\s+([a-zA-Z0-9_]+)\s*=/gm, 'globalThis.$2 =');
+
+  // 3. Remove unsupported browser APIs that crash Bloxd
+  code = code.replace(/^(.*(?:fetch\(|document\.|window\.).*)$/gm, '/* Removed unsupported browser feature */');
+
+  // Apply the fixed code if changes were made
+  if (code !== originalCode) {
+    window.editor.setValue(code);
+    logToConsole("Code automatically fixed! Errors have been replaced with proper Bloxd.io syntax.", "success");
+    showToast('🔧 Code Fixed!');
+    runValidator(); // Update the validation badge instantly
+  } else {
+    logToConsole("No obvious syntax errors found to automatically fix.", "warn");
+    showToast('Code is already clean');
+  }
+}
+
+/* ===================================================
+   VALIDATOR
+=================================================== */
+function runValidator() {
+  if (!window.editor) return;
+  switchPanel('validator');
+  const code = window.editor.getValue();
+  const out = document.getElementById('validator-output');
+  const issues = [];
+  const oks = [];
+
+  /* Checks */
+  if (/\/\/(?![^\n]*['"`])/.test(code))
+    issues.push({ type: 'error', msg: 'Single-line comments (//) break Bloxd.io! Use /* */ instead.' });
+  else oks.push('No single-line comments detected ✓');
+
+  if (code.length > 16000)
+    issues.push({ type: 'error', msg: `Code is ${code.length} chars — exceeds the 16,000 char limit.` });
+  else oks.push(`Character count OK: ${code.length} / 16,000 ✓`);
+
+  const lines = code.split('\n').length;
+  if (lines > 500)
+    issues.push({ type: 'warn', msg: `${lines} lines — if this is a Code Block, you exceed the 500 line limit.` });
+  else oks.push(`Line count OK: ${lines} lines ✓`);
+
+  if (/\blet\s+\w+\s*=/.test(code) && /globalThis/.test(code) === false)
+    issues.push({ type: 'warn', msg: 'Using "let" — if you need variables shared with Code Blocks, use globalThis.varName instead.' });
+
+  if (/\bfetch\s*\(/.test(code) || /\bdocument\b/.test(code) || /\bwindow\b/.test(code))
+    issues.push({ type: 'error', msg: 'Browser APIs (fetch, document, window) are NOT available in Bloxd.io.' });
+
+  if (/\bsetTimeout\b/.test(code) || /\bsetInterval\b/.test(code))
+    issues.push({ type: 'warn', msg: 'setTimeout/setInterval may not be available. Use the tick callback for timing.' });
+
+  if (/\brequire\s*\(/.test(code) || /\bimport\b/.test(code))
+    issues.push({ type: 'error', msg: 'require() and import are not supported in Bloxd.io.' });
+
+  if (code.includes('onPlayerJoin') && !code.includes('onPlayerLeave'))
+    issues.push({ type: 'warn', msg: 'You have onPlayerJoin but no onPlayerLeave — remember to clean up player data on leave.' });
+
+  if (code.trim() === '')
+    issues.push({ type: 'warn', msg: 'Editor is empty.' });
+  else oks.push('Editor has content ✓');
+
+  /* Render */
+  const hasErrors = issues.some(i => i.type === 'error');
+  const hasWarns = issues.some(i => i.type === 'warn');
+
+  let html = '';
+  if (issues.length === 0) {
+    html = '<div class="validator-ok" style="padding:8px 0">✅ All checks passed! Your code looks clean.</div>';
+  } else {
+    issues.forEach(issue => {
+      const icon = issue.type === 'error' ? '✗' : '⚠';
+      const cls = issue.type === 'error' ? 'validator-err' : 'validator-warn';
+      html += `<div class="validator-item"><span class="validator-icon ${cls}">${icon}</span><span>${issue.msg}</span></div>`;
+    });
+  }
+  html += '<div style="margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">';
+  oks.forEach(ok => {
+    html += `<div class="validator-item"><span class="validator-icon" style="color:#1a7f37">✓</span><span style="color:#57606a; font-size:11px">${ok}</span></div>`;
+  });
+  html += '</div>';
+
+  out.innerHTML = html;
+
+  const badge = document.getElementById('validate-badge');
+  if (hasErrors) { badge.textContent = '✗ Errors'; badge.style.color = '#cf222e'; }
+  else if (hasWarns) { badge.textContent = '⚠ Warnings'; badge.style.color = '#9a6700'; }
+  else { badge.textContent = '✓ Valid'; badge.style.color = '#1a7f37'; }
+}
+
+/* ===================================================
+   SNIPPETS PANEL
+=================================================== */
+const TAG_LABELS = { world: 'World Code', block: 'Code Block', util: 'Utility' };
+const TAG_CLASSES = { world: 'tag-world', block: 'tag-block', util: 'tag-util' };
+
+function buildSnippetGrid(list) {
+  list = list || SNIPPETS;
+  const grid = document.getElementById('snippet-grid');
+  grid.innerHTML = '';
+  list.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'snippet-card';
+    card.innerHTML = `
+      <div class="snippet-name">${s.name}</div>
+      <div class="snippet-desc">${s.desc}</div>
+      <span class="snippet-tag ${TAG_CLASSES[s.tag]}">${TAG_LABELS[s.tag]}</span>`;
+    card.onclick = () => {
+      insertText('\n' + s.code + '\n');
+      logToConsole(`Inserted: ${s.name}`, 'success');
+      showToast('✅ Snippet inserted');
+      switchPanel('console');
+    };
+    grid.appendChild(card);
+  });
+}
+
+function filterSnippets(q) {
+  q = q.toLowerCase();
+  buildSnippetGrid(q ? SNIPPETS.filter(s => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)) : SNIPPETS);
+}
+
+function buildModalSnippetList(list) {
+  const el = document.getElementById('modal-snippet-list');
+  el.innerHTML = '';
+  list.forEach(s => {
+    const row = document.createElement('div');
+    row.style = 'display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--border); border-radius:8px; cursor:pointer; background:var(--bg); transition:0.15s;';
+    row.onmouseover = () => row.style.background = 'var(--nav-hover)';
+    row.onmouseout = () => row.style.background = 'var(--bg)';
+    row.innerHTML = `
+      <div style="flex:1">
+        <div style="font-size:13px; font-weight:700; margin-bottom:2px">${s.name}</div>
+        <div style="font-size:12px; color:#57606a">${s.desc}</div>
+      </div>
+      <span class="snippet-tag ${TAG_CLASSES[s.tag]}">${TAG_LABELS[s.tag]}</span>
+      <button class="toolbar-btn primary" style="padding:4px 10px; font-size:11px">Insert</button>`;
+    row.querySelector('button').onclick = () => {
+      insertText('\n' + s.code + '\n');
+      closeModal('snippets-modal');
+      logToConsole(`Inserted: ${s.name}`, 'success');
+      showToast('✅ Snippet inserted');
+    };
+    el.appendChild(row);
+  });
+}
+
+function filterModalSnippets(q) {
+  q = q.toLowerCase();
+  buildModalSnippetList(q ? SNIPPETS.filter(s => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)) : SNIPPETS);
+}
+
+function openSnippetsModal() { document.getElementById('snippets-modal').classList.add('open'); }
+
+/* ===================================================
+   SAVE / LOAD
+=================================================== */
+function openSaveModal() {
+  const name = tabs.find(t => t.id === activeTab)?.name || 'script.js';
+  document.getElementById('save-name').value = name;
+  document.getElementById('save-modal').classList.add('open');
+  setTimeout(() => document.getElementById('save-name').focus(), 100);
+}
+
+function confirmSave() {
+  if (!window.editor) return;
+  const name = document.getElementById('save-name').value.trim() || 'Untitled';
+  const code = window.editor.getValue();
+  const saves = JSON.parse(localStorage.getItem('bloxd_saves') || '[]');
+  const existing = saves.findIndex(s => s.name === name);
+  const entry = { name, code, date: new Date().toLocaleString() };
+  if (existing >= 0) saves[existing] = entry; else saves.push(entry);
+  localStorage.setItem('bloxd_saves', JSON.stringify(saves));
+  closeModal('save-modal');
+  logToConsole(`Saved "${name}" to local storage.`, 'success');
+  showToast('💾 Script saved!');
+  refreshSavedList();
+}
+
+function loadSaved() {
+  switchPanel('saved');
+  refreshSavedList();
+}
+
+function exportProject() {
+  if (typeof JSZip === 'undefined') {
+    showToast('JSZip library not loaded yet. Please wait...', 'error');
+    return;
+  }
+  
+  if (tabs.length === 0) {
+    showToast('No scripts to export.', 'error');
+    return;
+  }
+
+  // Sync active tab content first
+  const cur = tabs.find(t => t.id === activeTab);
+  if (cur && editor) cur.content = editor.getValue();
+
+  const zip = new JSZip();
+  tabs.forEach(t => {
+    zip.file(t.name || `script_${t.id}.js`, t.content);
+  });
+
+  zip.generateAsync({type:"blob"}).then(function(content) {
+    const url = URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "bloxd_scripts_export.zip";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('📦 Project exported as ZIP!');
+  });
+}
+
+function refreshSavedList() {
+  const saves = JSON.parse(localStorage.getItem('bloxd_saves') || '[]');
+  const el = document.getElementById('saved-list');
+  if (saves.length === 0) {
+    el.innerHTML = '<div class="console-empty">No saved scripts yet. Use Save Local to save your work.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  saves.reverse().forEach((s, i) => {
+    const row = document.createElement('div');
+    row.style = 'display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--border);';
+    row.innerHTML = `
+      <div style="flex:1">
+        <div style="font-size:12px; font-weight:700">${s.name}</div>
+        <div style="font-size:11px; color:#57606a">${s.date} · ${s.code.length} chars</div>
+      </div>
+      <button class="toolbar-btn" style="font-size:11px; padding:3px 8px" onclick="loadScript(${saves.length-1-i})">Load</button>
+      <button class="toolbar-btn danger" style="font-size:11px; padding:3px 8px" onclick="deleteScript(${saves.length-1-i})">✕</button>`;
+    el.appendChild(row);
+  });
+}
+
+function loadScript(idx) {
+  const saves = JSON.parse(localStorage.getItem('bloxd_saves') || '[]');
+  if (!saves[idx]) return;
+  if (window.editor) {
+    window.editor.setValue(saves[idx].code);
+    const cur = tabs.find(t => t.id === activeTab);
+    if (cur) cur.name = saves[idx].name;
+    renderTabs();
+    logToConsole(`Loaded "${saves[idx].name}"`, 'success');
+    showToast('📂 Script loaded!');
+  }
+}
+
+function deleteScript(idx) {
+  const saves = JSON.parse(localStorage.getItem('bloxd_saves') || '[]');
+  const name = saves[idx]?.name;
+  saves.splice(idx, 1);
+  localStorage.setItem('bloxd_saves', JSON.stringify(saves));
+  logToConsole(`Deleted "${name}"`, 'warn');
+  refreshSavedList();
+}
+
+/* ===================================================
+   MODAL HELPERS
+=================================================== */
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+/* ===================================================
+   TOAST
+=================================================== */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.opacity = '0', 2200);
+}
+
+/* ===================================================
+   MOBILE / DESKTOP SIDEBAR TOGGLE & BOTTOM PANEL COLLAPSE
+=================================================== */
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  if (window.innerWidth <= 1024) {
+    if (sb) sb.classList.toggle('mobile-open');
+    if (overlay) overlay.classList.toggle('active');
+  } else {
+    if (sb) {
+      const isCollapsed = sb.classList.toggle('collapsed');
+      localStorage.setItem('sidebar-collapsed', isCollapsed);
+    }
+  }
+  // Let the Monaco editor resize nicely and perfectly!
+  if (window.editor) {
+    setTimeout(() => {
+      window.editor.layout();
+    }, 250);
+  }
+}
+
+function toggleMobileSidebar() {
+  toggleSidebar();
+}
+
+function toggleBottomPanel() {
+  const panel = document.querySelector('.bottom-panel');
+  const btn = document.getElementById('bottom-panel-toggle-btn');
+  if (panel) {
+    const isCollapsed = panel.classList.toggle('collapsed');
+    localStorage.setItem('bottom-panel-collapsed', isCollapsed);
+    if (btn) {
+      btn.innerHTML = isCollapsed ? '<i class="fas fa-chevron-up"></i>' : '<i class="fas fa-chevron-down"></i>';
+      btn.title = isCollapsed ? 'Expand Console' : 'Collapse Console';
+    }
+  }
+  // Update Monaco layout on vertical resize
+  if (window.editor) {
+    setTimeout(() => {
+      window.editor.layout();
+    }, 250);
+  }
+}
+
+function toggleConsoleFromToolbar() {
+  const panel = document.querySelector('.bottom-panel');
+  const consoleTab = document.getElementById('ptab-console');
+  const isConsoleActive = consoleTab && consoleTab.classList.contains('active');
+  const isCollapsed = panel && panel.classList.contains('collapsed');
+
+  if (isCollapsed) {
+    // If collapsed, expand it and switch to console tab
+    switchPanel('console');
+  } else {
+    if (isConsoleActive) {
+      // If open and already on console tab, collapse it
+      toggleBottomPanel();
+    } else {
+      // If open but on another tab, switch to console tab
+      switchPanel('console');
+    }
+  }
+}
+
+// Set initial chevron state on load
+document.addEventListener('DOMContentLoaded', () => {
+  const isPanelCollapsed = localStorage.getItem('bottom-panel-collapsed') === 'true';
+  const btn = document.getElementById('bottom-panel-toggle-btn');
+  if (isPanelCollapsed && btn) {
+    btn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+    btn.title = 'Expand Console';
+  }
+});
+
+/* ===================================================
+   GLOBAL KEYBOARD SHORTCUTS
+=================================================== */
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); openSaveModal(); }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    if (findBarOpen) toggleFindBar();
+  }
+});
+
+/* ===================================================
+   CODEXMIND DEVELOPER AI ASSISTANT
+=================================================== */
+let aiChatMessages = [
+  { role: 'system', content: typeof localPromptData !== 'undefined' ? localPromptData : 'You are CodexMind, a powerful expert programmer model for Bloxd.io.' }
+];
+
+function toggleAISidebar() {
+  const sb = document.getElementById('ai-editor-sidebar');
+  if (!sb) return;
+  const isCollapsed = sb.classList.toggle('collapsed');
+  localStorage.setItem('ai-sidebar-collapsed', isCollapsed);
+  if (window.editor) {
+    setTimeout(() => { window.editor.layout(); }, 250);
+  }
+}
+
+// Initial state load and form trigger setup
+document.addEventListener('DOMContentLoaded', () => {
+  const sb = document.getElementById('ai-editor-sidebar');
+  if (sb) {
+    const isCollapsed = localStorage.getItem('ai-sidebar-collapsed') === 'true';
+    if (isCollapsed) {
+      sb.classList.add('collapsed');
+    }
+  }
+
+  const chatInput = document.getElementById('ai-chat-input');
+  if (chatInput) {
+    chatInput.addEventListener('keydown', e => {
+      // Send on Enter (unless holding Shift or Ctrl)
+      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+        e.preventDefault();
+        sendAiMessage();
+      }
+    });
+  }
+});
+
+function setAiPrompt(text) {
+  const input = document.getElementById('ai-chat-input');
+  if (input) {
+    input.value = text;
+    input.focus();
+  }
+}
+
+function includeActiveCodeAsContext() {
+  if (!window.editor) return null;
+  return window.editor.getValue();
+}
+
+async function sendAiMessage() {
+  const inputEl = document.getElementById('ai-chat-input');
+  const sendBtn = document.getElementById('ai-send-btn');
+  const messagesBox = document.getElementById('ai-chat-messages');
+  const modelSelector = document.getElementById('ai-model-selector');
+  
+  if (!inputEl || !sendBtn || !messagesBox) return;
+  
+  const text = inputEl.value.trim();
+  if (!text) return;
+  
+  // Clear input
+  inputEl.value = '';
+  
+  // Append user message
+  appendAiChatMessage('user', text);
+  
+  // Build system instruction and include editor context
+  const selectedModel = modelSelector ? modelSelector.value : 'CodexMind';
+  const activeCode = includeActiveCodeAsContext();
+  let userContentWithContext = text;
+  if (activeCode) {
+    userContentWithContext = `User prompt: ${text}\n\n[Active Monaco Editor Code is below]:\n\`\`\`javascript\n${activeCode}\n\`\`\``;
+  }
+  
+  aiChatMessages.push({ role: 'user', content: userContentWithContext });
+  
+  // Create assistant message placeholder
+  const assistantMsgId = 'ai-msg-' + Date.now();
+  appendAiChatMessage('assistant', '', assistantMsgId);
+  
+  // Disable elements
+  sendBtn.disabled = true;
+  sendBtn.style.opacity = '0.5';
+  inputEl.disabled = true;
+  
+  const assistantBubble = document.getElementById(assistantMsgId);
+  const contentEl = assistantBubble ? assistantBubble.querySelector('.ai-msg-content') : null;
+  if (contentEl) {
+    contentEl.innerHTML = '<span style="color: var(--muted); font-style: italic;">Thinking... Deep reasoning enabled</span>';
+  }
+  
+  try {
+    let response;
+    let isDirectApi = false;
+    let geminiApiKey = localStorage.getItem('geminiApiKey');
+
+    if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io') || window.location.port === '5500') {
+      if (!geminiApiKey) {
+        geminiApiKey = prompt("Please enter your Gemini API Key. Since you are running this on GitHub Pages (statically), you need your own API Key. It will be saved securely in your browser:");
+        if (geminiApiKey) {
+          localStorage.setItem('geminiApiKey', geminiApiKey);
+        } else {
+           throw new Error('API Key is required on GitHub Pages.');
+        }
+      }
+      isDirectApi = true;
+      let geminiModel = 'gemini-1.5-flash';
+      if (selectedModel === 'CodexMind' || selectedModel === 'gemini-3.1-pro-preview') {
+         geminiModel = 'gemini-2.0-flash'; // Better fallback for static
+      }
+      
+      const geminiMessages = aiChatMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] }));
+      const promptText = typeof localPromptData !== 'undefined' ? localPromptData : 'You are CodexMind, an expert programmer for Bloxd.io.';
+
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${geminiApiKey}&alt=sse`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: promptText }] },
+          contents: geminiMessages
+        })
+      });
+    } else {
+      response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: aiChatMessages,
+          model: selectedModel,
+          systemPrompt: typeof localPromptData !== 'undefined' ? localPromptData : ''
+        })
+      });
+    }
+    
+    if (!response.ok) {
+      if (response.status === 400 || response.status === 403) {
+         if (isDirectApi) {
+             localStorage.removeItem('geminiApiKey');
+             throw new Error("Invalid API Key. Please refresh and try again.");
+         }
+      }
+      throw new Error('Failed to connect to CodexMind AI');
+    }
+    
+    if (!response.body) throw new Error("No response body");
+    
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+    let fullContent = '';
+    let buffer = '';
+    
+    if (contentEl) {
+      contentEl.innerHTML = '';
+    }
+    
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      if (value) {
+        buffer += decoder.decode(value, { stream: !done });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('data: ')) {
+            const data = trimmed.slice(6);
+            if (data === '[DONE]') {
+              done = true;
+              break;
+            } else if (data) {
+              try {
+                const parsed = JSON.parse(data);
+                if (isDirectApi) {
+                   if (parsed.candidates && parsed.candidates[0].content && parsed.candidates[0].content.parts) {
+                      fullContent += parsed.candidates[0].content.parts[0].text;
+                   }
+                } else {
+                   if (parsed.delta) { fullContent += parsed.delta; }
+                }
+                
+                if (contentEl) {
+                  contentEl.innerHTML = formatMarkdown(fullContent);
+                }
+                messagesBox.scrollTop = messagesBox.scrollHeight;
+              } catch(e) {
+                console.error("Delta parse error:", e);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Save response in history
+    aiChatMessages.push({ role: 'assistant', content: fullContent });
+    
+    // Auto highlight any code blocks rendered
+    if (typeof window.refreshSyntax === 'function') {
+      window.refreshSyntax();
+    }
+    
+    // Auto-apply Code to Editor
+    const cmdCreateRegex = /<command\s+type="create_file"\s+name="([^"]+)">([\s\S]*?)<\/command>/g;
+    let createMatch;
+    let hasCommands = false;
+    while ((createMatch = cmdCreateRegex.exec(fullContent)) !== null) {
+        hasCommands = true;
+        aiCreateOrUpdateTab(createMatch[1], createMatch[2]);
+    }
+    
+    const cmdDelRegex = /<command\s+type="delete_file"\s+name="([^"]+)"><\/command>/g;
+    let delMatch;
+    while ((delMatch = cmdDelRegex.exec(fullContent)) !== null) {
+        hasCommands = true;
+        aiDeleteTab(delMatch[1]);
+    }
+
+    if (!hasCommands) {
+        let autoCode = null;
+        let activeContent = fullContent.replace(/<command[^>]*>([\s\S]*?)<\/command>/g, "```javascript\n$1\n```");
+        const mdMatch = /```(?:javascript|js|typescript|ts|html|css)?\n([\s\S]*?)```/g;
+        let match;
+        while ((match = mdMatch.exec(activeContent)) !== null) {
+            autoCode = match[1];
+        }
+        if (autoCode) {
+            applyCodeToEditor(autoCode.trim());
+        }
+    } else {
+        showToast('✨ AI Workspace Updated!');
+        runValidator();
+    }
+    
+  } catch(err) {
+    console.error(err);
+    if (contentEl) {
+      contentEl.innerHTML = `<span style="color: #cf222e; font-weight: bold;">Error: ${err.message || 'Unable to load response'}</span>`;
+    }
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.style.opacity = '1';
+    inputEl.disabled = false;
+    inputEl.focus();
+  }
+}
+
+function appendAiChatMessage(role, content, msgId) {
+  const messagesBox = document.getElementById('ai-chat-messages');
+  if (!messagesBox) return;
+  
+  const bubble = document.createElement('div');
+  bubble.className = `ai-message ${role}`;
+  if (msgId) bubble.id = msgId;
+  
+  bubble.style = role === 'user' 
+    ? 'background: var(--nav-hover); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; max-width: 90%; align-self: flex-end; line-height: 1.5; color: var(--text);'
+    : 'background: var(--bg); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; max-width: 90%; align-self: flex-start; line-height: 1.5; color: var(--text);';
+    
+  const prefix = role === 'user' 
+    ? '<div style="font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">👤 You</div>'
+    : '<div style="font-size: 11px; font-weight: bold; color: var(--purple); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">🤖 CodexMind AI</div>';
+    
+  bubble.innerHTML = `${prefix}<div class="ai-msg-content">${formatMarkdown(content)}</div>`;
+  messagesBox.appendChild(bubble);
+  messagesBox.scrollTop = messagesBox.scrollHeight;
+}
+
+// Simple but powerful markdown parser to separate code blocks and paragraphs
+function formatMarkdown(text) {
+  if (!text) return '';
+  
+  // Transform <command> XML tags to code blocks
+  let processed = text.replace(/<command\s+type="create_file"\s+name="([^"]+)">([\s\S]*?)<\/command>/g, "```javascript\n// File: $1\n$2\n```");
+  processed = processed.replace(/<command\s+type="delete_file"\s+name="([^"]+)"><\/command>/g, "**[Action: Deleted $1]**\n");
+  
+  // Escape HTML to prevent injection
+  let safe = processed
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+    
+  // Format code blocks - Hidden in <details> as it's auto-applied
+  const codeRegex = /```(?:javascript|js|typescript|ts|html|css)?\n([\s\S]*?)```/g;
+  safe = safe.replace(codeRegex, (match, code) => {
+    // Escape quote strings inside the button arguments
+    const escapedCode = code.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '');
+    return `<div class="ai-code-block" style="background:#0d1117; color:#e6edf3; padding:12px; border-radius:6px; font-family:\'Fira Code\', monospace; font-size:11px; overflow-x:auto; margin:8px 0; border:1px solid #30363d; position:relative; white-space:pre-wrap;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #30363d;">
+         <span style="color:#3fb950; font-weight:bold; font-size: 13px;"><i class="fas fa-check-circle"></i> Code successfully sent to Editor</span>
+         <button class="ai-apply-btn" onclick="applyCodeToEditor('${escapedCode}')" style="position:relative; top:0; right:0; background:#238636; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:700; transition:background 0.15s;">Re-Apply Code</button>
+      </div>
+      <details>
+        <summary style="cursor:pointer; color:#8b949e; font-size:10px; outline:none; text-transform:uppercase; font-weight:800; letter-spacing:0.05em;">View Raw Source</summary>
+        <code style="display:block; margin-top:8px;">${code.trim()}</code>
+      </details>
+    </div>`;
+  });
+  
+  // Convert standard inline backticks `code`
+  safe = safe.replace(/`([^`\n]+)`/g, '<code style="background:var(--nav-hover); padding:2px 4px; border-radius:4px; font-family:\'Fira Code\', monospace; font-size:11px;">$1</code>');
+  
+  // Convert basic bold **text** -> <strong>text</strong>
+  safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Convert simple single line breaks
+  safe = safe.replace(/\n/g, '<br>');
+  
+  return safe;
+}
+
+function applyCodeToEditor(code) {
+  if (window.editor) {
+    const unescaped = code.replace(/\\n/g, '\n').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+    window.editor.setValue(unescaped);
+    logToConsole('Code successfully applied from CodexMind AI Assistant!', 'success');
+    showToast('✨ Applied to Editor!');
+    runValidator();
+  } else {
+    showToast('🚨 Editor not ready!');
+  }
+}
+</script>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+</body>
+</html>

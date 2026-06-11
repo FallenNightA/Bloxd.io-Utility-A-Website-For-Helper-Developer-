@@ -1,0 +1,73 @@
+/* Sidebar Navigation */
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    color: #374151; /* Tailwind gray-700 */
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .nav-item:hover {
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+  }
+  
+  .nav-item.active {
+    background-color: #3b82f6; /* Tailwind blue-500 */
+    color: white;
+  }
+  
+  /* Sidebar Link for External */
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    color: #374151; /* Tailwind gray-700 */
+    transition: background-color 0.2s;
+  }
+  
+  .sidebar-link:hover {
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+  }
+  
+  .sidebar-link.active {
+    background-color: #3b82f6; /* Tailwind blue-500 */
+    color: white;
+  }
+  
+  /* Main Content Area */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  /* Editor Container */
+  #editor-container {
+    border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+    border-radius: 0.5rem; /* Tailwind rounded-lg */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Error Display */
+  #error-display {
+    background-color: #fee2e2; /* Tailwind red-100 */
+    color: #b91c1c; /* Tailwind red-700 */
+    border-radius: 0.5rem; /* Tailwind rounded-lg */
+  }
+  
+  /* Run Button */
+  #run-btn {
+    background-color: #3b82f6; /* Tailwind blue-500 */
+    transition: background-color 0.2s;
+  }
+  
+  #run-btn:hover {
+    background-color: #2563eb; /* Tailwind blue-600 */
+  }
+  
+  /* Output Console */
+  #output-console {
+    background-color: #111827; /* Tailwind gray-900 */
+    color: #10b981; /* Tailwind green-400 */
+    border-radius: 0.5rem; /* Tailwind rounded-lg */
+    font-family: "Fira Code", "Consolas", monospace;
+  }
