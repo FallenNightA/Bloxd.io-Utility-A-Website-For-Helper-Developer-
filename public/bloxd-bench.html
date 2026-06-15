@@ -286,9 +286,37 @@
     
     // --- ASSETS PANEL ---
     async function loadAssets() {
+        let data = null;
         try {
+            // First attempt to fetch from the active Next.js backend API
             const res = await fetch('/api/assets');
-            const data = await res.json();
+            if (res.ok) {
+                const text = await res.text();
+                if (text && text.trim().startsWith('{')) {
+                    data = JSON.parse(text);
+                }
+            }
+        } catch (e) {
+            console.warn("Express/Next backend asset route not available. Attempting static fallback...", e);
+        }
+
+        // If backend fetch failed (e.g. running on static VS Code Live Server / GitHub pages), load the static JSON file
+        if (!data) {
+            try {
+                const resFallback = await fetch('assets.json');
+                if (resFallback.ok) {
+                    const textFallback = await resFallback.text();
+                    if (textFallback && textFallback.trim().startsWith('{')) {
+                        data = JSON.parse(textFallback);
+                        console.log("Successfully loaded static folder structure assets.json fallback!");
+                    }
+                }
+            } catch (fallbackError) {
+                console.error("Static assets.json fallback also failed", fallbackError);
+            }
+        }
+
+        if (data) {
             if (data.models) {
                 bloxdItemsList = data.models.map(f => f.replace('.glb', ''));
             }
@@ -299,8 +327,8 @@
             if (data.skyBoxes) {
                 skyBoxList = data.skyBoxes;
             }
-        } catch (e) {
-            console.error("Failed to load assets", e);
+        } else {
+            console.warn("Could not load any assets. Autocomplete may not show initial list.");
         }
     }
 

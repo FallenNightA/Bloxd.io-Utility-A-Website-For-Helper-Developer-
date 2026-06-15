@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build:webpack": "webpack",
-    "build": "webpack && next build",
+    "build": "node generate-assets.js && webpack && next build",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "clean": "next clean"
