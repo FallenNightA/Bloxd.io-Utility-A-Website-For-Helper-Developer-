@@ -9,7 +9,7 @@ git add .
 
 :: 2. Prompt for a commit message
 echo.
-set /p msg="Put Your Message here: "
+set /p msg="Updated File And add file: "
 
 :: If you press enter without typing anything, a default message will be used
 if "%msg%"=="" set msg="Automated project files update"

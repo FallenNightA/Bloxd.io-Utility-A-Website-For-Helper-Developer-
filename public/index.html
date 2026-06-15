@@ -7,12 +7,12 @@
     <link rel="icon" type="image/png" href="Bloxd Utility Logo.png">
     <!-- Syntax System -->
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    <link rel="stylesheet" href="assets/css/editor-theme.css">
+    <link rel="stylesheet" href="./assets/css/editor-theme.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-    <script src="assets/js/syntax.js"></script>
+    <script src="./assets/js/syntax.js"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="Prompt.js"></script>
+    <script src="./Prompt.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
@@ -605,6 +605,9 @@
             <div class="nav-item" onclick="location.href='tools.html'">
                 <i class="fas fa-tools mr-3 opacity-40"></i> Developer Tools
             </div>
+            <div class="nav-item" onclick="location.href='bloxd-bench.html'">
+                <i class="fas fa-cubes mr-3 opacity-40"></i> BloxdBench
+            </div>
             
             <div class="mt-8 px-4 text-[12px] font-bold text-gray-400 uppercase tracking-widest">External</div>
             <a href="https://github.com/Bloxdy/code-api" target="_blank" class="nav-item mt-2">
@@ -914,11 +917,11 @@
                     <p class="text-gray-500 font-medium">One-click copy of a 3000+ word system prompt that turns LLMs like ChatGPT/Claude into a Bloxd.io expert — no hallucinations.</p>
                     <div class="mt-4 text-yellow-600 text-sm font-bold">Copy Prompt →</div>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card" onclick="location.href='bloxd-bench.html'">
                     <i class="fas fa-cubes text-purple-500 text-2xl mb-4"></i>
-                    <h3 class="text-xl font-extrabold mb-2">Offline Ready</h3>
-                    <p class="text-gray-500 font-medium">The system prompt template is bundled locally in <code class="bg-gray-100 px-1 rounded text-sm">Prompt.js</code>, so it works without an internet connection. API data ships with the site too.</p>
-                    <div class="mt-4 text-purple-600 text-sm font-bold">Always Available ✓</div>
+                    <h3 class="text-xl font-extrabold mb-2">BloxdBench</h3>
+                    <p class="text-gray-500 font-medium">Design and preview custom 3D models and voxel structures right in your browser. (Compatible with Windows 8.1 / older systems)</p>
+                    <div class="mt-4 text-purple-600 text-sm font-bold">Open Builder →</div>
                 </div>
             </div>
 
@@ -938,7 +941,7 @@
     <!-- TOAST -->
     <div id="toast">✅ PROMPT COPIED!</div>
 
-    <script src="assets/js/api-data.js"></script>
+    <script src="./assets/js/api-data.js"></script>
     <script>
         /* ========== DATA ========== */
         const apiData = typeof API_DATA !== 'undefined' ? API_DATA : { functions: {}, blocks: [], items: [], commonVariables: [] };

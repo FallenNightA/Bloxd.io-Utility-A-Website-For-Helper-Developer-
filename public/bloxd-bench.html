@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloxdBench</title>
+  <link rel="icon" type="image/png" href="Bloxd Utility Logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; padding: 0; background: #1e1e1e; color: #e5e5e5; }
+    #canvas-container { position: absolute; top: 64px; left: 0; right: 256px; bottom: 0; z-index: 1;}
+    #toolbar { position: absolute; z-index: 10; top: 74px; left: 10px; background: #252526; padding: 4px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #333; display: flex; flex-direction: column; gap: 4px;}
+    .tool-btn { padding: 8px; width: 36px; height: 36px; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; background: transparent; border: 1px solid transparent; color: #aaa; display:flex; justify-content:center; align-items:center; }
+    .tool-btn:hover { background: #3e3e42; color:#fff; }
+    .tool-btn.active { background: #0e639c; color: white; border-color: #0e639c;}
+    
+    #menu-bar { position: absolute; top: 0; left: 0; right: 0; height: 32px; background: #333; z-index: 20; display: flex; align-items: center; padding: 0 8px; font-size: 13px; color: #ccc;}
+    .menu-item { padding: 4px 8px; border-radius: 4px; cursor: pointer; position: relative;}
+    .menu-item:hover { background: #444; color: #fff;}
+    .menu-dropdown { position: absolute; left: 0; top: 100%; background: #252526; border: 1px solid #444; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; min-width: 200px; padding: 4px 0; z-index: 100;}
+    .menu-dropdown-nested { position: absolute; left: 100%; top: 0; background: #252526; border: 1px solid #444; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; min-width: 180px; padding: 4px 0; z-index: 100;}
+    .group:hover > .menu-dropdown { display: block; }
+    .group-nested:hover > .menu-dropdown-nested { display: block; }
+
+    #tab-bar { position: absolute; top: 32px; left: 0; right: 0; height: 32px; background: #252526; z-index: 15; display: flex; align-items: center; padding: 0 4px; border-bottom: 1px solid #111; gap: 2px;}
+    .nav-tab { background: #333; color: #ccc; border-radius: 4px 4px 0 0; border: 1px solid #111; border-bottom: none; height: 100%; display: flex; align-items: center; padding: 0 12px; font-size: 13px; cursor: pointer; gap: 8px; min-width: 120px; justify-content: space-between; }
+    .nav-tab.active { background: #1e1e1e; color: #fff; border-top: 2px solid #0e639c; }
+    .nav-tab:hover:not(.active) { background: #3e3e42; }
+    .nav-tab-close { opacity: 0.5; padding: 2px; }
+    .nav-tab-close:hover { opacity: 1; color: #ef4444; }
+    .nav-tab-add { padding: 0 8px; font-size: 14px; color: #888; cursor: pointer; height: 100%; display: flex; align-items: center; }
+    .nav-tab-add:hover { color: #fff; }
+
+    #color-picker-container { position: absolute; right: 276px; top: 74px; background: #252526; padding: 8px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #333; z-index: 10;}
+    .color-swatch { width: 28px; height: 28px; border-radius: 4px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; display: inline-block; }
+    .color-swatch.active { border-color: #fff; transform: scale(1.1);}
+
+    #right-panel { position: absolute; top: 64px; right: 0; bottom: 0; width: 256px; background: #252526; border-left: 1px solid #333; display: flex; flex-direction: column; z-index:10; }
+    .panel-section { flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid #333; overflow-y: auto; }
+    .outliner-header { padding: 12px; font-size: 11px; font-weight: 700; color: #ccc; display: flex; justify-content: space-between; align-items: center; background: #2d2d30; letter-spacing: 0.5px; }
+    .outliner-list, .texture-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+    .outliner-item, .texture-item { padding: 6px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; }
+    .outliner-item:hover, .texture-item:hover { background: #2a2d2e; }
+    .outliner-item.selected, .texture-item.selected { background: #37373d; color: #fff; }
+    .texture-item img { width: 16px; height: 16px; image-rendering: pixelated; object-fit: contain; }
+    .texture-group { margin-left: 12px; display: flex; flex-direction: column; gap: 2px; border-left: 1px solid #444; padding-left: 4px;}
+    
+    .top-btn { padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; background: #333; border: 1px solid #444; color: #ccc; display:flex; align-items:center; }
+    .top-btn:hover { background: #444; color: #fff; }
+    .top-btn.primary { background: #0e639c; border-color: #0e639c; color:#fff; }
+    .top-btn.primary:hover { background: #1177bb; }
+    .top-btn.danger { background: #d0302d; border-color: #d0302d; color:#fff; }
+    .top-btn.danger:hover { background: #e03c39; }
+
+    #context-menu {
+      position: absolute;
+      background: #252526;
+      border: 1px solid #333;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      padding: 4px 0;
+      display: none;
+      z-index: 100;
+      min-width: 180px;
+      color: #ccc;
+      font-size: 13px;
+    }
+    .context-menu-item {
+      padding: 6px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .context-menu-item:hover {
+      background: #094771;
+      color: #fff;
+    }
+    .context-menu-divider {
+      height: 1px;
+      background: #333;
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body class="bg-[#1e1e1e]">
+
+  <!-- TOP MENU BAR -->
+  <div id="menu-bar">
+     <div class="font-bold text-white flex items-center gap-2 mr-4 px-2">
+         <i class="fas fa-cube text-blue-400"></i> BloxdBench
+     </div>
+     
+     <div class="group relative">
+         <div class="menu-item cursor-default">File</div>
+         <div class="menu-dropdown">
+             <div class="group-nested relative">
+                 <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer flex justify-between items-center text-white">
+                     <span>New</span> <i class="fas fa-caret-right text-gray-400"></i>
+                 </div>
+                 <div class="menu-dropdown-nested">
+                     <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="createNewProject('Generic Model')">Generic Model</div>
+                     <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="createNewProject('Bloxd Block Model')">Bloxd Block Model</div>
+                     <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="createNewProject('Bloxd Item Model')">Bloxd Item Model</div>
+                 </div>
+             </div>
+             <div class="h-px bg-[#444] my-1"></div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="exportGLTF()">
+                 <div class="flex justify-between items-center"><span>Export Model</span><span class="text-xs text-gray-500">Ctrl+S</span></div>
+             </div>
+         </div>
+     </div>
+
+     <div class="group relative">
+         <div class="menu-item cursor-default">Edit</div>
+         <div class="menu-dropdown">
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="duplicateObject(selectedObject)">
+                 <div class="flex justify-between items-center"><span>Duplicate</span><span class="text-xs text-gray-500">Ctrl+D</span></div>
+             </div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="renameObject(selectedObject)">
+                 <div class="flex justify-between items-center"><span>Rename</span><span class="text-xs text-gray-500">F2</span></div>
+             </div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="toggleVisibility(selectedObject)">
+                 <div class="flex justify-between items-center"><span>Toggle Visibility</span></div>
+             </div>
+             <div class="h-px bg-[#444] my-1"></div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer text-red-500 hover:text-white" onclick="deleteObject(selectedObject)">
+                 <div class="flex justify-between items-center"><span>Delete</span><span class="text-xs text-gray-500">Del</span></div>
+             </div>
+         </div>
+     </div>
+     
+     <div class="group relative">
+         <div class="menu-item cursor-default">Transform</div>
+         <div class="menu-dropdown">
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="setTransformMode('translate')"><div class="flex justify-between items-center"><span>Move Mode</span><span class="text-xs text-gray-500">W</span></div></div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="setTransformMode('rotate')"><div class="flex justify-between items-center"><span>Rotate Mode</span><span class="text-xs text-gray-500">R</span></div></div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="setTransformMode('scale')"><div class="flex justify-between items-center"><span>Scale Mode</span><span class="text-xs text-gray-500">S</span></div></div>
+         </div>
+     </div>
+     
+     <div class="group relative">
+         <div class="menu-item cursor-default">Tools</div>
+         <div class="menu-dropdown">
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="setTool('select')"><div class="flex justify-between items-center"><span>Select / Transform</span><span class="text-xs text-gray-500">V</span></div></div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="setTool('draw')"><div class="flex justify-between items-center"><span>Draw Voxel</span><span class="text-xs text-gray-500">B</span></div></div>
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="setTool('erase')"><div class="flex justify-between items-center"><span>Erase Voxel</span><span class="text-xs text-gray-500">E</span></div></div>
+         </div>
+     </div>
+
+     <div class="group relative">
+         <div class="menu-item cursor-default">View</div>
+         <div class="menu-dropdown">
+             <div class="px-4 py-1.5 hover:bg-[#094771] cursor-pointer hover:text-white" onclick="centerCamera()">Center View</div>
+         </div>
+     </div>
+
+     <div class="flex-1"></div>
+     
+     <!-- Exit to Hub -->
+     <div class="menu-item group" onclick="window.location.href='index.html'">
+       <i class="fas fa-home"></i> Hub
+     </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div id="tab-bar">
+      <div class="nav-tab active">
+          <div class="flex items-center gap-2">
+             <i class="fas fa-cube text-blue-400 text-xs"></i>
+             <span id="current-tab-name">test</span>
+          </div>
+          <i class="fas fa-times nav-tab-close" onclick="console.log('Close tab')"></i>
+      </div>
+      <div class="nav-tab-add" onclick="createNewProject()" title="New Project">
+          <i class="fas fa-plus"></i>
+      </div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="item-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex justify-center items-center backdrop-blur-sm">
+    <div class="bg-[#252526] border border-[#333] rounded-lg shadow-2xl w-[400px] text-white">
+      <div class="px-4 py-3 border-b border-[#333] flex justify-between items-center">
+        <h2 class="font-bold">Create New Model</h2>
+        <button onclick="closeItemModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Name:</label>
+          <input type="text" id="item-modal-name" class="w-full bg-[#1e1e1e] border border-[#444] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0e639c]" placeholder="Type name.">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Size:</label>
+          <select id="item-modal-size" class="w-full bg-[#1e1e1e] border border-[#444] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0e639c]">
+            <option value="16">16x16</option>
+            <option value="32">32x32</option>
+            <option value="64">64x64</option>
+          </select>
+        </div>
+        <div class="relative">
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Model / Item:</label>
+          <input type="text" id="item-modal-item" class="w-full bg-[#1e1e1e] border border-[#444] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0e639c]" placeholder="Type the model/item name (auto-completes via loaded .glb)" autocomplete="off" oninput="handleItemAutocomplete(this.value)" onfocus="handleItemAutocomplete(this.value)">
+          <div id="item-autocomplete-list" class="absolute left-0 right-0 top-full mt-1 bg-[#252526] border border-[#444] rounded-md shadow-lg max-h-48 overflow-y-auto hidden z-50">
+             <!-- Autocomplete items appended here -->
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-[#333] flex justify-end gap-2">
+        <button onclick="closeItemModal()" class="px-4 py-2 rounded text-sm font-semibold hover:bg-[#333]">Cancel</button>
+        <button onclick="confirmItemCreate()" class="px-4 py-2 rounded text-sm font-semibold bg-[#0e639c] hover:bg-[#1177bb]">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL (Outliner & Textures) -->
+  <div id="right-panel">
+    <div class="panel-section h-1/2 min-h-[150px]">
+      <div class="outliner-header">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-list"></i>
+            <span>OUTLINER</span>
+        </div>
+        <div class="flex gap-2">
+           <button onclick="addCubeManually()" class="hover:text-white" title="Add Element"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <div id="outliner-list" class="outliner-list">
+        <!-- Items -->
+      </div>
+    </div>
+    <div class="panel-section flex-1">
+      <div class="outliner-header">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-image"></i>
+            <span>TEXTURES</span>
+        </div>
+        <div class="flex gap-2">
+           <button onclick="importTexture()" class="hover:text-white" title="Import Texture"><i class="fas fa-file-import"></i></button>
+           <button onclick="createTextureGroup()" class="hover:text-white" title="Create Texture Group"><i class="fas fa-folder-plus"></i></button>
+        </div>
+      </div>
+      <div id="texture-list" class="texture-list">
+        <!-- Textures & Groups -->
+      </div>
+    </div>
+  </div>
+
+  <!-- COLOR PICKER -->
+  <div id="color-picker-container" class="grid grid-cols-4 w-[136px] gap-1">
+    <!-- Swatches injected by JS -->
+    <input type="color" id="custom-color-input" class="w-full h-8 col-span-4 mt-1 cursor-pointer rounded border border-gray-600 bg-gray-800" value="#4ade80" title="Custom Color">
+  </div>
+
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <button class="tool-btn active" id="tool-select" onclick="setTool('select')" title="Select / Transform (V)"><i class="fas fa-mouse-pointer"></i></button>
+    <button class="tool-btn" id="tool-draw" onclick="setTool('draw')" title="Draw Voxel (B)"><i class="fas fa-cube"></i></button>
+    <button class="tool-btn" id="tool-erase" onclick="setTool('erase')" title="Erase Voxel (E)"><i class="fas fa-eraser"></i></button>
+    <div class="w-full h-px bg-gray-700 my-1"></div>
+    <button class="tool-btn active" id="mode-translate" onclick="setTransformMode('translate')" title="Move (W)"><i class="fas fa-arrows-alt"></i></button>
+    <button class="tool-btn" id="mode-rotate" onclick="setTransformMode('rotate')" title="Rotate (R)"><i class="fas fa-sync-alt"></i></button>
+    <button class="tool-btn" id="mode-scale" onclick="setTransformMode('scale')" title="Scale (S)"><i class="fas fa-compress-arrows-alt"></i></button>
+  </div>
+
+  <!-- 3D CANVAS -->
+  <div id="canvas-container"></div>
+
+  <!-- CONTEXT MENU -->
+  <div id="context-menu"></div>
+
+  <script>
+    let bloxdItemsList = [];
+    let textureList = [];
+    let skyBoxList = [];
+    let currentProjectType = 'Generic Model';
+    
+    // --- ASSETS PANEL ---
+    async function loadAssets() {
+        try {
+            const res = await fetch('/api/assets');
+            const data = await res.json();
+            if (data.models) {
+                bloxdItemsList = data.models.map(f => f.replace('.glb', ''));
+            }
+            if (data.textures) {
+                textureList = data.textures;
+                renderTextureList();
+            }
+            if (data.skyBoxes) {
+                skyBoxList = data.skyBoxes;
+            }
+        } catch (e) {
+            console.error("Failed to load assets", e);
+        }
+    }
+
+    function isBlockModel(name) {
+        const n = name.toLowerCase();
+        // Specific block-related keywords or categories used in Bloxd
+        const blockKeywords = [
+            'block', 'spawner', 'bed', 'carpet', 'door', 'ladder', 'trapdoor', 'torch',
+            'banner', 'table', 'vending', 'pot', 'hob', 'board', 'worktop', 'pad',
+            'spikes', 'pod', 'frame', 'chest', 'window', 'wall', 'slab', 'stairs',
+            'fence', 'gate', 'pillar', 'sapling', 'grass', 'flower', 'mushroom',
+            'bush', 'vine', 'leaf', 'leaves', 'cactus', 'ore', 'stone', 'dirt',
+            'sand', 'gravel', 'clay', 'wood', 'planks', 'cobweb', 'painting', 'crate',
+            'bar', 'lamp', 'furnace', 'anvil', 'glass', 'lava'
+        ];
+        
+        // Exact block word validation boundary to avoid false matching substrings like "pot" in "potato" or "pad" in "spade"
+        return blockKeywords.some(kw => {
+            const index = n.indexOf(kw);
+            if (index === -1) return false;
+            const before = index === 0 ? ' ' : n[index - 1];
+            const after = index + kw.length === n.length ? ' ' : n[index + kw.length];
+            return /[^a-z0-9]/.test(before) && /[^a-z0-9]/.test(after);
+        });
+    }
+
+    function showItemModal(type) {
+        currentProjectType = type || 'Bloxd Block Model';
+        document.getElementById('item-modal-name').value = '';
+        document.getElementById('item-modal-size').value = '16';
+        document.getElementById('item-modal-item').value = '';
+        document.getElementById('item-autocomplete-list').classList.add('hidden');
+        document.querySelector('#item-modal h2').innerText = 'Create ' + currentProjectType;
+        document.getElementById('item-modal').classList.remove('hidden');
+    }
+
+    function closeItemModal() {
+        document.getElementById('item-modal').classList.add('hidden');
+    }
+
+    function handleItemAutocomplete(val) {
+        const listDiv = document.getElementById('item-autocomplete-list');
+        listDiv.innerHTML = '';
+        
+        let matches = bloxdItemsList || [];
+        
+        // Filter by text search match if typing
+        if (val) {
+            matches = matches.filter(i => i.toLowerCase().includes(val.toLowerCase()));
+        }
+        
+        // SMART SORT: Put matching items (non-blocks) at the top if 'Bloxd Item Model' is chosen,
+        // and matching blocks at the top if 'Bloxd Block Model' is chosen. 
+        // This ensures the list is NEVER empty or restricted, but the matching ones are beautifully shown first!
+        matches = [...matches].sort((a, b) => {
+            const aIsBlock = isBlockModel(a);
+            const bIsBlock = isBlockModel(b);
+            
+            if (currentProjectType === 'Bloxd Item Model') {
+                if (!aIsBlock && bIsBlock) return -1;
+                if (aIsBlock && !bIsBlock) return 1;
+            } else if (currentProjectType === 'Bloxd Block Model') {
+                if (aIsBlock && !bIsBlock) return -1;
+                if (!aIsBlock && bIsBlock) return 1;
+            }
+            return a.localeCompare(b);
+        });
+        
+        // Show up to 500 items
+        matches = matches.slice(0, 500);
+
+        if (matches.length === 0) {
+            const div = document.createElement('div');
+            div.className = 'px-3 py-2 text-sm text-gray-500 italic';
+            div.innerText = 'No matching ' + (currentProjectType === 'Bloxd Block Model' ? 'blocks' : 'items') + ' found, default template will be used';
+            listDiv.appendChild(div);
+            listDiv.classList.remove('hidden');
+            return;
+        }
+        
+        matches.forEach(match => {
+            const div = document.createElement('div');
+            div.className = 'px-3 py-2 cursor-pointer hover:bg-[#094771] text-sm flex justify-between items-center';
+            
+            const textSpan = document.createElement('span');
+            textSpan.innerText = match;
+            
+            const isBlock = isBlockModel(match);
+            const badge = document.createElement('span');
+            badge.className = 'text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ' + (isBlock ? 'bg-indigo-900/85 text-indigo-200 border border-indigo-700' : 'bg-emerald-950/85 text-emerald-300 border border-emerald-800');
+            badge.innerText = isBlock ? 'Block' : 'Item';
+            
+            div.appendChild(textSpan);
+            div.appendChild(badge);
+            
+            div.onclick = function() {
+                document.getElementById('item-modal-item').value = match;
+                listDiv.classList.add('hidden');
+            };
+            listDiv.appendChild(div);
+        });
+        listDiv.classList.remove('hidden');
+    }
+
+    function confirmItemCreate() {
+        const name = document.getElementById('item-modal-name').value || 'New Model';
+        const itemMock = document.getElementById('item-modal-item').value || '';
+        
+        clearCanvas(true);
+        document.getElementById('current-tab-name').innerText = name;
+        document.title = name + " - BloxdBench";
+
+        closeItemModal();
+
+        // 1. Detect if the user specified an item or block name that matches exactly or partially
+        let matchTarget = itemMock.trim();
+        let modelFile = null;
+        if (matchTarget) {
+            modelFile = bloxdItemsList.find(m => m.toLowerCase() === matchTarget.toLowerCase());
+        }
+        
+        // If not matched yet, check the name input too!
+        if (!modelFile && name) {
+            const trimmedName = name.trim();
+            // Try matching whole name
+            modelFile = bloxdItemsList.find(m => m.toLowerCase() === trimmedName.toLowerCase());
+            if (!modelFile) {
+                // Try matching word by word
+                const words = trimmedName.toLowerCase().split(/[\s_-]+/);
+                for (const word of words) {
+                    if (word.length >= 3) {
+                        modelFile = bloxdItemsList.find(m => m.toLowerCase() === word);
+                        if (modelFile) break;
+                    }
+                }
+            }
+        }
+
+        if (modelFile) {
+            console.log('Detected matching 3D models files for context:', modelFile);
+            const loader = new THREE.GLTFLoader();
+            // Load via our bulletproof binary stream API to prevent JSON / content loading errors
+            loader.load('/api/models/' + encodeURIComponent(modelFile + '.glb'), function (gltf) {
+                // Determine target scale dimension. Let's make it nice and BIG (approx 180 units)!
+                let targetSize = 180;
+                
+                // First calculate original bounding box and size
+                const box = new THREE.Box3().setFromObject(gltf.scene);
+                const size = new THREE.Vector3();
+                box.getSize(size);
+                
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+                
+                const maxDim = Math.max(size.x, size.y, size.z);
+                let scale = maxDim > 0 ? (targetSize / maxDim) : 100;
+                
+                // Set scale uniformly to preserve 3D geometry of both blocks and items perfectly! No 2D squashing!
+                gltf.scene.scale.set(scale, scale, scale);
+                
+                // Centering math: Translate gltf.scene position so that the scaled center (center * scale)
+                // aligns perfectly with (25, 25, 25) which is the starting block/voxel coordinate
+                const targetCenter = new THREE.Vector3(25, 25, 25);
+                const scaledCenter = center.clone().multiplyScalar(scale);
+                gltf.scene.position.copy(targetCenter).sub(scaledCenter);
+                
+                gltf.scene.updateMatrixWorld(true);
+
+                // Extract all child meshes flatly so they are fully selectable & editable with precise pivots
+                const meshesToAdd = [];
+                gltf.scene.traverse(function (child) {
+                    if (child.isMesh) {
+                        child.updateMatrixWorld(true);
+                        
+                        // Extract absolute world coordinates, rotation, and scale
+                        const worldPosition = new THREE.Vector3();
+                        child.getWorldPosition(worldPosition);
+                        
+                        const worldQuaternion = new THREE.Quaternion();
+                        child.getWorldQuaternion(worldQuaternion);
+                        
+                        const worldScale = new THREE.Vector3();
+                        child.getWorldScale(worldScale);
+                        
+                        // Clone the child mesh to preserve asset references in cache
+                        const clonedMesh = child.clone();
+                        
+                        // Set local transforms directly to match world space, which aligns the transform gizmo beautifully
+                        clonedMesh.position.copy(worldPosition);
+                        clonedMesh.quaternion.copy(worldQuaternion);
+                        clonedMesh.scale.copy(worldScale);
+                        clonedMesh.updateMatrixWorld(true);
+                        
+                        clonedMesh.name = clonedMesh.name || ("mesh_" + (++objectCounter));
+                        if (clonedMesh.material) {
+                            clonedMesh.material = clonedMesh.material.clone ? clonedMesh.material.clone() : clonedMesh.material;
+                        }
+                        meshesToAdd.push(clonedMesh);
+                    }
+                });
+
+                meshesToAdd.forEach(function (mesh) {
+                    scene.add(mesh);
+                    objects.push(mesh);
+                });
+
+                updateOutliner();
+                setTool('select');
+            }, undefined, function (error) {
+                console.error('Error loading model from API, falling back to default:', error);
+                generateDefaultModel();
+            });
+        } else {
+            generateDefaultModel();
+        }
+    }
+
+    function generateDefaultModel() {
+        let voxelsToCreate = [];
+        let mat = new THREE.MeshLambertMaterial( { color: currentColor } );
+        
+        if (currentProjectType === 'Bloxd Block Model') {
+            // Cubic representation of block
+            let baseCube = new THREE.Mesh( new THREE.BoxGeometry(50, 50, 50), mat );
+            baseCube.position.set(25, 25, 25);
+            voxelsToCreate.push(baseCube);
+        } else if (currentProjectType === 'Bloxd Item Model') {
+            // Flat representation of item 
+            let flatCube = new THREE.Mesh( new THREE.BoxGeometry(50, 50, 10), mat );
+            flatCube.position.set(25, 25, 5);
+            voxelsToCreate.push(flatCube);
+        } else {
+            let genericCube = new THREE.Mesh( cubeGeo, mat );
+            genericCube.position.set(25, 25, 25);
+            voxelsToCreate.push(genericCube);
+        }
+        
+        voxelsToCreate.forEach(v => {
+            objectCounter++;
+            v.name = "generated_mesh_" + objectCounter;
+            scene.add(v);
+            objects.push(v);
+        });
+        updateOutliner();
+        if(voxelsToCreate.length > 0) selectObject(voxelsToCreate[0]);
+        setTool('select');
+    }
+
+    // -- Global State --
+    let currentTool = 'select'; // Default tool
+    let currentColor = 0x4ade80; 
+    let selectedObject = null;
+    let objectCounter = 0;
+    
+    // UI Helpers
+    function setTool(tool) {
+      currentTool = tool;
+      document.getElementById('tool-select').classList.toggle('active', tool === 'select');
+      document.getElementById('tool-draw').classList.toggle('active', tool === 'draw');
+      document.getElementById('tool-erase').classList.toggle('active', tool === 'erase');
+      
+      if(tool !== 'select') {
+         if(transformControl) transformControl.detach();
+         selectedObject = null;
+         updateOutlinerSelection();
+         if(rollOverMesh) rollOverMesh.visible = (tool === 'draw');
+      } else {
+         if(rollOverMesh) rollOverMesh.visible = false;
+      }
+    }
+
+    function setTransformMode(mode) {
+       if(transformControl) transformControl.setMode(mode);
+       document.getElementById('mode-translate').classList.toggle('active', mode === 'translate');
+       document.getElementById('mode-rotate').classList.toggle('active', mode === 'rotate');
+       document.getElementById('mode-scale').classList.toggle('active', mode === 'scale');
+       if(currentTool !== 'select') setTool('select');
+    }
+
+    const swatches = [
+      0xef4444, 0xf97316, 0xf59e0b, 0x84cc16, 
+      0x4ade80, 0x0ea5e9, 0x3b82f6, 0x8b5cf6, 
+      0xd946ef, 0xf43f5e, 0x64748b, 0x1e1e1e,
+      0xffffff, 0xd1d5db, 0x9ca3af, 0x4b5563
+    ];
+
+    const cpContainer = document.getElementById('color-picker-container');
+    swatches.forEach(c => {
+      const hex = '#' + c.toString(16).padStart(6, '0');
+      const div = document.createElement('div');
+      div.className = 'color-swatch';
+      div.style.backgroundColor = hex;
+      if(c === currentColor) div.classList.add('active');
+      div.onclick = () => {
+        currentColor = c;
+        document.querySelectorAll('.color-swatch').forEach(n => n.classList.remove('active'));
+        div.classList.add('active');
+        document.getElementById('custom-color-input').value = hex;
+        // If an object is selected, apply color, else switch to draw code
+        if(selectedObject && selectedObject.material && currentTool === 'select') {
+           selectedObject.material.color.setHex(currentColor);
+        } else {
+           setTool('draw');
+        }
+      };
+      cpContainer.insertBefore(div, document.getElementById('custom-color-input'));
+    });
+
+    document.getElementById('custom-color-input').addEventListener('input', (e) => {
+      currentColor = parseInt(e.target.value.replace('#', '0x'), 16);
+      document.querySelectorAll('.color-swatch').forEach(n => n.classList.remove('active'));
+      if(selectedObject && selectedObject.material && currentTool === 'select') {
+           selectedObject.material.color.setHex(currentColor);
+      } else {
+           setTool('draw');
+      }
+    });
+
+    // -- Three.JS Setup --
+    let camera, scene, renderer, controls, transformControl;
+    let plane;
+    let pointer, raycaster;
+    let pointerDownPos = new THREE.Vector2();
+
+    let rollOverMesh, rollOverMaterial;
+    let cubeGeo, cubeMaterial;
+
+    const objects = [];
+
+    init();
+    animate();
+
+    function init() {
+      const container = document.getElementById('canvas-container');
+      const width = window.innerWidth - 256;
+      const height = window.innerHeight - 64;
+
+      camera = new THREE.PerspectiveCamera( 45, width / height, 1, 10000 );
+      camera.position.set( 300, 400, 500 );
+      camera.lookAt( 0, 0, 0 );
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color( 0x1e1e1e );
+
+      // roll-over helpers
+      const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
+      rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.3, transparent: true } );
+      rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+      rollOverMesh.visible = false;
+      scene.add( rollOverMesh );
+
+      // cubes
+      cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
+      
+      // grid
+      const gridHelper = new THREE.GridHelper( 1000, 20, 0x444444, 0x333333 );
+      scene.add( gridHelper );
+
+      // raycast plane
+      const geometry = new THREE.PlaneGeometry( 1000, 1000 );
+      geometry.rotateX( - Math.PI / 2 );
+
+      plane = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { visible: false } ) );
+      scene.add( plane );
+      objects.push( plane );
+
+      // lights
+      const ambientLight = new THREE.AmbientLight( 0x606060 );
+      scene.add( ambientLight );
+
+      const directionalLight = new THREE.DirectionalLight( 0xffffff );
+      directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+      scene.add( directionalLight );
+
+      renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( width, height );
+      container.appendChild( renderer.domElement );
+
+      controls = new THREE.OrbitControls( camera, renderer.domElement );
+      controls.mouseButtons = {
+          LEFT: THREE.MOUSE.ROTATE,
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.PAN
+      };
+      
+      transformControl = new THREE.TransformControls( camera, renderer.domElement );
+      transformControl.addEventListener( 'dragging-changed', function ( event ) {
+          controls.enabled = !event.value;
+      } );
+      scene.add( transformControl );
+
+      raycaster = new THREE.Raycaster();
+      pointer = new THREE.Vector2();
+
+      container.addEventListener( 'pointermove', onPointerMove );
+      container.addEventListener( 'pointerdown', onPointerDown );
+      container.addEventListener( 'pointerup', onPointerUp );
+      window.addEventListener( 'resize', onWindowResize );
+      document.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          const distance = Math.sqrt(Math.pow(e.clientX - pointerDownPos.x, 2) + Math.pow(e.clientY - pointerDownPos.y, 2));
+          if (distance > 5) return; // Prevent menu if panning
+          
+          let target = null;
+          const intersects = getIntersects(e);
+          if ( intersects.length > 0 ) {
+             const intersect = intersects[0];
+             if(intersect.object !== plane && !intersect.object.isTransformControls) {
+                 target = intersect.object;
+             }
+          }
+          showContextMenu(e.clientX, e.clientY, target);
+      });
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+         const key = e.key.toLowerCase();
+         if(key === 'v') setTool('select');
+         if(key === 'b') setTool('draw');
+         if(key === 'e') setTool('erase');
+         if(key === 'w') setTransformMode('translate');
+         if(key === 'r') setTransformMode('rotate');
+         if(key === 's') setTransformMode('scale');
+         if(e.key === 'Delete' || e.key === 'Backspace') {
+             if(selectedObject && currentTool === 'select') {
+                 deleteObject(selectedObject);
+             }
+         }
+      });
+      
+      document.addEventListener('click', (e) => {
+         const menu = document.getElementById('context-menu');
+         if(e.target.closest('#context-menu')) return;
+         menu.style.display = 'none';
+      });
+
+      setTool('select');
+      setTransformMode('translate');
+    }
+
+    function onWindowResize() {
+      const width = window.innerWidth - 256;
+      const height = window.innerHeight - 64;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize( width, height );
+    }
+
+    function getIntersects(event) {
+      const container = document.getElementById('canvas-container');
+      const rect = container.getBoundingClientRect();
+      pointer.set(
+        ( (event.clientX - rect.left) / rect.width ) * 2 - 1,
+        - ( (event.clientY - rect.top) / rect.height ) * 2 + 1
+      );
+      raycaster.setFromCamera( pointer, camera );
+      return raycaster.intersectObjects( objects, false );
+    }
+
+    function onPointerMove( event ) {
+      if(currentTool === 'draw' || currentTool === 'erase') {
+        const intersects = getIntersects(event);
+        if ( intersects.length > 0 ) {
+          const intersect = intersects[ 0 ];
+          rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+          rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+        }
+      }
+    }
+
+    function onPointerDown( event ) {
+      pointerDownPos.set(event.clientX, event.clientY);
+    }
+
+    function onPointerUp( event ) {
+      const distance = Math.sqrt(Math.pow(event.clientX - pointerDownPos.x, 2) + Math.pow(event.clientY - pointerDownPos.y, 2));
+      if (distance < 5) { // Click
+         handleClick(event);
+      }
+    }
+    
+    function handleClick(event) {
+      if(event.button !== 0) return; // Only left click for tools
+      
+      const intersects = getIntersects(event);
+      if ( intersects.length > 0 ) {
+        const intersect = intersects[ 0 ];
+
+        if ( currentTool === 'select' ) {
+           // Don't deselect if clicking on transform controls
+           if(intersect.object !== plane && !intersect.object.isTransformControls) {
+              selectObject(intersect.object);
+           } else if(intersect.object === plane) {
+              selectObject(null);
+           }
+        } else if ( currentTool === 'erase' ) {
+          if ( intersect.object !== plane ) {
+            scene.remove( intersect.object );
+            objects.splice( objects.indexOf( intersect.object ), 1 );
+            if(selectedObject === intersect.object) selectObject(null);
+            updateOutliner();
+          }
+        } else if (currentTool === 'draw') {
+          const newPos = new THREE.Vector3().copy( intersect.point ).add( intersect.face.normal );
+          newPos.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+          
+          let exists = objects.some(obj => obj !== plane && obj.position.equals(newPos));
+          if(!exists) {
+              addCubeAtPosition(newPos);
+          }
+        }
+      } else {
+        if(currentTool === 'select') {
+           selectObject(null);
+        }
+      }
+    }
+
+    // addCubeAtPosition logic has been moved to textures section
+
+    function addCubeManually() {
+       addCubeAtPosition(null);
+       setTool('select');
+    }
+
+    function selectObject(obj) {
+       selectedObject = obj;
+       if(obj && obj !== plane) {
+          transformControl.attach(obj);
+       } else {
+          transformControl.detach();
+       }
+       updateOutlinerSelection();
+    }
+
+    function clearCanvas(force) {
+       if(force || confirm("Are you sure you want to clear the 3D model?")) {
+           const cubesToRemove = objects.filter(o => o !== plane);
+           cubesToRemove.forEach(obj => {
+              scene.remove(obj);
+           });
+           objects.length = 1; // keep plane
+           selectObject(null);
+           updateOutliner();
+       }
+    }
+
+    function createNewProject(type) {
+       if(objects.length > 1) {
+           if(!confirm("Create new project? Current work will be lost.")) return;
+       }
+       if (type === 'Bloxd Item Model' || type === 'Bloxd Block Model') {
+           showItemModal(type);
+           return;
+       }
+       clearCanvas(true);
+       const defaultName = type || "New Project";
+       const newName = prompt("Enter project name:", defaultName);
+       if (newName) {
+           document.getElementById('current-tab-name').innerText = newName;
+           document.title = newName + " - BloxdBench";
+       }
+    }
+
+    function addCubeManually() {
+       const voxel = new THREE.Mesh( cubeGeo, new THREE.MeshLambertMaterial( { color: currentColor } ) );
+       voxel.position.set(25, 25, 25);
+       objectCounter++;
+       voxel.name = "cube_" + objectCounter;
+       scene.add( voxel );
+       objects.push( voxel );
+       updateOutliner();
+       selectObject(voxel);
+    }
+
+    function updateOutliner() {
+       const list = document.getElementById('outliner-list');
+       // Clear list keeping performance in mind (this is fine for low counts)
+       list.innerHTML = ''; 
+       const cubes = objects.filter(o => o !== plane);
+       cubes.forEach(cube => {
+          const div = document.createElement('div');
+          div.className = 'outliner-item';
+          if(selectedObject === cube) div.classList.add('selected');
+          
+          const icon = document.createElement('i');
+          icon.className = 'fas fa-cube text-blue-400';
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = cube.name || 'cube';
+          nameSpan.className = 'flex-1 pl-2 font-medium';
+          
+          const visibilityBtn = document.createElement('i');
+          visibilityBtn.className = cube.visible ? 'fas fa-eye text-gray-400 hover:text-white' : 'fas fa-eye-slash text-gray-600 hover:text-white';
+          visibilityBtn.onclick = (e) => {
+             e.stopPropagation();
+             cube.visible = !cube.visible;
+             visibilityBtn.className = cube.visible ? 'fas fa-eye text-gray-400 hover:text-white' : 'fas fa-eye-slash text-gray-600 hover:text-white';
+             if(!cube.visible && selectedObject === cube) {
+                selectObject(null);
+             }
+          };
+          
+          div.appendChild(icon);
+          div.appendChild(nameSpan);
+          div.appendChild(visibilityBtn);
+          
+          div.onclick = () => {
+             if(currentTool !== 'select') setTool('select');
+             if(cube.visible) selectObject(cube);
+          };
+          list.appendChild(div);
+       });
+    }
+
+    function updateOutlinerSelection() {
+       const list = document.getElementById('outliner-list');
+       const cubes = objects.filter(o => o !== plane);
+       Array.from(list.children).forEach((node, idx) => {
+          if(cubes[idx] === selectedObject) {
+             node.classList.add('selected');
+          } else {
+             node.classList.remove('selected');
+          }
+       });
+    }
+
+    function showContextMenu(x, y, target) {
+        const menu = document.getElementById('context-menu');
+        menu.innerHTML = '';
+        
+        if (target) {
+            if(currentTool !== 'select') setTool('select');
+            selectObject(target);
+            
+            addContextMenuItem('Duplicate', 'Ctrl+D', () => { duplicateObject(target); menu.style.display='none'; }, 'fas fa-copy');
+            addContextMenuItem('Rename', 'F2', () => { renameObject(target); menu.style.display='none'; }, 'fas fa-signature');
+            addContextMenuItem('Toggle Visibility', '', () => { toggleVisibility(target); menu.style.display='none'; }, target.visible ? 'fas fa-eye' : 'fas fa-eye-slash');
+            addContextMenuDivider();
+            addContextMenuItem('Delete', 'Del', () => { deleteObject(target); menu.style.display='none'; }, 'fas fa-trash text-red-500');
+        } else {
+            addContextMenuItem('Center View', '', () => { centerCamera(); menu.style.display='none'; }, 'fas fa-compress-arrows-alt');
+            addContextMenuItem('Clear Canvas', '', () => { clearCanvas(); menu.style.display='none'; }, 'fas fa-trash text-red-500');
+        }
+        
+        menu.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+        menu.style.top = Math.min(y, window.innerHeight - menu.offsetHeight - 50) + 'px';
+        menu.style.display = 'block';
+    }
+
+    function addContextMenuItem(text, shortcut, onClick, iconClass) {
+        const menu = document.getElementById('context-menu');
+        const div = document.createElement('div');
+        div.className = 'context-menu-item';
+        div.onclick = onClick;
+        
+        const left = document.createElement('div');
+        left.className = 'flex items-center';
+        if(iconClass) {
+            const icon = document.createElement('i');
+            icon.className = iconClass + ' w-5 text-center mr-2';
+            left.appendChild(icon);
+        }
+        left.appendChild(document.createTextNode(text));
+        
+        div.appendChild(left);
+        
+        if(shortcut) {
+            const right = document.createElement('span');
+            right.className = 'text-gray-500 text-xs ml-4';
+            right.innerText = shortcut;
+            div.appendChild(right);
+        }
+        
+        menu.appendChild(div);
+    }
+
+    function addContextMenuDivider() {
+        const menu = document.getElementById('context-menu');
+        const div = document.createElement('div');
+        div.className = 'context-menu-divider';
+        menu.appendChild(div);
+    }
+    
+    function deleteObject(target) {
+        if(!target) return;
+        scene.remove(target);
+        objects.splice(objects.indexOf(target), 1);
+        if(selectedObject === target) selectObject(null);
+        updateOutliner();
+    }
+    
+    function duplicateObject(target) {
+        if(!target) return;
+        const voxel = new THREE.Mesh( cubeGeo, target.material.clone() );
+        voxel.position.copy(target.position).add(new THREE.Vector3(50, 0, 0));
+        objectCounter++;
+        voxel.name = target.name + "_copy";
+        scene.add( voxel );
+        objects.push( voxel );
+        updateOutliner();
+        selectObject(voxel);
+    }
+    
+    function renameObject(target) {
+        if(!target) return;
+        const newName = prompt("Enter new name:", target.name);
+        if(newName) {
+            target.name = newName;
+            updateOutliner();
+        }
+    }
+    
+    function toggleVisibility(target) {
+        if(!target) return;
+        target.visible = !target.visible;
+        if(!target.visible && selectedObject === target) {
+            selectObject(null);
+        }
+        updateOutliner();
+    }
+    
+    function centerCamera() {
+        controls.target.set(0,0,0);
+        camera.position.set(300,400,500);
+        controls.update();
+    }
+
+    // --- TEXTURES PANEL ---
+    let activeTexture = null;
+    let textureMaterial = null;
+
+    function renderTextureList() {
+        const trList = document.getElementById('texture-list');
+        trList.innerHTML = '';
+        
+        textureList.forEach(file => {
+            const div = document.createElement('div');
+            div.className = 'texture-item';
+            div.onclick = () => {
+                document.querySelectorAll('.texture-item').forEach(el => el.classList.remove('selected'));
+                div.classList.add('selected');
+                applyTexture(file);
+            };
+            
+            const img = document.createElement('img');
+            img.src = '/textures/' + file;
+            img.alt = file;
+            
+            const span = document.createElement('span');
+            span.textContent = file;
+            span.className = 'flex-1 truncate';
+            
+            div.appendChild(img);
+            div.appendChild(span);
+            trList.appendChild(div);
+        });
+    }
+
+    function applyTexture(filename) {
+        if (!filename.endsWith('.png') && !filename.endsWith('.jpg')) return;
+        
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load('/textures/' + filename, (tex) => {
+            tex.magFilter = THREE.NearestFilter;
+            tex.minFilter = THREE.NearestFilter;
+            
+            textureMaterial = new THREE.MeshLambertMaterial({ map: tex, transparent: true, alphaTest: 0.5 });
+            
+            if (selectedObject && currentTool === 'select' && selectedObject.material) {
+                selectedObject.material = textureMaterial;
+            } else {
+                setTool('draw');
+            }
+        });
+    }
+
+    function importTexture() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png, image/jpeg';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            
+            // Render it in list
+            const trList = document.getElementById('texture-list');
+            const div = document.createElement('div');
+            div.className = 'texture-item';
+            div.onclick = () => {
+                document.querySelectorAll('.texture-item').forEach(el => el.classList.remove('selected'));
+                div.classList.add('selected');
+                
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(url, (tex) => {
+                    tex.magFilter = THREE.NearestFilter;
+                    tex.minFilter = THREE.NearestFilter;
+                    textureMaterial = new THREE.MeshLambertMaterial({ map: tex, transparent: true, alphaTest: 0.5});
+                    if (selectedObject && currentTool === 'select') {
+                        selectedObject.material = textureMaterial;
+                    } else {
+                        setTool('draw');
+                    }
+                });
+            };
+            
+            const img = document.createElement('img');
+            img.src = url;
+            
+            const span = document.createElement('span');
+            span.textContent = file.name;
+            span.className = 'flex-1 truncate';
+            
+            div.appendChild(img);
+            div.appendChild(span);
+            trList.prepend(div);
+        };
+        input.click();
+    }
+    
+    function createTextureGroup() {
+        const name = prompt("Enter folder name:");
+        if (!name) return;
+        
+        const trList = document.getElementById('texture-list');
+        const div = document.createElement('div');
+        div.className = 'font-semibold text-gray-400 text-xs mt-2 mb-1 flex items-center gap-1';
+        div.innerHTML = `<i class="fas fa-folder-open text-blue-400"></i> ${name}`;
+        trList.prepend(div);
+    }
+
+    // Replace addCubeAtPosition to use textureMaterial if selected
+    function addCubeAtPosition(pos) {
+       const material = textureMaterial ? textureMaterial.clone() : new THREE.MeshLambertMaterial( { color: currentColor } );
+       const voxel = new THREE.Mesh( cubeGeo, material );
+       if(pos) {
+          voxel.position.copy(pos);
+       } else {
+          voxel.position.set(25, 25, 25);
+       }
+       objectCounter++;
+       voxel.name = "cube_" + objectCounter;
+       scene.add( voxel );
+       objects.push( voxel );
+       updateOutliner();
+       if(currentTool === 'select') selectObject(voxel);
+    }
+    
+    // Call loadAssets on init
+    loadAssets();
+
+    function exportGLTF() {
+      const gltfExporter = new THREE.GLTFExporter();
+      const cubes = objects.filter(obj => obj !== plane);
+      
+      if (cubes.length === 0) {
+        alert("No blocks to export!");
+        return;
+      }
+
+      const exportGroup = new THREE.Group();
+      cubes.forEach(cube => {
+          exportGroup.add(cube.clone());
+      });
+
+      gltfExporter.parse(
+        exportGroup,
+        function ( result ) {
+          if ( result instanceof ArrayBuffer ) {
+            saveArrayBuffer( result, 'scene.glb' );
+          } else {
+            const output = JSON.stringify( result, null, 2 );
+            saveString( output, 'scene.gltf' );
+          }
+        },
+        { binary: true } // Export as GLB
+      );
+    }
+
+    function save( blob, filename ) {
+      const link = document.createElement( 'a' );
+      link.style.display = 'none';
+      document.body.appendChild( link ); 
+      link.href = URL.createObjectURL( blob );
+      link.download = filename;
+      link.click();
+      document.body.removeChild( link );
+    }
+    function saveString( text, filename ) { save( new Blob( [ text ], { type: 'text/plain' } ), filename ); }
+    function saveArrayBuffer( buffer, filename ) { save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename ); }
+
+    function animate() {
+      requestAnimationFrame( animate );
+      controls.update();
+      renderer.render( scene, camera );
+    }
+
+  </script>
+</body>
+</html>
