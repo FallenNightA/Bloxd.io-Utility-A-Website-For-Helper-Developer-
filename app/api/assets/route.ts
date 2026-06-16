@@ -28,5 +28,12 @@ export async function GET() {
         assets[type] = Array.from(new Set(items));
     });
 
+    // Write the static assets.json fallback for standalone/static environments like GitHub Pages and VS Code Live Server
+    try {
+        fs.writeFileSync(path.join(root, 'public', 'assets.json'), JSON.stringify(assets, null, 2));
+    } catch (e) {
+        console.error('Failed to write public/assets.json static fallback', e);
+    }
+
     return NextResponse.json(assets);
 }

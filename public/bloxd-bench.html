@@ -279,28 +279,72 @@
   <div id="context-menu"></div>
 
   <script>
-    let bloxdItemsList = [];
-    let textureList = [];
-    let skyBoxList = [];
+    let bloxdItemsList = [
+        // WEAPONS & UTILITIES
+        "AK-47", "AWP", "Deagle", "DMR", "Double Barrel", "FMR", "GPMG", "Grenade Launcher", 
+        "M16", "M1911", "MP40", "Minigun", "Obby RPG", "RPG", "SKAR", "Striker-12", "Super RPG", "TAR-21", "VSR", "Winchester",
+        "Diamond Axe", "Diamond Boots", "Diamond Bow", "Diamond Chestplate", "Diamond Helmet", "Diamond Hoe", "Diamond Leggings", "Diamond Pickaxe", "Diamond Spade", "Diamond Spear", "Diamond Sword", "Diamond Trophy", "Diamond Whip", "Diamond",
+        "Gold Axe", "Gold Boots", "Gold Bow", "Gold Chestplate", "Gold Helmet", "Gold Hoe", "Gold Leggings", "Gold Pickaxe", "Gold Spade", "Gold Spear", "Gold Sword", "Gold Trophy", "Gold Whip",
+        "Iron Axe", "Iron Boots", "Iron Bow", "Iron Chestplate", "Iron Helmet", "Iron Hoe", "Iron Leggings", "Iron Pickaxe", "Iron Spade", "Iron Spear", "Iron Sword", "Iron Trophy", "Iron Whip",
+        "Stone Axe", "Stone Boots", "Stone Bow", "Stone Chestplate", "Stone Helmet", "Stone Hoe", "Stone Leggings", "Stone Pickaxe", "Stone Spade", "Stone Spear", "Stone Sword", "Stone Trophy", "Stone Whip",
+        "Wood Axe", "Wood Boots", "Wood Bow", "Wood Chestplate", "Wood Helmet", "Wood Hoe", "Wood Leggings", "Wood Pickaxe", "Wood Spade", "Wood Spear", "Wood Sword", "Wood Trophy", "Wood Whip",
+        // ITEMS & CONSUMABLES
+        "Apple", "Banana", "Cherry", "Pear", "Plum", "Coconut", "Melon Slice", "Watermelon Slice", "Cranberries", "Cranberry Bowl", "Baked Potato", "Raw Potato", "Beef Stew", "Mushroom Soup", "Porridge", "Vegetable Soup", "Bread", "Cooked Mutton", "Cooked Porkchop", "Cooked Venison", "Raw Beef", "Raw Mutton", "Raw Porkchop", "Raw Venison", "Steak", "Cheese", "Oats", "Poop", "Egg", "Milk Potion", "Cow's Milk", "Sheep's Milk", "Yoghurt Pot", "Wheat", "Beetroot", "Carrot", "Corn", "Cotton", "Rice", "Tomato", "Chili Pepper",
+        "Aura XP Fragment", "Aura XP Potion", "Brain Rot Potion", "Defense Potion", "Double Jump Potion", "Haste Potion", "Heat Resistance Potion", "Instant Damage Potion", "Instant Healing Potion", "Invisibility Potion", "Jump Potion", "Knockback Potion", "Mining Yield Potion", "Poison Potion", "Regeneration Potion", "Shield Potion", "Slowness Potion", "Speed Potion", "Strength Potion", "Weakness Potion", "X-Ray Vision Potion",
+        // BLOCKS / STRUCTURES
+        "Acorn", "Alchemy Table", "Allium", "Basalt Pipefish", "Bed", "Black Balloon", "Black Banner", "Black Bed", "Black Carpet", "Black Torch", "Blue Balloon", "Blue Banner", "Blue Bed", "Blue Carpet", "Blue Torch", "Brown Balloon", "Brown Banner", "Brown Bed", "Brown Carpet", "Brown Torch", "Cactus", "Cobweb", "Compass", "Daisy", "Dandelion", "Dangling Rope", "Dangling Vine", "Draugr Banner", "Elm Ladder", "Empty Spawner Block", "Forget-me-not", "Gorilla Spawn Orb", "Green Balloon", "Green Banner", "Green Bed", "Green Carpet", "Green Torch", "Iron Bar", "Iron Ladder", "Iron Trapdoor", "Jump Pad", "Kitchen Worktop", "Landing Pad", "Lava Bucket", "Lettuce", "Lime Balloon", "Lime Banner", "Lime Bed", "Lime Carpet", "Lime Torch", "Magenta Balloon", "Magenta Banner", "Magenta Bed", "Magenta Carpet", "Magenta Torch", "Mango", "Orange Balloon", "Orange Banner", "Orange Bed", "Orange Carpet", "Orange Torch", "Pine Sapling", "Pink Balloon", "Pink Banner", "Pink Bed", "Pink Carpet", "Pink Torch", "Poppy", "Potion Table", "Purple Balloon", "Purple Banner", "Purple Bed", "Purple Carpet", "Purple Torch", "Red Balloon", "Red Banner", "Red Bed", "Red Carpet", "Red Torch", "Saddle", "Seahorse", "Shears", "Slime Trail", "Snowball", "Spikes_Diamond", "Spikes_Gold", "Spikes_Iron", "Spikes_Kill", "Spikes_Stone", "Spikes_Wood", "Spirit Bear", "Spirit Golem", "Spirit Gorilla", "Spirit Stag", "Spirit Wolf", "Torch", "Toxin Ball", "Truffle", "Vending Machine", "Water Bucket", "Yellow Balloon", "Yellow Banner", "Yellow Bed", "Yellow Carpet", "Yellow Torch"
+    ];
+    let textureList = [
+        "stone.png", "sand.png", "sandstone_brick.png", "smooth_stone.png", "sea_lantern.png", "cobblestone.png", "dirt.png", "grass.png",
+        "wood_whip.png", "wooden_axe.png", "wooden_pickaxe.png", "wooden_shovel.png", "wooden_sword.png", "worldbuilder_wand.png", "wool_colored_white.png",
+        "wool_colored_black.png", "wool_colored_blue.png", "wool_colored_cyan.png", "wool_colored_gray.png", "wool_colored_green.png",
+        "wool_colored_lime.png", "wool_colored_magenta.png", "wool_colored_orange.png", "wool_colored_pink.png", "wool_colored_purple.png",
+        "wool_colored_red.png", "wool_colored_yellow.png", "white_concrete.png", "yellow_concrete.png", "white_planks.png", "yellow_planks.png"
+    ];
+    let skyBoxList = [
+        "gloomy", "interstellar", "space_blue", "space_lightblue", "space_red"
+    ];
     let currentProjectType = 'Generic Model';
+    
+    // Determine if we are running on a static host (e.g., GitHub Pages, static local files, or simple live servers)
+    const isStaticHost = window.location.hostname.endsWith('.github.io') || 
+                         window.location.protocol === 'file:' || 
+                         window.location.hostname.includes('github.io');
+
+    function getAssetUrl(type, filename) {
+        if (isStaticHost) {
+            // Static host uses relative paths: e.g. models/Apple.glb or textures/stone.png
+            return type + '/' + filename;
+        } else {
+            // Next.js active backend environment in AI Studio
+            if (type === 'models') {
+                return '/api/models/' + encodeURIComponent(filename);
+            }
+            return '/' + type + '/' + filename;
+        }
+    }
     
     // --- ASSETS PANEL ---
     async function loadAssets() {
         let data = null;
-        try {
-            // First attempt to fetch from the active Next.js backend API
-            const res = await fetch('/api/assets');
-            if (res.ok) {
-                const text = await res.text();
-                if (text && text.trim().startsWith('{')) {
-                    data = JSON.parse(text);
+        
+        // Skip calling backend API on static host environments to avoid cluttering developer console with 404s
+        if (!isStaticHost) {
+            try {
+                // First attempt to fetch from the active Next.js backend API
+                const res = await fetch('/api/assets');
+                if (res.ok) {
+                    const text = await res.text();
+                    if (text && text.trim().startsWith('{')) {
+                        data = JSON.parse(text);
+                    }
                 }
+            } catch (e) {
+                console.warn("Express/Next backend asset route not available. Attempting static fallback...", e);
             }
-        } catch (e) {
-            console.warn("Express/Next backend asset route not available. Attempting static fallback...", e);
         }
 
-        // If backend fetch failed (e.g. running on static VS Code Live Server / GitHub pages), load the static JSON file
+        // If backend fetch failed or we are on static host, load the static JSON file
         if (!data) {
             try {
                 const resFallback = await fetch('assets.json');
@@ -317,18 +361,18 @@
         }
 
         if (data) {
-            if (data.models) {
+            if (data.models && data.models.length > 0) {
                 bloxdItemsList = data.models.map(f => f.replace('.glb', ''));
             }
-            if (data.textures) {
+            if (data.textures && data.textures.length > 0) {
                 textureList = data.textures;
                 renderTextureList();
             }
-            if (data.skyBoxes) {
+            if (data.skyBoxes && data.skyBoxes.length > 0) {
                 skyBoxList = data.skyBoxes;
             }
         } else {
-            console.warn("Could not load any assets. Autocomplete may not show initial list.");
+            console.log("Using offline preloaded fallbacks. Autocomplete is ready to use with default models!");
         }
     }
 
@@ -470,8 +514,8 @@
         if (modelFile) {
             console.log('Detected matching 3D models files for context:', modelFile);
             const loader = new THREE.GLTFLoader();
-            // Load via our bulletproof binary stream API to prevent JSON / content loading errors
-            loader.load('/api/models/' + encodeURIComponent(modelFile + '.glb'), function (gltf) {
+            // Load via our getAssetUrl helper to prevent absolute path errors on GitHub Pages
+            loader.load(getAssetUrl('models', modelFile + '.glb'), function (gltf) {
                 // Determine target scale dimension. Let's make it nice and BIG (approx 180 units)!
                 let targetSize = 180;
                 
@@ -1076,7 +1120,7 @@
             };
             
             const img = document.createElement('img');
-            img.src = '/textures/' + file;
+            img.src = getAssetUrl('textures', file);
             img.alt = file;
             
             const span = document.createElement('span');
@@ -1093,7 +1137,7 @@
         if (!filename.endsWith('.png') && !filename.endsWith('.jpg')) return;
         
         const textureLoader = new THREE.TextureLoader();
-        textureLoader.load('/textures/' + filename, (tex) => {
+        textureLoader.load(getAssetUrl('textures', filename), (tex) => {
             tex.magFilter = THREE.NearestFilter;
             tex.minFilter = THREE.NearestFilter;
             
