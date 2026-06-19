@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig([{
-    extends: [...next],
-}]);
+export default defineConfig([
+  { ignores: ['assets/**', 'models/**', 'textures/**', 'textures2/**', 'textures3/**', 'skyBoxes/**', 'public/**', '.next/**', 'dist/**'] },
+  { extends: [...next] }
+]);
