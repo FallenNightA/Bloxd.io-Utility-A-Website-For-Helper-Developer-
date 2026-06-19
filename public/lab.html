@@ -2229,9 +2229,9 @@ async function sendAiMessage() {
         }
       }
       isDirectApi = true;
-      let geminiModel = 'gemini-1.5-flash';
+      let geminiModel = 'gemini-2.5-flash';
       if (selectedModel === 'CodexMind' || selectedModel === 'gemini-3.1-pro-preview') {
-         geminiModel = 'gemini-2.0-flash'; // Better fallback for static
+         geminiModel = 'gemini-3.1-pro-preview'; // Better fallback for static
       }
       
       const geminiMessages = aiChatMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] }));
@@ -2450,5 +2450,6 @@ function applyCodeToEditor(code) {
 
   <!-- MOBILE OVERLAY -->
   <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+  <script src="./assets/js/global-ai-chat.js"></script>
 </body>
 </html>

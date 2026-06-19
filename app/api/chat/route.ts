@@ -76,26 +76,73 @@ Always output these command structures for any file operations so the container 
          parts: [{ text: m.content }]
       }));
 
-      const responseStream = await ai.models.generateContentStream({
-        model: finalModel,
-        contents: chatMessages,
-        config: { systemInstruction: systemMessage ? systemMessage : undefined }
-      });
+      // Build an ordered list of fallback models to bypass temporary demand spikes / 503s
+      const modelList = [finalModel];
+      if (finalModel === 'gemini-3.5-flash') {
+        modelList.push('gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.1-pro-preview', 'gemini-3.1-flash-lite');
+      } else {
+        modelList.push('gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.1-flash-lite');
+      }
+
+      // Helper function to test initiation of stream and find a working model instantly
+      const getRobustGeminiStream = async (modelNames: string[]) => {
+        for (const modelName of modelNames) {
+          try {
+            console.log(`[MindChat] Attempting content stream with model: ${modelName}`);
+            const responseStream = await ai.models.generateContentStream({
+              model: modelName,
+              contents: chatMessages,
+              config: { systemInstruction: systemMessage ? systemMessage : undefined }
+            });
+            
+            // Proactively request the first chunk to verify model availability (to catch 503/403/400 early)
+            const iterator = responseStream[Symbol.asyncIterator]();
+            const firstResult = await iterator.next();
+            
+            console.log(`[MindChat] Successfully established stream on model: ${modelName}`);
+            return {
+              firstChunk: firstResult.done ? null : firstResult.value,
+              iterator: iterator,
+              modelName: modelName
+            };
+          } catch (err: any) {
+            console.warn(`[MindChat] Model ${modelName} call failed, trying next fallback. Error:`, err?.message || err);
+          }
+        }
+        throw new Error('All available Gemini models are currently experiencing high demand. Please try again in a few moments.');
+      };
+
+      let activeStream;
+      try {
+        activeStream = await getRobustGeminiStream(modelList);
+      } catch (err: any) {
+        return NextResponse.json({ error: err.message || 'Gemini Service Unavailable' }, { status: 503 });
+      }
 
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            for await (const chunk of responseStream) {
-              if (chunk.text) {
-                // OpenAI compatible SSE format
+            // Write the validated first chunk if it exists
+            if (activeStream.firstChunk && activeStream.firstChunk.text) {
+              const data = JSON.stringify({ delta: activeStream.firstChunk.text });
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+            }
+            
+            // Loop through the rest of the stream
+            let nextVal = await activeStream.iterator.next();
+            while (!nextVal.done) {
+              const chunk = nextVal.value;
+              if (chunk && chunk.text) {
                 const data = JSON.stringify({ delta: chunk.text });
                 controller.enqueue(encoder.encode(`data: ${data}\n\n`));
               }
+              nextVal = await activeStream.iterator.next();
             }
+            
             controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
             controller.close();
-          } catch (error) {
+          } catch (error: any) {
             console.error('Gemini Stream Error:', error);
             controller.error(error);
           }

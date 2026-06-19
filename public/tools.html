@@ -302,6 +302,20 @@
           <p>Draw pixel-art textures and compile your custom Bloxd.io .zip pack natively.</p>
         </div>
 
+        <!-- Bloxd SDK Compiler -->
+        <div class="app-card" style="border-top-color: #3b82f6;" onclick="openTool('vscodium')">
+          <div class="tool-icon" style="background: rgba(59,130,246,0.1); color: #3b82f6;"><i class="fas fa-box-open"></i></div>
+          <h3>Bloxd SDK Compiler</h3>
+          <p>Organize, compile, and minify modular scripts offline. Works natively across Windows, macOS, and Linux.</p>
+        </div>
+
+        <!-- BloxdUtility Client -->
+        <div class="app-card" style="border-top-color: #f59e0b;" onclick="openTool('client-hub')">
+          <div class="tool-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;"><i class="fas fa-gamepad"></i></div>
+          <h3>BloxdUtility Client</h3>
+          <p>Create and customize your personalized crosshair, menu theme, and web-client loader overlay.</p>
+        </div>
+
       </div>
     </div>
 
@@ -740,6 +754,440 @@
         </div>
       </div>
 
+      <!-- ============================================== -->
+      <!-- TOOL: BLOXD SDK COMPILER                       -->
+      <!-- ============================================== -->
+      <div id="tool-vscodium" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: #3b82f6; margin-bottom: 8px;"><i class="fas fa-box-open mr-2"></i> Bloxd SDK Compiler</h2>
+        <p style="color: var(--muted); margin-bottom: 24px;">Setup and develop modular Bloxd.io code scripts offline using modern compilation compilers.</p>
+
+        <!-- Information Tabs Sub-navigation -->
+        <div style="display: flex; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 24px;">
+          <button class="btn" id="btn-sdk-tab-start" style="background: #3b82f6; color: white; padding: 8px 16px; font-size: 13px;" onclick="switchSdkInfoTab('start')">
+            <i class="fas fa-play"></i> Getting Started
+          </button>
+          <button class="btn" id="btn-sdk-tab-cli" style="background: var(--nav-hover); color: var(--text); padding: 8px 16px; font-size: 13px;" onclick="switchSdkInfoTab('cli')">
+            <i class="fas fa-terminal"></i> Command Reference
+          </button>
+          <button class="btn" id="btn-sdk-tab-os" style="background: var(--nav-hover); color: var(--text); padding: 8px 16px; font-size: 13px;" onclick="switchSdkInfoTab('os')">
+            <i class="fas fa-laptop-code"></i> All OS Guides
+          </button>
+        </div>
+
+        <!-- Tab 1: Getting Started -->
+        <div id="sdk-tab-content-start" class="sdk-tab-pane" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 24px; border-radius: 12px; margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #3b82f6; margin-bottom: 16px;"><i class="fas fa-rocket"></i> Cross-Platform Quickstart</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; font-size: 13px; line-height: 1.6;">
+            <div>
+              <p style="margin-bottom: 12px;"><b>1. Install Node.js</b><br>
+              Ensure <a href="https://nodejs.org/" target="_blank" style="color: #60a5fa; text-decoration: underline;">Node.js</a> is installed. Node.js is completely cross-platform and supports all distributions of Windows, macOS, Linux, and ChromeOS natively.</p>
+              <p style="margin-bottom: 12px;"><b>2. Establish Workspace</b><br>
+              Create a local directory on your machine (e.g., <code>~/BloxdModProject</code>) and open this folder using VSCodium or your preferred text editor.</p>
+            </div>
+            <div>
+              <p style="margin-bottom: 12px;"><b>3. Download SDK Core Files</b><br>
+              Acquire <b><code>bloxd-helper.js</code></b> from the downloader panel below and save it inside your project root directory.</p>
+              <p style="margin-bottom: 12px;"><b>4. Start modular coding</b><br>
+              Using your terminal, initialize and compile your project structure with single commands. No complex external environments required!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Command Reference -->
+        <div id="sdk-tab-content-cli" class="sdk-tab-pane" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 24px; border-radius: 12px; margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #10b981; margin-bottom: 16px;"><i class="fas fa-terminal"></i> Terminal Command Hub</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+              <div style="border-left: 3px solid #3b82f6; padding-left: 12px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 0 8px 8px 0;">
+                <code style="font-size: 14px; font-weight: 800; color: var(--text);">node bloxd-helper.js init</code>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5;">Configures folder layouts under <code>/src</code> and creates sample template files (ticks, chats, README.md) with boilerplate codes.</p>
+              </div>
+              <div style="border-left: 3px solid #10b981; padding-left: 12px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 0 8px 8px 0;">
+                <code style="font-size: 14px; font-weight: 800; color: var(--text);">node bloxd-helper.js build</code>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5;">Parses, resolves imports/entrypoints, merges, and minifies your source files into a unified, copy-pasteable <code>dist/bloxd-code.js</code>.</p>
+              </div>
+              <div style="border-left: 3px solid #f59e0b; padding-left: 12px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 0 8px 8px 0;">
+                <code style="font-size: 14px; font-weight: 800; color: var(--text);">node bloxd-helper.js stats</code>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5;">Analyzes compiled script size, counts characters count limits, and flags redundant event hook performance bottlenecks.</p>
+              </div>
+              <div style="border-left: 3px solid #cba6f7; padding-left: 12px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 0 8px 8px 0; grid-column: 1 / -1;">
+                <code style="font-size: 14px; font-weight: 800; color: var(--text);">node bloxd-helper.js help &lt;command&gt;</code>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5;">Full detailed guide and information for compiling commands. Example: <code>bloxd help build</code> or <code>bloxd help init</code> to learn exactly how it works.</p>
+              </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: OS Guides -->
+        <div id="sdk-tab-content-os" class="sdk-tab-pane" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 24px; border-radius: 12px; margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #f59e0b; margin-bottom: 16px;"><i class="fas fa-cube"></i> Operating System Specific Setup</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; font-size: 13px; line-height: 1.6;">
+            <div>
+              <h4 style="font-weight: 700; color: #ffb86c; margin-bottom: 8px;"><i class="fab fa-windows"></i> Windows Environment</h4>
+              <p style="margin-bottom: 12px;">Create and use <code>bloxd.bat</code> next to <code>bloxd-helper.js</code> in your folder. Once placed, you can run simple shorthand actions in CDM/PowerShell:</p>
+              <pre class="language-bash" style="padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.2); font-size: 12px; margin-bottom: 12px;"><code>bloxd init
+bloxd build
+bloxd stats</code></pre>
+            </div>
+            <div>
+              <h4 style="font-weight: 700; color: #8be9fd; margin-bottom: 8px;"><i class="fab fa-apple"></i> macOS, Linux & Chromebook</h4>
+              <p style="margin-bottom: 12px;">Open your Terminal (zsh / bash) in the workspace. Run commands using standard Node execution or set up a shell alias for native look:</p>
+              <pre class="language-bash" style="padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.2); font-size: 12px; margin-bottom: 12px;"><code>alias bloxd="node bloxd-helper.js"
+bloxd init
+bloxd build</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Panel Workspace files downloader -->
+        <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 12px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+            <div style="display: flex; gap: 12px;">
+              <button class="btn" id="btn-vsc-helper" style="background: #3b82f6; color: white; padding: 6px 14px; font-size: 12px;" onclick="switchVscTab('helper')">bloxd-helper.js</button>
+              <button class="btn" id="btn-vsc-bat" style="background: var(--nav-hover); color: var(--text); padding: 6px 14px; font-size: 12px;" onclick="switchVscTab('bat')">bloxd.bat</button>
+            </div>
+            <a id="vsc-dl-link" href="./assets/local-cli/bloxd-helper.js" download="bloxd-helper.js" class="btn btn-gold" style="padding: 6px 14px; font-size: 12px; text-decoration: none;"><i class="fas fa-file-download"></i> Download Selected File</a>
+          </div>
+
+          <div id="vsc-view-helper">
+            <div style="margin-bottom: 8px; font-size: 11px; color: var(--muted); display: flex; align-items: center; justify-content: space-between;">
+              <span>Zero-dependency Javascript development compiler. Save this file as <code>bloxd-helper.js</code> in your folder.</span>
+              <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: 12px;" onclick="copyCodeOutput('vsc-output-helper')"><i class="fas fa-copy"></i> Copy code</button>
+            </div>
+            <pre class="language-javascript" style="max-height: 350px; overflow-y: auto;"><code id="vsc-code-helper">Loading bloxd-helper.js content...</code></pre>
+            <textarea id="vsc-output-helper" style="display:none"></textarea>
+          </div>
+
+          <div id="vsc-view-bat" style="display: none;">
+            <div style="margin-bottom: 8px; font-size: 11px; color: var(--muted); display: flex; align-items: center; justify-content: space-between;">
+              <span>Windows CMD Batch companion script. Save this file as <code>bloxd.bat</code> in your folder.</span>
+              <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: 12px;" onclick="copyCodeOutput('vsc-output-bat')"><i class="fas fa-copy"></i> Copy code</button>
+            </div>
+            <pre class="language-javascript" style="max-height: 250px; overflow-y: auto;"><code id="vsc-code-bat">Loading bloxd.bat content...</code></pre>
+            <textarea id="vsc-output-bat" style="display:none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TOOL: BLOXDUTILITY CLIENT                      -->
+      <!-- ============================================== -->
+      <div id="tool-client-hub" class="tool-section">
+        <h2 style="font-size: 24px; font-weight: 800; color: #f59e0b; margin-bottom: 8px;"><i class="fas fa-gamepad mr-2"></i> BloxdUtility Client Hub</h2>
+        <p style="color: var(--muted); margin-bottom: 24px;">Setup and style your own custom-built Bloxd.io Companion Client. Design beautiful crosshairs, adjust color elements, and download userscript overlays instantly.</p>
+
+        <!-- STANDALONE LAUNCHER PANEL -->
+        <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; padding: 24px; border-radius: 12px; margin-bottom: 32px; display: flex; align-items: stretch; gap: 24px;">
+          <div style="flex: 1;">
+            <h3 style="font-size: 18px; font-weight: 800; color: #10b981; margin-bottom: 8px;"><i class="fas fa-rocket"></i> Download BloxdUtility Setup Launcher</h3>
+            <p style="font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px;">Get the standalone desktop Python application. Connect directly to Bloxd.io <b>inside</b> the app, manage multiple <b>.bloxdutility</b> custom configurations locally, and access full crosshair/script integration.</p>
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+              <a href="./assets/local-cli/BloxdUtility_Launcher.py" download="BloxdUtility_Launcher.py" class="btn" style="background: #10b981; color: #11111b; font-weight: 800; padding: 8px 16px; text-decoration: none; border-radius: 6px;">
+                <i class="fab fa-python"></i> Download Launcher (.py)
+              </a>
+              <span style="font-size: 11px; color: var(--muted);">v1.0.0 (Supports Python <= 3.9)</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <a href="./assets/local-cli/Build_BloxdUtility.bat" download="Build_BloxdUtility.bat" class="btn" style="background: rgba(255,255,255,0.1); color: #fff; font-weight: 800; padding: 6px 12px; font-size: 11px; text-decoration: none; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);">
+                <i class="fab fa-windows"></i> Download .EXE Compiler (.bat)
+              </a>
+              <span style="font-size: 10px; color: var(--muted); max-width: 250px;">Run this .bat file next to the .py file to automatically build an offline .EXE executable!</span>
+            </div>
+            <p style="font-size: 11px; color: #6b7280; margin-top: 12px;">Credits: github.com/FallenNightA | Youtube: @newismaharanisyahrir1005</p>
+          </div>
+          <div style="width: 250px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.05);">
+            <h4 style="font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 8px;">How to get the .exe:</h4>
+            <ol style="font-size: 11px; color: var(--muted); margin: 0; padding-left: 16px; line-height: 1.5;">
+              <li>Install <a href="https://www.python.org/downloads/release/python-3913/" target="_blank" style="color:#60a5fa;">Python 3.9.13</a>.</li>
+              <li>Download both the <b>.py</b> and <b>.bat</b> files into one folder on your desktop.</li>
+              <li>Double-click the <b>.bat</b> file. It will install packages and create a <code>dist</code> folder containing your `.exe` app!</li>
+            </ol>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 32px; margin-bottom: 32px;">
+          <!-- Left side: Customizer Controls -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <!-- Panel 1: Theme Style Color -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 20px; border-radius: 12px;">
+              <h4 style="font-size: 15px; font-weight: 800; color: #f59e0b; margin-bottom: 6px;"><i class="fas fa-palette"></i> Client Theme Color</h4>
+              <p style="font-size: 11px; color: var(--muted); margin-bottom: 16px;">Set primary branding colors utilized in the BloxdUtility Client HUD side menu.</p>
+              
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <input type="color" id="client-theme-color" value="#f59e0b" oninput="updateClientThemeColor(this.value)">
+                <div style="font-size: 12px; font-weight: 700; font-family: monospace;" id="client-theme-hex">#f59e0b</div>
+              </div>
+              
+              <!-- Palette Presets -->
+              <div style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+                <button class="btn" style="padding: 4px 10px; font-size: 11px; background: #f59e0b; color: #000;" onclick="setClientPresetColor('#f59e0b')">Gold</button>
+                <button class="btn" style="padding: 4px 10px; font-size: 11px; background: #3b82f6; color: #fff;" onclick="setClientPresetColor('#3b82f6')">Blue</button>
+                <button class="btn" style="padding: 4px 10px; font-size: 11px; background: #ec4899; color: #fff;" onclick="setClientPresetColor('#ec4899')">Pink</button>
+                <button class="btn" style="padding: 4px 10px; font-size: 11px; background: #10b981; color: #000;" onclick="setClientPresetColor('#10b981')">Emerald</button>
+                <button class="btn" style="padding: 4px 10px; font-size: 11px; background: #a855f7; color: #fff;" onclick="setClientPresetColor('#a855f7')">Purple</button>
+              </div>
+            </div>
+
+
+
+            <!-- Panel 2: Crosshair Designer Studio -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 20px; border-radius: 12px;">
+              <h4 style="font-size: 15px; font-weight: 800; color: #f59e0b; margin-bottom: 4px;"><i class="fas fa-crosshairs"></i> Crosshair Studio</h4>
+              <p style="font-size: 11px; color: var(--muted); margin-bottom: 16px;">Select a premium preset reticle, draw a custom design, or upload a direct PNG file.</p>
+              
+              <!-- Crosshair Mode Tabs -->
+              <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <button class="btn" id="client-ch-btn-preset" style="background: #3b82f6; padding: 4px 10px; font-size: 11px; color: white;" onclick="switchChMode('preset')">Presets</button>
+                <button class="btn" id="client-ch-btn-draw" style="background: var(--nav-hover); color: var(--text); padding: 4px 10px; font-size: 11px;" onclick="switchChMode('draw')">Designer Painter</button>
+                <button class="btn" id="client-ch-btn-upload" style="background: var(--nav-hover); color: var(--text); padding: 4px 10px; font-size: 11px;" onclick="switchChMode('upload')">Upload PNG</button>
+              </div>
+
+              <!-- Content A: Presets -->
+              <div id="client-ch-panel-preset" class="client-ch-panel">
+                <style>
+                  .preset-ch-card {
+                    background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.15s;
+                  }
+                  .preset-ch-card:hover {
+                    border-color: #f59e0b; background: rgba(245,158,11,0.05); transform: translateY(-1px);
+                  }
+                </style>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                  <div class="preset-ch-card" onclick="setCrosshairPreset('dot')">
+                    <div style="font-size: 18px; margin-bottom: 4px; color: #ffb86c;">🎯</div>
+                    <div style="font-size: 11px; font-weight: 700;">Dot</div>
+                  </div>
+                  <div class="preset-ch-card" onclick="setCrosshairPreset('classic')">
+                    <div style="font-size: 18px; margin-bottom: 4px; color: #8be9fd;">✚</div>
+                    <div style="font-size: 11px; font-weight: 700;">Classic</div>
+                  </div>
+                  <div class="preset-ch-card" onclick="setCrosshairPreset('hollow')">
+                    <div style="font-size: 18px; margin-bottom: 4px; color: #50fa7b;">⭕</div>
+                    <div style="font-size: 11px; font-weight: 700;">Hollow Ring</div>
+                  </div>
+                  <div class="preset-ch-card" onclick="setCrosshairPreset('gap')">
+                    <div style="font-size: 18px; margin-bottom: 4px; color: #ff79c6;">⛛</div>
+                    <div style="font-size: 11px; font-weight: 700;">Gap Cross</div>
+                  </div>
+                  <div class="preset-ch-card" onclick="setCrosshairPreset('sniper')">
+                    <div style="font-size: 18px; margin-bottom: 4px; color: #f1fa8c;">🔭</div>
+                    <div style="font-size: 11px; font-weight: 700;">Target ring</div>
+                  </div>
+                  <div class="preset-ch-card" onclick="setCrosshairPreset('none')">
+                    <div style="font-size: 18px; margin-bottom: 4px; color: #ff5555;">✕</div>
+                    <div style="font-size: 11px; font-weight: 700;">None (Default)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content B: Designer Canvas Painter -->
+              <div id="client-ch-panel-draw" class="client-ch-panel" style="display: none;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                  <div style="display: flex; gap: 8px; width: 100%; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 11px; color: var(--muted);">Click or drag to paint colored pixels:</div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <input type="color" id="client-draw-color" value="#ffffff" style="width:24px; height:24px;">
+                      <button class="btn" style="padding: 2px 6px; font-size: 10px; background: rgba(0,0,0,0.3); border:1px solid var(--border);" onclick="clearChCanvas()">Clear</button>
+                      <button class="btn" style="padding: 2px 6px; font-size: 10px; background: rgba(0,0,0,0.3); border:1px solid var(--border);" onclick="fillChCanvas()">Fill</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Canvas Creator grid -->
+                  <div id="client-ch-pixel-grid" style="display: grid; grid-template-columns: repeat(16, 1fr); gap: 1px; background: var(--border); border: 2px solid var(--border); width: 226px; height: 226px; user-select: none; border-radius: 4px; overflow: hidden;">
+                    <!-- Rendered in modern javascript dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content C: Upload PNG -->
+              <div id="client-ch-panel-upload" class="client-ch-panel" style="display: none;">
+                <div class="upload-box" id="client-ch-upload-zone" style="padding: 24px 10px; border-color: var(--border);">
+                  <i class="fas fa-file-image" style="color: #f59e0b; margin-bottom: 8px;"></i>
+                  <p style="font-size: 12px; font-weight: 700; margin-bottom: 4px;">Drag & Drop Custom Crosshair PNG</p>
+                  <p style="font-size: 10px; color: var(--muted); line-height:1.4;">Square transparent images (e.g., 32x32px or 64x64px) produce perfect pixel-art previews.</p>
+                  <input type="file" id="client-ch-file-input" accept="image/png, image/jpeg" style="display: none;" onchange="handleChFileSelect(event)">
+                  <button class="btn btn-gold" style="padding: 6px 14px; font-size: 11px; margin-top: 12px;" onclick="triggerChFileUpload()"><i class="fas fa-folder-open"></i> Select File</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Panel 3: Toggleable Client Mods -->
+            <div style="display: none;">
+              <h4 style="font-size: 15px; font-weight: 800; color: #f59e0b; margin-bottom: 6px;"><i class="fas fa-tasks"></i> Toggle Client Features</h4>
+              <p style="font-size: 11px; color: var(--muted); margin-bottom: 14px;">Customize integrated features built natively into the copy-pasteable script block.</p>
+              
+              <!-- Web Feature Tabs Navigation -->
+              <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+                <button type="button" id="web-tabBtn-combat" onclick="switchWebFeatureTab('combat')" style="flex: 1; border: none; padding: 7px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.15s; background: rgba(245,158,11,0.15); color: #f59e0b;">Combat</button>
+                <button type="button" id="web-tabBtn-movement" onclick="switchWebFeatureTab('movement')" style="flex: 1; border: none; padding: 7px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.15s; background: transparent; color: #8b949e;">Movement</button>
+                <button type="button" id="web-tabBtn-visuals" onclick="switchWebFeatureTab('visuals')" style="flex: 1; border: none; padding: 7px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.15s; background: transparent; color: #8b949e;">Visuals</button>
+              </div>
+
+              <!-- COMBAT SUB-PANEL -->
+              <div id="web-panel-combat" style="display: flex; flex-direction: column; gap: 14px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-cps" checked onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Interactive CPS Counter Display</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Displays a high-performance floating clicks per second counter widget for Left and Right mouse button actions.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-boost" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Lobby FPS Optimizer Tweak</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Minimizes idle DOM components rendering on standard servers to provide visual FPS boosts.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-sparks" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Legit PvP Spark Hit Particles</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Spawns tiny client-side impact sparkles around crosshair on click for visual hit-tracking confirmation.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-hitsound" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">PvP Tick Auditory Hit-Sound</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Emits a short satisfying procedural click-tick via Web Audio API, providing clean timing feedback.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-tickwood" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Organic Wooden Hit-Pop Sound</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Transforms hitsounds from electrical ticks into hollow, organic woodblock clicks.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-focusring" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Melee Center Focus Guide Ring</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Overlays a clean concentric dashed guide ring around the crosshair pointing directly to melee aim center.</p>
+                  </div>
+                </label>
+              </div>
+
+              <!-- MOVEMENT SUB-PANEL -->
+              <div id="web-panel-movement" style="display: none; flex-direction: column; gap: 14px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-autosprint" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Auto-Sprint (Automatic Sprinting)</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Automatically triggers running acceleration speed when walking forward. 100% legal, non-cheating.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-direction" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Directional WASD Strafe HUD Arrows</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Overlays beautiful dynamic tri-chevrons under the crosshair to help keep track of circle strafes.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-togglesneak" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">T-Key Toggle Permanent Sneaking</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Tap T key to lock sneak mode. Excellent for block building without falling off edges.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-jumpbuffer" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Space-bar Continuous Jump Buffer</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Slightly offsets landing timing in browser input pipeline to improve jump chaining fluidness.</p>
+                  </div>
+                </label>
+              </div>
+
+              <!-- VISUALS SUB-PANEL -->
+              <div id="web-panel-visuals" style="display: none; flex-direction: column; gap: 14px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-fps" checked onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Watermark & Live FPS Overlay</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Renders client versioning details and performance tickrate in top-right screen corner.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-key" checked onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Keystrokes (WASD + LMB + RMB)</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Highlights WASD movement key presses along with Left Mouse Button and Right Mouse Button clicks.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-drag" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Draggable Layout UI Elements</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Enables drag-to-reposition overlays with automatic persistent local coordinate saving for HUD elements.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-zoom" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Hold C-Key to Binocular Zoom</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Zooms into your crosshair by 1.5x zoom magnification when holding the C key.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-bloom" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Recoil Crosshair Bloom Pulsar</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Your custom crosshair expands slightly during rapid PvP clicks to simulate visual fire recoil.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-nightvision" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Night Vision Ambient Brightness</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Overrides default visual filters to boost overall screen brightness and contrast in dim regions.</p>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; cursor: pointer;">
+                  <input type="checkbox" id="client-feat-streamer" onchange="regenerateClientScript()" style="margin-top: 2px;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--text);">Streamer Clean UI Mode</span>
+                    <p style="font-size: 10px; color: var(--muted); margin-top: 2px;">Fades out default promo boxes, chat spam, and side ads for a completely focused streaming view.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right side: Simulator Screen & Code Exporter -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <!-- Panel 5: Userscript generator downloader -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 20px; border-radius: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 15px; font-weight: 800; color: #f59e0b;"><i class="fas fa-file-code"></i> Generated Userscript</h4>
+                <div>
+                  <button class="btn" style="background: #a6e3a1; color: #11111b; font-weight: 800; padding: 4px 10px; font-size: 11px; margin-right: 6px;" onclick="exportBloxdUtility()"><i class="fas fa-download"></i> Export .bloxdutility</button>
+                  <button class="btn btn-gold" style="padding: 4px 10px; font-size: 11px;" onclick="copyCodeOutput('client-script-code')"><i class="fas fa-copy"></i> Copy Script Code</button>
+                </div>
+              </div>
+              
+              <p style="font-size: 11px; color: var(--muted); margin-bottom: 12px;">Save this code block as a customized userscript file (or use within Tampermonkey/Violentmonkey browser extensions).</p>
+              
+              <textarea id="client-script-code" class="form-textarea" style="height: 520px; font-family: 'Fira Code', monospace; font-size: 11px; margin-bottom: 12px; background: rgba(0,0,0,0.3); border-color: var(--border);" readonly>Generating tailored layout script...</textarea>
+
+              <div style="background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.2); padding: 12px; border-radius: 8px; font-size: 11px; line-height: 1.5; color: #ffb86c;">
+                <i class="fas fa-info-circle mr-1"></i> <b>How to Load into Bloxd.io:</b>
+                <ol style="margin-top: 6px; padding-left: 14px; display: flex; flex-direction: column; gap: 4px;">
+                  <li>Download a standard desktop browser userscript manager extension (e.g. <b>Tampermonkey</b>).</li>
+                  <li>Create a "New Script (+)" inside Tampermonkey, erase boilerplate templates, paste the custom script content above, then press Ctrl+S to save.</li>
+                  <li>Navigate onto <b>https://bloxd.io/</b> in your browser. The custom HUD menu and crosshair will render on startup!</li>
+                </ol>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1002,7 +1450,7 @@
           }
         }
         isDirectApi = true;
-        let geminiModel = 'gemini-2.0-flash'; // Better fallback for static
+        let geminiModel = 'gemini-2.5-flash'; // Better fallback for static
         
         const promptText = typeof localPromptData !== 'undefined' ? localPromptData : 'You are CodexMind, an expert programmer for Bloxd.io.';
 
@@ -1763,10 +2211,1621 @@ api.playParticleEffect({
     if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
   }
 
+  /* ===== BLOXDUTILITY CLIENT COMPANION HUB ===== */
+  let activeThemeColor = "#f59e0b";
+  let activeCrosshairDataUrl = "";
+  let isClientChDrawing = false;
+  let clientChMatrix = Array(16).fill(null).map(() => Array(16).fill('transparent'));
+
+  function updateClientThemeColor(value) {
+    activeThemeColor = value;
+    document.getElementById("client-theme-hex").textContent = value.toLowerCase();
+    
+    // Update live simulator visuals
+    const previewMenu = document.getElementById("preview-client-menu");
+    if (previewMenu) previewMenu.style.borderColor = value;
+    const textColorables = document.querySelectorAll(".preview-client-text");
+    textColorables.forEach(el => el.style.color = value);
+    
+    regenerateClientScript();
+  }
+
+  function setClientPresetColor(value) {
+    document.getElementById("client-theme-color").value = value;
+    updateClientThemeColor(value);
+  }
+
+  function switchChMode(mode) {
+    document.querySelectorAll(".client-ch-panel").forEach(el => el.style.display = "none");
+    document.getElementById(`client-ch-panel-${mode}`).style.display = "block";
+    
+    // Reset buttons styles
+    document.getElementById("client-ch-btn-preset").style.background = "var(--nav-hover)";
+    document.getElementById("client-ch-btn-preset").style.color = "var(--text)";
+    document.getElementById("client-ch-btn-draw").style.background = "var(--nav-hover)";
+    document.getElementById("client-ch-btn-draw").style.color = "var(--text)";
+    document.getElementById("client-ch-btn-upload").style.background = "var(--nav-hover)";
+    document.getElementById("client-ch-btn-upload").style.color = "var(--text)";
+    
+    // Active style
+    const activeBtn = document.getElementById(`client-ch-btn-${mode}`);
+    if (activeBtn) {
+      activeBtn.style.background = "#3b82f6";
+      activeBtn.style.color = "white";
+    }
+  }
+
+  function initClientChGrid() {
+    const grid = document.getElementById('client-ch-pixel-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    grid.addEventListener('mousedown', () => { isClientChDrawing = true; });
+    window.addEventListener('mouseup', () => { isClientChDrawing = false; });
+    
+    for (let y = 0; y < 16; y++) {
+      for (let x = 0; x < 16; x++) {
+        const cell = document.createElement('div');
+        cell.className = 'client-ch-pixel-cell';
+        cell.style.backgroundColor = clientChMatrix[y][x];
+        cell.style.width = '100%';
+        cell.style.height = '100%';
+        cell.style.cursor = 'crosshair';
+        cell.style.border = '1px solid rgba(255,255,255,0.05)';
+        
+        const drawOnCell = () => {
+          const color = document.getElementById('client-draw-color').value;
+          clientChMatrix[y][x] = color;
+          cell.style.backgroundColor = color;
+          updateCustomCrosshairFromGrid();
+        };
+
+        cell.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          drawOnCell();
+        });
+        
+        cell.addEventListener('mouseover', () => {
+          if (isClientChDrawing) {
+            drawOnCell();
+          }
+        });
+        
+        grid.appendChild(cell);
+      }
+    }
+  }
+
+  function clearChCanvas() {
+    clientChMatrix = Array(16).fill(null).map(() => Array(16).fill('transparent'));
+    const cells = document.querySelectorAll('#client-ch-pixel-grid > div');
+    cells.forEach(c => c.style.backgroundColor = 'transparent');
+    updateCustomCrosshairFromGrid();
+  }
+
+  function fillChCanvas() {
+    const color = document.getElementById('client-draw-color').value;
+    clientChMatrix = Array(16).fill(null).map(() => Array(16).fill(color));
+    const cells = document.querySelectorAll('#client-ch-pixel-grid > div');
+    cells.forEach(c => c.style.backgroundColor = color);
+    updateCustomCrosshairFromGrid();
+  }
+
+  function updateCustomCrosshairFromGrid() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 16;
+    canvas.height = 16;
+    const ctx = canvas.getContext('2d');
+    
+    for (let y = 0; y < 16; y++) {
+      for (let x = 0; x < 16; x++) {
+        const color = clientChMatrix[y][x];
+        if (color !== 'transparent' && color) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, 1, 1);
+        } else {
+          ctx.clearRect(x, y, 1, 1);
+        }
+      }
+    }
+    
+    const dataUrl = canvas.toDataURL('image/png');
+    applyCrosshairDataUrl(dataUrl);
+  }
+
+  function setCrosshairPreset(name) {
+    clientChMatrix = Array(16).fill(null).map(() => Array(16).fill('transparent'));
+    const color = document.getElementById('client-draw-color').value || '#ffffff';
+    
+    if (name === 'dot') {
+      clientChMatrix[7][7] = color;
+      clientChMatrix[7][8] = color;
+      clientChMatrix[8][7] = color;
+      clientChMatrix[8][8] = color;
+    } else if (name === 'classic') {
+      for (let x = 4; x <= 11; x++) { clientChMatrix[7][x] = color; clientChMatrix[8][x] = color; }
+      for (let y = 4; y <= 11; y++) { clientChMatrix[y][7] = color; clientChMatrix[y][8] = color; }
+    } else if (name === 'hollow') {
+      for (let i = 5; i <= 10; i++) {
+        clientChMatrix[5][i] = color;
+        clientChMatrix[10][i] = color;
+        clientChMatrix[i][5] = color;
+        clientChMatrix[i][10] = color;
+      }
+    } else if (name === 'gap') {
+      clientChMatrix[7][3] = color; clientChMatrix[7][4] = color;
+      clientChMatrix[7][11] = color; clientChMatrix[7][12] = color;
+      clientChMatrix[3][7] = color; clientChMatrix[4][7] = color;
+      clientChMatrix[11][7] = color; clientChMatrix[12][7] = color;
+    } else if (name === 'sniper') {
+      clientChMatrix[7][7] = color; clientChMatrix[7][8] = color; clientChMatrix[8][7] = color; clientChMatrix[8][8] = color;
+      for (let i = 4; i <= 11; i++) {
+        clientChMatrix[3][i] = color;
+        clientChMatrix[12][i] = color;
+        clientChMatrix[i][3] = color;
+        clientChMatrix[i][12] = color;
+      }
+    }
+    
+    // Re-render UI designer grid cells
+    const cells = document.querySelectorAll('#client-ch-pixel-grid > div');
+    if (cells.length > 0) {
+      let idx = 0;
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          if (cells[idx]) {
+            cells[idx].style.backgroundColor = clientChMatrix[y][x];
+          }
+          idx++;
+        }
+      }
+    }
+    
+    if (name === 'none') {
+      applyCrosshairDataUrl('');
+    } else {
+      updateCustomCrosshairFromGrid();
+    }
+  }
+
+  function triggerChFileUpload() {
+    const fileInput = document.getElementById('client-ch-file-input');
+    if (fileInput) fileInput.click();
+  }
+
+  function handleChFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 32, 32);
+        const dataUrl = canvas.toDataURL('image/png');
+        applyCrosshairDataUrl(dataUrl);
+        window.showToast("🎯 Custom File loaded into Studio!");
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function applyCrosshairDataUrl(dataUrl) {
+    activeCrosshairDataUrl = dataUrl;
+    const preview = document.getElementById('preview-crosshair-element');
+    const crossStatusDetail = document.getElementById('preview-status-cross');
+    
+    if (dataUrl) {
+      if (preview) {
+        preview.innerHTML = '';
+        preview.style.width = '32px';
+        preview.style.height = '32px';
+        preview.style.backgroundImage = `url(${dataUrl})`;
+        preview.style.backgroundSize = 'contain';
+        preview.style.backgroundPosition = 'center';
+        preview.style.backgroundRepeat = 'no-repeat';
+      }
+      if (crossStatusDetail) crossStatusDetail.textContent = "Custom ✔";
+    } else {
+      if (preview) {
+        preview.style.backgroundImage = 'none';
+        preview.style.width = '32px';
+        preview.style.height = '32px';
+        preview.innerHTML = '<div style="width: 6px; height: 6px; background: #50fa7b; border-radius: 50%; box-shadow: 0 0 4px #000;"></div>';
+      }
+      if (crossStatusDetail) crossStatusDetail.textContent = "Default";
+    }
+    regenerateClientScript();
+  }
+
+  // --- Live Client Simulator Helpers (Prestige menu tabs, live CPS tap clicker, & dragging) ---
+  function toggleSimFeature(featureName) {
+    const dashCheck = document.getElementById("client-feat-" + featureName);
+    if (dashCheck) {
+      dashCheck.checked = !dashCheck.checked;
+      applyDashboardCheckboxToSim(featureName, dashCheck.checked);
+      regenerateClientScript();
+    }
+  }
+
+  function applyDashboardCheckboxToSim(featureName, checked) {
+    const simIndicator = document.getElementById("sim-status-" + featureName);
+    if (simIndicator) {
+      if (simIndicator.tagName === 'INPUT' && simIndicator.type === 'checkbox') {
+        simIndicator.checked = checked;
+      } else {
+        simIndicator.textContent = checked ? "Active ✔" : "Off ✕";
+        simIndicator.style.color = checked ? "#50fa7b" : "#ff5555";
+      }
+    }
+  }
+
+  function switchSimTab(tabName) {
+    const panels = ['home', 'combat', 'movement', 'visuals'];
+    panels.forEach(p => {
+      const panelEl = document.getElementById(`sim-panel-${p}`);
+      if (panelEl) panelEl.style.display = (p === tabName) ? 'flex' : 'none';
+      
+      const btnEl = document.getElementById(`sim-tabBtn-${p}`);
+      if (btnEl) {
+        if (p === tabName) {
+          btnEl.style.background = 'rgba(245,158,11,0.15)';
+          btnEl.style.color = '#f59e0b';
+        } else {
+          btnEl.style.background = 'transparent';
+          btnEl.style.color = '#8b949e';
+        }
+      }
+    });
+  }
+
+  function switchWebFeatureTab(tabName) {
+    const panels = ['combat', 'movement', 'visuals'];
+    panels.forEach(p => {
+      const panelEl = document.getElementById(`web-panel-${p}`);
+      if (panelEl) panelEl.style.display = (p === tabName) ? 'flex' : 'none';
+      
+      const btnEl = document.getElementById(`web-tabBtn-${p}`);
+      if (btnEl) {
+        if (p === tabName) {
+          btnEl.style.background = 'rgba(245,158,11,0.15)';
+          btnEl.style.color = '#f59e0b';
+        } else {
+          btnEl.style.background = 'transparent';
+          btnEl.style.color = '#8b949e';
+        }
+      }
+    });
+  }
+
+  let simClicks = [];
+  function handleSimMouseDown(e) {
+    // Prevent clicking dragging handle highlights
+    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.clickable-container') || e.target.closest('.sim-tab-button')) {
+      return;
+    }
+    
+    // Highlight corresponding mouse button in keystrokes indicator
+    const isRightClick = e.button === 2;
+    const lookupId = isRightClick ? 'preview-key-RMB' : 'preview-key-LMB';
+    const btn = document.getElementById(lookupId);
+    if (btn) {
+      btn.style.backgroundColor = activeThemeColor || '#f59e0b';
+      btn.style.color = '#000000';
+      btn.style.transform = 'translateY(1px)';
+      btn.style.borderBottomWidth = '1px';
+      setTimeout(() => {
+        btn.style.backgroundColor = 'rgba(255,255,255,0.12)';
+        btn.style.color = '#c9d1d9';
+        btn.style.transform = 'none';
+        btn.style.borderBottomWidth = '2px';
+      }, 100);
+    }
+
+    // Sparks effect trigger
+    const sparksActive = document.getElementById("client-feat-sparks") ? document.getElementById("client-feat-sparks").checked : true;
+    if (sparksActive) {
+      const mapBox = document.getElementById("simulator-map-box");
+      const crosshair = document.getElementById("preview-crosshair-element");
+      if (mapBox && crosshair) {
+        const chRect = crosshair.getBoundingClientRect();
+        const mapRect = mapBox.getBoundingClientRect();
+        const centerX = (chRect.left + chRect.width/2) - mapRect.left;
+        const centerY = (chRect.top + chRect.height/2) - mapRect.top;
+        
+        const colors = ["#ff5555", "#50fa7b", "#ffbe5c", "#8be9fd", "#ff79c6"];
+        for (let i = 0; i < 6; i++) {
+          const spark = document.createElement("div");
+          spark.style.position = "absolute";
+          spark.style.left = centerX + "px";
+          spark.style.top = centerY + "px";
+          spark.style.width = "4px";
+          spark.style.height = "4px";
+          spark.style.borderRadius = "50%";
+          spark.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          spark.style.pointerEvents = "none";
+          spark.style.zIndex = "12";
+          spark.style.transition = "all 0.35s cubic-bezier(0.1, 0.8, 0.3, 1)";
+          mapBox.appendChild(spark);
+          
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 8 + Math.random() * 20;
+          
+          requestAnimationFrame(() => {
+            spark.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`;
+            spark.style.opacity = "0";
+          });
+          
+          setTimeout(() => spark.remove(), 350);
+        }
+      }
+    }
+
+    // Audio hit-tick feedback trigger
+    const hitsoundActive = document.getElementById("client-feat-hitsound") ? document.getElementById("client-feat-hitsound").checked : true;
+    if (hitsoundActive) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(isRightClick ? 420 : 680, audioCtx.currentTime); 
+        osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } catch(e) {}
+    }
+
+    // Recoil crosshair bloom pulsing
+    const bloomActive = document.getElementById("client-feat-bloom") ? document.getElementById("client-feat-bloom").checked : true;
+    if (bloomActive) {
+      const crosshair = document.getElementById("preview-crosshair-element");
+      if (crosshair) {
+        crosshair.style.transform = "scale(1.4)";
+        setTimeout(() => {
+          crosshair.style.transform = "scale(1)";
+        }, 85);
+      }
+    }
+    
+    // Log click timestamp
+    const now = performance.now();
+    simClicks.push(now);
+    
+    // Update CPS display
+    updateSimCps();
+  }
+  
+  function updateSimCps() {
+    const now = performance.now();
+    // filter out clicks older than 1 second
+    simClicks = simClicks.filter(t => now - t < 1000);
+    
+    const cpsVal = simClicks.length;
+    const cpsDisplay = document.getElementById('preview-cps-value');
+    if (cpsDisplay) {
+      cpsDisplay.textContent = `${cpsVal} CPS`;
+    }
+    
+    // Also update simulated CPS indicator in Combat Tab of simulator if open
+    const statEl = document.getElementById('sim-cps-stat');
+    if (statEl) {
+      statEl.textContent = `${cpsVal} CPS`;
+    }
+  }
+  // Periodically decay CPS value to 0 if clear of input clicks
+  setInterval(updateSimCps, 150);
+
+  function initSimulatorDragging() {
+    const elements = ['preview-client-menu', 'preview-keystrokes', 'preview-cps-overlay', 'preview-fps-overlay'];
+    const container = document.getElementById('simulator-map-box');
+    if (!container) return;
+    
+    elements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        makeSimElementDraggable(el, container);
+      }
+    });
+  }
+  
+  function makeSimElementDraggable(elm, container) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    // Bind mouse down
+    elm.onmousedown = dragMouseDown;
+    
+    function dragMouseDown(e) {
+      // Only drag if drag option is checked
+      const dragCheck = document.getElementById("client-feat-drag");
+      const dragEnabled = dragCheck ? dragCheck.checked : false;
+      if (!dragEnabled) return;
+      
+      // Do not drag if clicking buttons, links, or internal scrollable lists
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('.clickable-container') || e.target.closest('.sim-tab-button')) {
+        return;
+      }
+      
+      e = e || window.event;
+      e.preventDefault();
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      document.onmousemove = elementDrag;
+    }
+    
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      
+      let newTop = elm.offsetTop - pos2;
+      let newLeft = elm.offsetLeft - pos1;
+      
+      // Boundaries checks
+      const parentRect = container.getBoundingClientRect();
+      const elementRect = elm.getBoundingClientRect();
+      
+      if (newTop < 0) newTop = 0;
+      if (newTop > parentRect.height - elm.offsetHeight) newTop = parentRect.height - elm.offsetHeight;
+      if (newLeft < 0) newLeft = 0;
+      if (newLeft > parentRect.width - elm.offsetWidth) newLeft = parentRect.width - elm.offsetWidth;
+      
+      elm.style.top = newTop + "px";
+      elm.style.left = newLeft + "px";
+      elm.style.right = "auto";
+      elm.style.bottom = "auto";
+      elm.style.transform = "none"; // Remove percentage transform constraints once dragged
+    }
+    
+    function closeDragElement() {
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
+
+  // Local persistence initialization for a safe, standalone local storage experience
+  function initClientLocalStorage() {
+    // 1. Load theme color
+    const savedColor = localStorage.getItem("bloxd_client_theme_color");
+    if (savedColor) {
+      activeThemeColor = savedColor;
+      const clientColorInput = document.getElementById('client-theme-color');
+      if (clientColorInput) {
+        clientColorInput.value = savedColor;
+        document.getElementById('client-theme-hex').textContent = savedColor;
+      }
+    }
+
+    // 2. Load crosshair
+    const savedCrosshair = localStorage.getItem("bloxd_client_crosshair_url");
+    if (savedCrosshair) {
+      activeCrosshairDataUrl = savedCrosshair;
+      applyCrosshairDataUrl(savedCrosshair);
+    }
+
+    // 3. Load feature checklist checkboxes
+    const savedFeaturesStr = localStorage.getItem("bloxd_client_features");
+    if (savedFeaturesStr) {
+      try {
+        const savedFeatures = JSON.parse(savedFeaturesStr);
+        const featureKeys = [
+          'fps', 'boost', 'key', 'autosprint', 'cps', 'drag', 'sparks', 'hitsound',
+          'tickwood', 'focusring', 'togglesneak', 'jumpbuffer', 'direction', 'zoom', 'bloom',
+          'nightvision', 'streamer'
+        ];
+        featureKeys.forEach(k => {
+          const el = document.getElementById("client-feat-" + k);
+          if (el && savedFeatures[k] !== undefined) {
+            el.checked = !!savedFeatures[k];
+          }
+        });
+      } catch(e) {
+        console.warn("Could not load saved features JSON", e);
+      }
+    }
+  }
+
+  function saveClientLocalStorage() {
+    localStorage.setItem("bloxd_client_theme_color", activeThemeColor);
+    localStorage.setItem("bloxd_client_crosshair_url", activeCrosshairDataUrl);
+    
+    const featureKeys = [
+      'fps', 'boost', 'key', 'autosprint', 'cps', 'drag', 'sparks', 'hitsound',
+      'tickwood', 'focusring', 'togglesneak', 'jumpbuffer', 'direction', 'zoom', 'bloom',
+      'nightvision', 'streamer'
+    ];
+    const currentFeatures = {};
+    featureKeys.forEach(k => {
+      const el = document.getElementById("client-feat-" + k);
+      if (el) {
+        currentFeatures[k] = el.checked;
+      }
+    });
+    localStorage.setItem("bloxd_client_features", JSON.stringify(currentFeatures));
+  }
+
+
+
+  function exportBloxdUtility() {
+    if (typeof JSZip === 'undefined') { window.showToast("⚠ Error: JSZip library not loaded."); return; }
+    
+    // Save to local storage right before export
+    saveClientLocalStorage();
+    
+    const zip = new JSZip();
+    
+    // Feature payload
+    const settings = {
+      color: activeThemeColor,
+      crosshair: activeCrosshairDataUrl || "",
+      features: {
+        fps: document.getElementById("client-feat-fps").checked,
+        boost: document.getElementById("client-feat-boost").checked,
+        key: document.getElementById("client-feat-key").checked,
+        autosprint: document.getElementById("client-feat-autosprint").checked,
+        cps: document.getElementById("client-feat-cps").checked,
+        drag: document.getElementById("client-feat-drag").checked,
+        sparks: document.getElementById("client-feat-sparks").checked,
+        hitsound: document.getElementById("client-feat-hitsound").checked,
+        direction: document.getElementById("client-feat-direction").checked,
+        zoom: document.getElementById("client-feat-zoom").checked,
+        bloom: document.getElementById("client-feat-bloom").checked,
+        tickwood: document.getElementById("client-feat-tickwood").checked,
+        focusring: document.getElementById("client-feat-focusring").checked,
+        togglesneak: document.getElementById("client-feat-togglesneak").checked,
+        jumpbuffer: document.getElementById("client-feat-jumpbuffer").checked,
+        nightvision: document.getElementById("client-feat-nightvision").checked,
+        streamer: document.getElementById("client-feat-streamer").checked
+      }
+    };
+    
+    zip.file("settings.json", JSON.stringify(settings, null, 2));
+    
+    // Include Userscript
+    const userscriptContent = document.getElementById('client-script-code').value;
+    zip.file("bloxdutility-client.user.js", userscriptContent);
+
+    zip.generateAsync({type:"blob"}).then(function(content) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(content);
+      a.download = "my_custom_client.bloxdutility";
+      a.click();
+      window.showToast("✅ Downloaded .bloxdutility Modpack!");
+    });
+  }
+
+  function regenerateClientScript() {
+    const fpsActive = document.getElementById("client-feat-fps").checked;
+    const boostActive = document.getElementById("client-feat-boost").checked;
+    const keyActive = document.getElementById("client-feat-key").checked;
+    const sprintActive = document.getElementById("client-feat-autosprint").checked;
+    const cpsActive = document.getElementById("client-feat-cps").checked;
+    const dragActive = document.getElementById("client-feat-drag").checked;
+    const sparksActive = document.getElementById("client-feat-sparks").checked;
+    const hitsoundActive = document.getElementById("client-feat-hitsound").checked;
+    const directionActive = document.getElementById("client-feat-direction").checked;
+    const zoomActive = document.getElementById("client-feat-zoom").checked;
+    const bloomActive = document.getElementById("client-feat-bloom").checked;
+    
+    // Extracted new features
+    const tickwoodActive = document.getElementById("client-feat-tickwood").checked;
+    const focusringActive = document.getElementById("client-feat-focusring").checked;
+    const togglesneakActive = document.getElementById("client-feat-togglesneak").checked;
+    const jumpbufferActive = document.getElementById("client-feat-jumpbuffer").checked;
+    const nightvisionActive = document.getElementById("client-feat-nightvision").checked;
+    const streamerActive = document.getElementById("client-feat-streamer").checked;
+
+    // Persist all configuration preferences immediately offline
+    saveClientLocalStorage();
+
+    // Sync simulated panel checkboxes to match dashboard state
+    applyDashboardCheckboxToSim('fps', fpsActive);
+    applyDashboardCheckboxToSim('boost', boostActive);
+    applyDashboardCheckboxToSim('key', keyActive);
+    applyDashboardCheckboxToSim('autosprint', sprintActive);
+    applyDashboardCheckboxToSim('cps', cpsActive);
+    applyDashboardCheckboxToSim('drag', dragActive);
+    applyDashboardCheckboxToSim('sparks', sparksActive);
+    applyDashboardCheckboxToSim('hitsound', hitsoundActive);
+    applyDashboardCheckboxToSim('direction', directionActive);
+    applyDashboardCheckboxToSim('zoom', zoomActive);
+    applyDashboardCheckboxToSim('bloom', bloomActive);
+    
+    applyDashboardCheckboxToSim('tickwood', tickwoodActive);
+    applyDashboardCheckboxToSim('focusring', focusringActive);
+    applyDashboardCheckboxToSim('togglesneak', togglesneakActive);
+    applyDashboardCheckboxToSim('jumpbuffer', jumpbufferActive);
+    applyDashboardCheckboxToSim('nightvision', nightvisionActive);
+    applyDashboardCheckboxToSim('streamer', streamerActive);
+    
+    // Direct visual adjustments for the simulator preview
+    // 1. Night Vision (Fullbright) - adjust map brightness
+    const previewMap = document.getElementById("simulator-map-box");
+    if (previewMap) {
+      previewMap.style.filter = nightvisionActive ? "brightness(1.5) contrast(1.15)" : "";
+    }
+
+    // 2. Streamer Minimal Clean UI - fade out creator links/socials
+    const creators = document.querySelector("#preview-client-menu .clickable-container");
+    if (creators) {
+      creators.style.opacity = streamerActive ? "0" : "0.7";
+      creators.style.pointerEvents = streamerActive ? "none" : "auto";
+    }
+
+    // 3. Melee Center Aim Guide Ring - dotted focus ring around central crosshair
+    let frEl = document.getElementById("sim-focus-ring");
+    if (focusringActive) {
+      if (!frEl) {
+        frEl = document.createElement("div");
+        frEl.id = "sim-focus-ring";
+        frEl.style.position = "absolute";
+        frEl.style.width = "40px";
+        frEl.style.height = "40px";
+        frEl.style.border = "1.5px dashed " + activeThemeColor;
+        frEl.style.borderRadius = "50%";
+        frEl.style.pointerEvents = "none";
+        frEl.style.animation = "spin 12s linear infinite";
+        
+        // spin keyframes styles (if not already exists)
+        if (!document.getElementById("spin-keyframes-style")) {
+          const kStyle = document.createElement("style");
+          kStyle.id = "spin-keyframes-style";
+          kStyle.textContent = "@keyframes spin { 100% { transform: rotate(360deg); } }";
+          document.head.appendChild(kStyle);
+        }
+
+        const crosshairContainer = document.getElementById("preview-crosshair-element");
+        if (crosshairContainer) {
+          crosshairContainer.appendChild(frEl);
+        }
+      } else {
+        frEl.style.borderColor = activeThemeColor;
+      }
+    } else {
+      if (frEl) frEl.remove();
+    }
+
+    // Update live simulator indicators
+    const statusFps = document.getElementById("preview-status-fps");
+    const statusKeys = document.getElementById("preview-status-keys");
+    const statusSprint = document.getElementById("preview-status-autosprint");
+    const statusCross = document.getElementById("preview-status-cross");
+    const keypanel = document.getElementById("preview-keystrokes");
+    const labelFps = document.getElementById("preview-fps-overlay");
+    const labelCps = document.getElementById("preview-cps-overlay");
+    
+    if (statusFps) statusFps.textContent = fpsActive ? "Active ✔" : "Off ✕";
+    if (statusKeys) statusKeys.textContent = keyActive ? "Active ✔" : "Off ✕";
+    if (statusSprint) statusSprint.textContent = sprintActive ? "Active ✔" : "Off ✕";
+    if (keypanel) keypanel.style.display = keyActive ? "flex" : "none";
+    if (labelFps) labelFps.style.display = fpsActive ? "flex" : "none";
+    if (labelCps) labelCps.style.display = cpsActive ? "flex" : "none";
+    
+    const syncCodeValue = "LOCAL";
+    const originUrl = window.location.origin;
+
+    const scriptText = [
+      '// ==UserScript==',
+      '// @name         BloxdUtility Companion Client',
+      '// @namespace    http://tampermonkey.net/',
+      '// @version      1.3',
+      '// @description  Supreme QoL utility client offering real-time Cloud Sync, custom crosshairs, live keystroke monitors, auto-sprint, draggable HUD, and lobby FPS optimization patches for Bloxd.io',
+      '// @author       BloxdUtility Hub',
+      '// @match        *://bloxd.io/*',
+      '// @match        *://www.bloxd.io/*',
+      '// @grant        none',
+      '// @run-at       document-end',
+      '// ==/UserScript==',
+      '',
+      '(function() {',
+      '    \'use strict\';',
+      '',
+      '    // === PERSISTED OFFLINE LOCAL STATE ===',
+      '    let activeThemeColor = localStorage.getItem("bloxd_client_persisted_theme_color") || "' + activeThemeColor + '";',
+      '    let activeCrosshairDataUrl = localStorage.getItem("bloxd_client_persisted_crosshair_url") || "' + activeCrosshairDataUrl + '";',
+      '    let defaultFeatures = {',
+      `        fps: ${fpsActive},`,
+      `        boost: ${boostActive},`,
+      `        key: ${keyActive},`,
+      `        autosprint: ${sprintActive},`,
+      `        cps: ${cpsActive},`,
+      `        drag: ${dragActive},`,
+      `        sparks: ${sparksActive},`,
+      `        hitsound: ${hitsoundActive},`,
+      `        direction: ${directionActive},`,
+      `        zoom: ${zoomActive},`,
+      `        bloom: ${bloomActive},`,
+      `        tickwood: ${tickwoodActive},`,
+      `        focusring: ${focusringActive},`,
+      `        togglesneak: ${togglesneakActive},`,
+      `        jumpbuffer: ${jumpbufferActive},`,
+      `        nightvision: ${nightvisionActive},`,
+      `        streamer: ${streamerActive}`,
+      '    };',
+      '    let features = defaultFeatures;',
+      '    try {',
+      '        const savedFeats = localStorage.getItem("bloxd_client_persisted_features");',
+      '        if (savedFeats) {',
+      '            features = Object.assign({}, defaultFeatures, JSON.parse(savedFeats));',
+      '        }',
+      '    } catch(e) {}',
+      '    let activeMenuTab = \'home\';',
+      '    let clickTimestamps = [];',
+      '    let w_pressed = false;',
+      '',
+      '    // Injects client icon and font awesome loaders dynamically',
+      '    function injectFontAwesome() {',
+      '        let faLink = document.getElementById(\'bloxdutility-fa-icons\');',
+      '        if (!faLink) {',
+      '            faLink = document.createElement(\'link\');',
+      '            faLink.id = \'bloxdutility-fa-icons\';',
+      '            faLink.rel = \'stylesheet\';',
+      '            faLink.href = \'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\';',
+      '            document.head.appendChild(faLink);',
+      '        }',
+      '    }',
+      '',
+      '    // Injects client stylesheet dynamically',
+      '    function injectStyles(themeColor, crosshairUrl, hasBoost, hasKeys, hasCps) {',
+      '        let existingStyle = document.getElementById(\'bloxdutility-client-styles\');',
+      '        if (existingStyle) existingStyle.remove();',
+      '',
+      '        const customStyle = document.createElement(\'style\');',
+      '        customStyle.id = \'bloxdutility-client-styles\';',
+      '        customStyle.textContent = `',
+      '            /* Central Custom Crosshair */',
+      '            \${crosshairUrl ? `',
+      '            #crosshair, .crosshair, .Crosshair, .crosshair-element, img[src*="crosshair"], div[class*="crosshair"], div[class*="Crosshair"] {',
+      '                display: none !important;',
+      '                opacity: 0 !important;',
+      '            }',
+      '            #bloxdutility-custom-crosshair {',
+      '                position: fixed;',
+      '                left: 50%;',
+      '                top: 50%;',
+      '                width: 32px;',
+      '                height: 32px;',
+      '                transform: translate(-50%, -50%);',
+      '                background-image: url("\${crosshairUrl}");',
+      '                background-size: contain;',
+      '                background-position: center;',
+      '                background-repeat: no-repeat;',
+      '                pointer-events: none;',
+      '                z-index: 999999;',
+      '            }',
+      '            ` : \'\'}',
+      '',
+      '            /* Companion HUD Draggable Menu */',
+      '            #bloxdutility-client-menu {',
+      '                position: fixed;',
+      '                left: 20px;',
+      '                top: 20px;',
+      '                background: rgba(13, 20, 35, 0.95);',
+      '                border: 2px solid \${themeColor};',
+      '                border-radius: 12px;',
+      '                padding: 12px;',
+      '                color: #f8f9fa;',
+      '                font-family: system-ui, -apple-system, sans-serif;',
+      '                width: 580px;',
+      '                height: 340px;',
+      '                z-index: 99990;',
+      '                box-shadow: 0 10px 30px rgba(0,0,0,0.8);',
+      '                backdrop-filter: blur(12px);',
+      '                transition: opacity 0.2s ease;',
+      '                display: flex;',
+      '                flex-direction: column;',
+      '                user-select: none;',
+      '            }',
+      '',
+      '            /* Keystrokes Panel */',
+      '            #bloxdutility-keys {',
+      '                position: fixed;',
+      '                bottom: 24px;',
+      '                right: 24px;',
+      '                background: rgba(13,20,35,0.88);',
+      '                padding: 8px 12px 10px 12px;',
+      '                border-radius: 12px;',
+      '                border: 2px solid \${themeColor};',
+      '                font-family: system-ui, sans-serif;',
+      '                z-index: 99999;',
+      '                cursor: move;',
+      '                display: \${hasKeys ? \'flex\' : \'none\'};',
+      '                flex-direction: column;',
+      '                gap: 4px;',
+      '                box-shadow: 0 8px 24px rgba(0,0,0,0.6);',
+      '                backdrop-filter: blur(6px);',
+      '                width: 104px;',
+      '                user-select: none;',
+      '            }',
+      '            #bloxdutility-keys .k-row { display: flex; gap: 4px; justify-content: center; }',
+      '            #bloxdutility-keys .key-btn {',
+      '                width: 24px; height: 24px;',
+      '                display: inline-flex; align-items: center; justify-content: center;',
+      '                font-size: 10px; font-weight: 800;',
+      '                background: rgba(255,255,255,0.1);',
+      '                border-radius: 4px; border-bottom: 2px solid rgba(0,0,0,0.4);',
+      '                color: #ffffff; transition: 0.05s;',
+      '            }',
+      '            #bloxdutility-keys .key-btn.active {',
+      '                background: \${themeColor} !important;',
+      '                color: #000000 !important;',
+      '                transform: translateY(1.5px);',
+      '                border-bottom-width: 1px;',
+      '            }',
+      '',
+      '            /* CPS Floating overlay */',
+      '            #bloxdutility-cps-widget {',
+      '                position: fixed;',
+      '                bottom: 110px;',
+      '                right: 24px;',
+      '                background: rgba(13,20,35,0.88);',
+      '                padding: 6px 14px;',
+      '                border-radius: 8px;',
+      '                border: 2px solid \${themeColor};',
+      '                font-family: system-ui, sans-serif;',
+      '                font-size: 11px;',
+      '                font-weight: 950;',
+      '                color: #ffffff;',
+      '                z-index: 99998;',
+      '                cursor: move;',
+      '                display: \${hasCps ? \'flex\' : \'none\'};',
+      '                align-items: center;',
+      '                gap: 6px;',
+      '                box-shadow: 0 4px 15px rgba(0,0,0,0.5);',
+      '                backdrop-filter: blur(6px);',
+      '                user-select: none;',
+      '            }',
+      '',
+      '            /* Optimizer elements */',
+      '            \${hasBoost ? `',
+      '            .scroller-content, .card-grid {',
+      '                content-visibility: auto;',
+      '                contain-intrinsic-size: 250px;',
+      '            }',
+      '            body, html {',
+      '                scroll-behavior: auto !important;',
+      '            }',
+      '            ` : \'\'}',
+      '        `;',
+      '        document.head.appendChild(customStyle);',
+      '    }',
+      '',
+      '    // Apply runtime configurations and build tabs UI',
+      '    function applyConfigurations(config) {',
+      '        activeThemeColor = config.color || "#f59e0b";',
+      '        activeCrosshairDataUrl = config.crosshair || "";',
+      '        features = config.features || { fps: true, boost: false, key: true, autosprint: false, cps: true, drag: false, sparks: false, hitsound: false, direction: false, zoom: false, bloom: false, tickwood: false, focusring: false, togglesneak: false, jumpbuffer: false, nightvision: false, streamer: false };',
+      '        try {',
+      '            localStorage.setItem("bloxd_client_persisted_theme_color", activeThemeColor);',
+      '            localStorage.setItem("bloxd_client_persisted_crosshair_url", activeCrosshairDataUrl);',
+      '            localStorage.setItem("bloxd_client_persisted_features", JSON.stringify(features));',
+      '        } catch(e) {}',
+      '',
+      '        // Set up crosshair element',
+      '        let chEl = document.getElementById(\'bloxdutility-custom-crosshair\');',
+      '        if (activeCrosshairDataUrl) {',
+      '            if (!chEl) {',
+      '                chEl = document.createElement(\'div\');',
+      '                chEl.id = \'bloxdutility-custom-crosshair\';',
+      '                chEl.style.transition = \'transform 0.08s ease-out\';',
+      '                document.body.appendChild(chEl);',
+      '            }',
+      '        } else {',
+      '            if (chEl) chEl.remove();',
+      '        }',
+      '',
+      '        // Setup real-game Custom Strafe HUD around crosshair',
+      '        let strafeHUD = document.getElementById(\'bloxdutility-game-strafe-hud\');',
+      '        if (features.direction) {',
+      '            if (!strafeHUD) {',
+      '                strafeHUD = document.createElement(\'div\');',
+      '                strafeHUD.id = \'bloxdutility-game-strafe-hud\';',
+      '                strafeHUD.style.cssText = \'position: fixed; left: 50%; top: 50%; width: 80px; height: 80px; transform: translate(-50%, -50%); pointer-events: none; z-index: 999998; font-family: monospace; transition: 0.1s;\';',
+      '                strafeHUD.innerHTML = `',
+      '                   <div id="game-arrow-W" style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(255,255,255,0.20); text-shadow: 0 0 3px #000; transition: color 0.08s;">▲</div>',
+      '                   <div id="game-arrow-A" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: rgba(255,255,255,0.20); text-shadow: 0 0 3px #000; transition: color 0.08s;">◀</div>',
+      '                   <div id="game-arrow-S" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(255,255,255,0.20); text-shadow: 0 0 3px #000; transition: color 0.08s;">▼</div>',
+      '                   <div id="game-arrow-D" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: rgba(255,255,255,0.20); text-shadow: 0 0 3px #000; transition: color 0.08s;">▶</div>',
+      '                `;',
+      '                document.body.appendChild(strafeHUD);',
+      '            }',
+      '        } else {',
+      '            if (strafeHUD) strafeHUD.remove();',
+      '        }',
+      '',
+      '        // Re-inject stylesheet rules',
+      '        injectStyles(activeThemeColor, activeCrosshairDataUrl, features.boost, features.key, features.cps);',
+      '        injectFontAwesome();',
+      '',
+      '        // Build Draggable Menu UI',
+      '        let menu = document.getElementById(\'bloxdutility-client-menu\');',
+      '        if (!menu) {',
+      '            menu = document.createElement(\'div\');',
+      '            menu.id = \'bloxdutility-client-menu\';',
+      '            document.body.appendChild(menu);',
+      '            makeInGameElementDraggable(menu, \'bloxd_pos_client_menu\');',
+      '        }',
+      '',
+      '        // Construct internal panels HTML',
+      '        const homeHtml = `',
+      '            <div id="b-panel-home" style="display: \\${activeMenuTab === \'home\' ? \'flex\' : \'none\'}; flex-direction: column; gap: 8px; font-size: 13px; color: #c9d1d9; height: 100%;">',
+      '                <div style="font-weight: 800; color: \\${activeThemeColor}; font-size: 16px; margin-bottom: 4px;">Welcome to BloxdUtility</div>',
+      '                <p style="color: #8b949e; line-height: 1.4; font-size: 11px;">Supreme client utilities optimized for speed. Standalone Offline Mode activates locally instantly.</p>',
+      '                <div style="color: #50fa7b; font-weight: bold; font-size: 11px; margin-top: 10px;"><i class="fas fa-check-circle"></i> Status: Standalone Local Mode (Settings saved instantly to your browser storage)</div>',
+      '            </div>',
+      '        `;',
+      '',
+      '        const combatHtml = `',
+      '            <div id="b-panel-combat" style="display: \\${activeMenuTab === \'combat\' ? \'block\' : \'none\'}; font-size: 13px; color: #c9d1d9;">',
+      '                <div style="font-weight: 800; color: \\${activeThemeColor}; font-size: 16px; margin-bottom: 8px;">Combat Settings</div>',
+      '                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-bottom: 12px;">',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.cps ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'cps\')" style="width: 14px; height: 14px;">',
+      '                        <span>Floating CPS Widget</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.boost ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'boost\')" style="width: 14px; height: 14px;">',
+      '                        <span>Click Input Booster Patches</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.sparks ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'sparks\')" style="width: 14px; height: 14px;">',
+      '                        <span>PvP Spark hit Particles</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.hitsound ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'hitsound\')" style="width: 14px; height: 14px;">',
+      '                        <span>Auditory Sound-Click Ticks (No cheats)</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.tickwood ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'tickwood\')" style="width: 14px; height: 14px;">',
+      '                        <span>Organic Wooden Pop Hit-Sound</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.focusring ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'focusring\')" style="width: 14px; height: 14px;">',
+      '                        <span>Melee Center Aim Guide Ring</span>',
+      '                    </label>',
+      '                </div>',
+      '                <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; color: #8be9fd; font-weight: bold; font-size: 12px;">Click stats: <span id="b-combat-cps-val">0 CPS</span></div>',
+      '            </div>',
+      '        `;',
+      '',
+      '        const movementHtml = `',
+      '            <div id="b-panel-movement" style="display: \\${activeMenuTab === \'movement\' ? \'block\' : \'none\'}; font-size: 13px; color: #c9d1d9;">',
+      '                <div style="font-weight: 800; color: \\${activeThemeColor}; font-size: 16px; margin-bottom: 8px;">Movement Settings</div>',
+      '                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.autosprint ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'autosprint\')" style="width: 14px; height: 14px;">',
+      '                        <span>Auto-Sprint (Hold Forward)</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.togglesneak ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'togglesneak\')" style="width: 14px; height: 14px;">',
+      '                        <span>T-Key Toggle Permanent Sneaking</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.jumpbuffer ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'jumpbuffer\')" style="width: 14px; height: 14px;">',
+      '                        <span>Safe Continuous Jump Buffer</span>',
+      '                    </label>',
+      '                </div>',
+      '                <p style="color: #8b949e; line-height: 1.4; font-size: 11px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px;">Run automatically at full acceleration when forward key is held. Toggle permanent sneak with T, and leverage momentum buffering.</p>',
+      '            </div>',
+      '        `;',
+      '',
+      '        const visualsHtml = `',
+      '            <div id="b-panel-visuals" style="display: \\${activeMenuTab === \'visuals\' ? \'block\' : \'none\'}; font-size: 13px; color: #c9d1d9;">',
+      '                <div style="font-weight: 800; color: \\${activeThemeColor}; font-size: 16px; margin-bottom: 8px;">Visual Options</div>',
+      '                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin-bottom: 12px;">',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.fps ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'fps\')" style="width: 14px; height: 14px;">',
+      '                        <span>Performance FPS Label</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.key ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'key\')" style="width: 14px; height: 14px;">',
+      '                        <span>Keystrokes (WASD+LRMB)</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.drag ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'drag\')" style="width: 14px; height: 14px;">',
+      '                        <span>Draggable UI Layouts</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.direction ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'direction\')" style="width: 14px; height: 14px;">',
+      '                        <span>Strafe HUD Direction Arrows</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.zoom ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'zoom\')" style="width: 14px; height: 14px;">',
+      '                        <span>C-Key Zoom Magnifier Lens</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.bloom ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'bloom\')" style="width: 14px; height: 14px;">',
+      '                        <span>Crosshair Recoil Bloom Pulsar</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.nightvision ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'nightvision\')" style="width: 14px; height: 14px;">',
+      '                        <span>Night Vision Fullbright Tweak</span>',
+      '                    </label>',
+      '                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">',
+      '                        <input type="checkbox" \\${features.streamer ? \'checked\' : \'\'} onchange="window.bloxdutility_toggle(\'streamer\')" style="width: 14px; height: 14px;">',
+      '                        <span>Streamer Minimal Clean UI</span>',
+      '                    </label>',
+      '                </div>',
+      '            </div>',
+      '        `;',
+      '',
+      '        menu.innerHTML = `',
+      '            <!-- Prestige-like Header -->',
+      '            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 12px;">',
+      '                <div style="display: flex; align-items: center; gap: 8px;">',
+      '                    <i class="fas fa-star" style="color: \${activeThemeColor}; font-size: 14px;"></i>',
+      '                    <span style="font-size: 15px; font-weight: 900; letter-spacing: 1px; color: #ffffff; text-transform: uppercase;">BloxdUtility</span>',
+      '                </div>',
+      '                <div style="display: flex; gap: 10px; align-items: center;">',
+      '                    <a href="https://github.com/FallenNightA" target="_blank" title="GitHub" style="color: #ffffff; opacity: 0.7; text-decoration: none;"><i class="fab fa-github" style="font-size: 14px;"></i></a>',
+      '                    <a href="https://youtube.com/@newismaharanisyahrir1005" target="_blank" title="YouTube" style="color: #ff0000; opacity: 0.7; text-decoration: none;"><i class="fab fa-youtube" style="font-size: 14px;"></i></a>',
+      '                </div>',
+      '            </div>',
+      '            ',
+      '            <div style="display: flex; flex: 1; height: calc(100% - 32px); overflow: hidden;">',
+      '                <!-- Tab navigation -->',
+      '                <div style="width: 120px; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px; padding-right: 10px;">',
+      '                    <button id="b-tabBtn-home" onclick="window.bloxdutility_switchTab(\'home\')" style="width: 100%; border: none; padding: 8px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: left; background: \${activeMenuTab === \'home\' ? \'rgba(255,255,255,0.12)\' : \'transparent\'}; color: \${activeMenuTab === \'home\' ? activeThemeColor : \'#8b949e\'}; cursor: pointer; transition: 0.15s;">Home</button>',
+      '                    <button id="b-tabBtn-combat" onclick="window.bloxdutility_switchTab(\'combat\')" style="width: 100%; border: none; padding: 8px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: left; background: \${activeMenuTab === \'combat\' ? \'rgba(255,255,255,0.12)\' : \'transparent\'}; color: \${activeMenuTab === \'combat\' ? activeThemeColor : \'#8b949e\'}; cursor: pointer; transition: 0.15s;">Combat</button>',
+      '                    <button id="b-tabBtn-movement" onclick="window.bloxdutility_switchTab(\'movement\')" style="width: 100%; border: none; padding: 8px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: left; background: \${activeMenuTab === \'movement\' ? \'rgba(255,255,255,0.12)\' : \'transparent\'}; color: \${activeMenuTab === \'movement\' ? activeThemeColor : \'#8b949e\'}; cursor: pointer; transition: 0.15s;">Movement</button>',
+      '                    <button id="b-tabBtn-visuals" onclick="window.bloxdutility_switchTab(\'visuals\')" style="width: 100%; border: none; padding: 8px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: left; background: \${activeMenuTab === \'visuals\' ? \'rgba(255,255,255,0.12)\' : \'transparent\'}; color: \${activeMenuTab === \'visuals\' ? activeThemeColor : \'#8b949e\'}; cursor: pointer; transition: 0.15s;">Visuals</button>',
+      '                </div>',
+      '                ',
+      '                <!-- Tab pane content viewport -->',
+      '                <div style="flex: 1; padding-left: 14px; overflow-y: auto;">',
+      '                    \${homeHtml}',
+      '                    \${combatHtml}',
+      '                    \${movementHtml}',
+      '                    \${visualsHtml}',
+      '                </div>',
+      '            </div>',
+      '        `;',
+      '',
+      '        // Render WASD panels',
+      '        let keysPanel = document.getElementById(\'bloxdutility-keys\');',
+      '        if (features.key) {',
+      '            if (!keysPanel) {',
+      '                keysPanel = document.createElement(\'div\');',
+      '                keysPanel.id = \'bloxdutility-keys\';',
+      '                keysPanel.innerHTML = `',
+      '                    <div class="k-row">',
+      '                        <span id="bk-LMB" class="key-btn" style="width: 28px; font-size: 8px;">LMB</span>',
+      '                        <span id="bk-W" class="key-btn">W</span>',
+      '                        <span id="bk-RMB" class="key-btn" style="width: 28px; font-size: 8px;">RMB</span>',
+      '                    </div>',
+      '                    <div class="k-row">',
+      '                        <span id="bk-A" class="key-btn">A</span>',
+      '                        <span id="bk-S" class="key-btn">S</span>',
+      '                        <span id="bk-D" class="key-btn">D</span>',
+      '                    </div>',
+      '                    <div class="k-row" style="margin-top: 2px;">',
+      '                        <span id="bk-SPACE" class="key-btn" style="width: 86px; font-size: 8px;">space</span>',
+      '                    </div>',
+      '                `;',
+      '                document.body.appendChild(keysPanel);',
+      '                makeInGameElementDraggable(keysPanel, \'bloxd_pos_keystrokes\');',
+      '            }',
+      '        } else {',
+      '            if (keysPanel) keysPanel.remove();',
+      '        }',
+      '',
+      '        // Set up CPS floating overlay',
+      '        let cpsPanel = document.getElementById(\'bloxdutility-cps-widget\');',
+      '        if (cpsPanel) cpsPanel.remove();',
+      '',
+      '        // Toggle FPS benchmark label',
+      '        let fpsOverlay = document.getElementById(\'bloxdutility-fps\');',
+      '        if (features.fps) {',
+      '            if (!fpsOverlay) {',
+      '                fpsOverlay = document.createElement(\'div\');',
+      '                fpsOverlay.id = \'bloxdutility-fps\';',
+      '                fpsOverlay.style.position = \'fixed\';',
+      '                fpsOverlay.style.right = \'20px\';',
+      '                fpsOverlay.style.top = \'20px\';',
+      '                fpsOverlay.style.background = \'rgba(13,17,23,0.85)\';',
+      '                fpsOverlay.style.padding = \'6px 12px\';',
+      '                fpsOverlay.style.borderRadius = \'6px\';',
+      '                fpsOverlay.style.fontFamily = \'monospace\';',
+      '                fpsOverlay.style.fontSize = \'11px\';',
+      '                fpsOverlay.style.color = \'#50fa7b\';',
+      '                fpsOverlay.style.zIndex = \'99999\';',
+      '                fpsOverlay.style.border = \'1px solid rgba(255,255,255,0.05)\';',
+      '                document.body.appendChild(fpsOverlay);',
+      '                makeInGameElementDraggable(fpsOverlay, \'bloxd_pos_fps_widget\');',
+      '            }',
+      '        } else {',
+      '            if (fpsOverlay) fpsOverlay.remove();',
+      '        }',
+      '    }',
+      '',
+      '    // Swappable menu tabs control',
+      '    window.bloxdutility_switchTab = function(tab) {',
+      '        activeMenuTab = tab;',
+      '        const panels = [\'home\', \'combat\', \'movement\', \'visuals\'];',
+      '        panels.forEach(p => {',
+      '            const el = document.getElementById(\'b-panel-\' + p);',
+      '            if (el) el.style.display = (p === tab) ? \'block\' : \'none\';',
+      '            const btn = document.getElementById(\'b-tabBtn-\' + p);',
+      '            if (btn) {',
+      '                if (p === tab) {',
+      '                    btn.style.background = \'rgba(255,255,255,0.12)\';',
+      '                    btn.style.color = activeThemeColor;',
+      '                } else {',
+      '                    btn.style.background = \'transparent\';',
+      '                    btn.style.color = \'#8b949e\';',
+      '                }',
+      '            }',
+      '        });',
+      '    };',
+      '',
+      '    // Checkbox toggles inside the game themselves',
+      '    window.bloxdutility_toggle = function(name) {',
+      '        features[name] = !features[name];',
+      '        try { localStorage.setItem("bloxd_client_persisted_features", JSON.stringify(features)); } catch(e) {}',
+      '        applyConfigurations({ color: activeThemeColor, crosshair: activeCrosshairDataUrl, features: features });',
+      '        ',
+      '        // POST to cloud so web settings instantly synchronizes',
+      '        fetch(SYNC_URL, {',
+      '            method: \'POST\',',
+      '            headers: { \'Content-Type\': \'application/json\' },',
+      '            body: JSON.stringify({',
+      '                code: SYNC_CODE,',
+      '                color: activeThemeColor,',
+      '                crosshair: activeCrosshairDataUrl,',
+      '                features: features',
+      '            })',
+      '        }).catch(err => console.warn("Background sync post failed:", err));',
+      '    };',
+      '',
+      '    // Link new Room ID from in-game HUD',
+      '    window.bloxdutility_linkCode = function() {',
+      '        const val = document.getElementById(\'b-sync-input\').value.trim().toUpperCase();',
+      '        if (val && val.length >= 3) {',
+      '            localStorage.setItem(\'bloxd_client_sync_code_override\', val);',
+      '            alert(\'⚡ Sync Room Saved: \' + val + \'. Connecting to new cloud state!\');',
+      '            window.location.reload();',
+      '        } else {',
+      '            alert(\'⚠ Invalid room code (minimum 3 chars)\');',
+      '        }',
+      '    };',
+      '',
+      '    // Interactive dragging implementation across overlays',
+      '    function makeInGameElementDraggable(elm, storageKey) {',
+      '        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;',
+      '        ',
+      '        const saved = localStorage.getItem(storageKey);',
+      '        if (saved) {',
+      '            try {',
+      '                const { x, y } = JSON.parse(saved);',
+      '                elm.style.left = x;',
+      '                elm.style.top = y;',
+      '                elm.style.right = \'auto\';',
+      '                elm.style.bottom = \'auto\';',
+      '                elm.style.transform = \'none\';',
+      '            } catch(e) {}',
+      '        }',
+      '        ',
+      '        elm.onmousedown = dragMouseDown;',
+      '        ',
+      '        function dragMouseDown(e) {',
+      '            if (!features.drag) return;',
+      '            if (e.target.tagName === \'INPUT\' || e.target.tagName === \'BUTTON\' || e.target.tagName === \'A\') {',
+      '                return;',
+      '            }',
+      '            e = e || window.event;',
+      '            e.preventDefault();',
+      '            pos3 = e.clientX;',
+      '            pos4 = e.clientY;',
+      '            document.onmouseup = closeDragElement;',
+      '            document.onmousemove = elementDrag;',
+      '        }',
+      '        ',
+      '        function elementDrag(e) {',
+      '            e = e || window.event;',
+      '            e.preventDefault();',
+      '            pos1 = pos3 - e.clientX;',
+      '            pos2 = pos4 - e.clientY;',
+      '            pos3 = e.clientX;',
+      '            pos4 = e.clientY;',
+      '            ',
+      '            let newTop = elm.offsetTop - pos2;',
+      '            let newLeft = elm.offsetLeft - pos1;',
+      '            ',
+      '            if (newTop < 0) newTop = 0;',
+      '            if (newTop > window.innerHeight - elm.offsetHeight) newTop = window.innerHeight - elm.offsetHeight;',
+      '            if (newLeft < 0) newLeft = 0;',
+      '            if (newLeft > window.innerWidth - elm.offsetWidth) newLeft = window.innerWidth - elm.offsetWidth;',
+      '            ',
+      '            elm.style.top = newTop + "px";',
+      '            elm.style.left = newLeft + "px";',
+      '            elm.style.right = \'auto\';',
+      '            elm.style.bottom = \'auto\';',
+      '            elm.style.transform = \'none\';',
+      '        }',
+      '        ',
+      '        function closeDragElement() {',
+      '            document.onmouseup = null;',
+      '            document.onmousemove = null;',
+      '            localStorage.setItem(storageKey, JSON.stringify({',
+      '                x: elm.style.left,',
+      '                y: elm.style.top',
+      '            }));',
+      '        }',
+      '    }',
+      '',
+      '    // Toggle main client HUD menu visibility with shift or key bind',
+      '    window.addEventListener(\'keydown\', (e) => {',
+      '        if ((e.key === \'Shift\' && e.location === 2) || e.key.toUpperCase() === \'K\') {',
+      '            const m = document.getElementById(\'bloxdutility-client-menu\');',
+      '            if (m) {',
+      '                m.style.display = (m.style.display === \'none\') ? \'flex\' : \'none\';',
+      '            }',
+      '        }',
+      '    });',
+      '',
+      '    // Track keystrokes activity in physical keyboard',
+      '    const activeKeys = { \'W\': \'bk-W\', \'A\': \'bk-A\', \'S\': \'bk-S\', \'D\': \'bk-D\', \' \': \'bk-SPACE\' };',
+      '    window.addEventListener(\'keydown\', (e) => {',
+      '        const lookup = activeKeys[e.key.toUpperCase()] || (e.key === \' \' ? \'bk-SPACE\' : \'\');',
+      '        if (lookup) {',
+      '            const button = document.getElementById(lookup);',
+      '            if (button) button.classList.add(\'active\');',
+      '        }',
+      '        const physicalKey = e.key.toUpperCase();',
+      '        if ([\'W\',\'A\',\'S\',\'D\'].includes(physicalKey)) {',
+      '            const arrowEl = document.getElementById(\'game-arrow-\' + physicalKey);',
+      '            if (arrowEl && features.direction) arrowEl.style.color = activeThemeColor;',
+      '        }',
+      '        if (physicalKey === \'C\' && features.zoom) {',
+      '            const canvas = document.querySelector(\'canvas\') || document.body;',
+      '            if (canvas) {',
+      '                canvas.style.transition = \'transform 0.15s ease-out\';',
+      '                canvas.style.transform = \'scale(1.22)\';',
+      '            }',
+      '        }',
+      '        // Auto-Sprint trigger key listener',
+      '        if (e.key.toUpperCase() === \'W\') {',
+      '            w_pressed = true;',
+      '            if (features.autosprint) {',
+      '                const sprintEvent = new KeyboardEvent(\'keydown\', {',
+      '                    key: \'Shift\',',
+      '                    code: \'ShiftLeft\',',
+      '                    keyCode: 16,',
+      '                    which: 16,',
+      '                    bubbles: true',
+      '                });',
+      '                window.dispatchEvent(sprintEvent);',
+      '            }',
+      '        }',
+      '    });',
+      '    window.addEventListener(\'keyup\', (e) => {',
+      '        const lookup = activeKeys[e.key.toUpperCase()] || (e.key === \' \' ? \'bk-SPACE\' : \'\');',
+      '        if (lookup) {',
+      '            const button = document.getElementById(lookup);',
+      '            if (button) button.classList.remove(\'active\');',
+      '        }',
+      '        const physicalKey = e.key.toUpperCase();',
+      '        if ([\'W\',\'A\',\'S\',\'D\'].includes(physicalKey)) {',
+      '            const arrowEl = document.getElementById(\'game-arrow-\' + physicalKey);',
+      '            if (arrowEl) arrowEl.style.color = \'rgba(255,255,255,0.2)\';',
+      '        }',
+      '        if (physicalKey === \'C\') {',
+      '            const canvas = document.querySelector(\'canvas\') || document.body;',
+      '            if (canvas) {',
+      '                canvas.style.transform = \'none\';',
+      '            }',
+      '        }',
+      '        if (e.key.toUpperCase() === \'W\') {',
+      '            w_pressed = false;',
+      '        }',
+      '    });',
+      '',
+      '    // Mouse click tracking for Keystroke triggers (LMB / RMB)',
+      '    window.addEventListener(\'mousedown\', (e) => {',
+      '        const lookup = e.button === 2 ? \'bk-RMB\' : \'bk-LMB\';',
+      '        const button = document.getElementById(lookup);',
+      '        if (button) button.classList.add(\'active\');',
+      '        ',
+      '        if (features.cps) {',
+      '            clickTimestamps.push(performance.now());',
+      '            updateLiveCps();',
+      '        }',
+      '        ',
+      '        // Spark particles hit visualizer in real-game',
+      '        if (features.sparks) {',
+      '            const colors = ["#ff5555", "#50fa7b", "#ffbe5c", "#8be9fd", "#ff79c6"];',
+      '            const cX = window.innerWidth / 2;',
+      '            const cY = window.innerHeight / 2;',
+      '            for (let i = 0; i < 6; i++) {',
+      '                const spark = document.createElement("div");',
+      '                spark.style.position = "absolute";',
+      '                spark.style.left = cX + "px";',
+      '                spark.style.top = cY + "px";',
+      '                spark.style.width = "4px";',
+      '                spark.style.height = "4px";',
+      '                spark.style.borderRadius = "50%";',
+      '                spark.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];',
+      '                spark.style.pointerEvents = "none";',
+      '                spark.style.zIndex = "999999";',
+      '                spark.style.transition = "all 0.35s cubic-bezier(0.1, 0.8, 0.3, 1)";',
+      '                document.body.appendChild(spark);',
+      '                ',
+      '                const angle = Math.random() * Math.PI * 2;',
+      '                const distance = 8 + Math.random() * 20;',
+      '                ',
+      '                requestAnimationFrame(() => {',
+      '                    spark.style.transform = `translate(\\${Math.cos(angle) * distance}px, \\${Math.sin(angle) * distance}px) scale(0)`;',
+      '                    spark.style.opacity = "0";',
+      '                });',
+      '                ',
+      '                setTimeout(() => spark.remove(), 350);',
+      '            }',
+      '        }',
+      '        ',
+      '        // Audio feedback click sounds in real-game',
+      '        if (features.hitsound) {',
+      '            try {',
+      '                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();',
+      '                const osc = audioCtx.createOscillator();',
+      '                const gain = audioCtx.createGain();',
+      '                osc.connect(gain);',
+      '                gain.connect(audioCtx.destination);',
+      '                osc.frequency.setValueAtTime(e.button === 2 ? 420 : 680, audioCtx.currentTime);',
+      '                osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);',
+      '                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);',
+      '                gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);',
+      '                osc.start();',
+      '                osc.stop(audioCtx.currentTime + 0.05);',
+      '            } catch(e) {}',
+      '        }',
+      '        ',
+      '        // Crosshair Bloom Recoil pulsing in real-game',
+      '        if (features.bloom) {',
+      '            const chEl = document.getElementById(\'bloxdutility-custom-crosshair\');',
+      '            if (chEl) {',
+      '                chEl.style.transform = \'translate(-50%, -50%) scale(1.4)\';',
+      '                setTimeout(() => {',
+      '                    chEl.style.transform = \'translate(-50%, -50%) scale(1)\';',
+      '                }, 85);',
+      '            }',
+      '        }',
+      '    });',
+      '    window.addEventListener(\'mouseup\', (e) => {',
+      '        const lookup = e.button === 2 ? \'bk-RMB\' : \'bk-LMB\';',
+      '        const button = document.getElementById(lookup);',
+      '        if (button) button.classList.remove(\'active\');',
+      '    });',
+      '',
+      '    function updateLiveCps() {',
+      '        const now = performance.now();',
+      '        clickTimestamps = clickTimestamps.filter(t => now - t < 1000);',
+      '        const counterText = document.getElementById(\'b-cps-text\');',
+      '        if (counterText) counterText.textContent = `\${clickTimestamps.length} CPS\`;',
+      '        ',
+      '        const inlineCounter = document.getElementById(\'b-combat-cps-val\');',
+      '        if (inlineCounter) inlineCounter.textContent = `\${clickTimestamps.length} CPS\`;',
+      '    }',
+      '    setInterval(() => {',
+      '        if (features.cps) updateLiveCps();',
+      '    }, 150);',
+      '',
+      '    // FPS logic loop',
+      '    let frames = 0;',
+      '    let lastTime = performance.now();',
+      '    function updateFpsCount() {',
+      '        const fpsEl = document.getElementById(\'bloxdutility-fps\');',
+      '        if (fpsEl && features.fps) {',
+      '            frames++;',
+      '            const now = performance.now();',
+      '            if (now - lastTime >= 1000) {',
+      '                const currentFps = Math.round((frames * 1000) / (now - lastTime));',
+      '                let cpsText = "";',
+      '                if (features.cps) cpsText = ` | <span style="color:#8be9fd;">\\${clickTimestamps.length} CPS</span>`;',
+      '                fpsEl.innerHTML = `<span style="color:#50fa7b;">\\${currentFps} FPS</span>\\${cpsText}`;',
+      '                frames = 0;',
+      '                lastTime = now;',
+      '            }',
+      '        }',
+      '        requestAnimationFrame(updateFpsCount);',
+      '    }',
+      '    updateFpsCount();',
+      '',
+      '    // Background client config retrieval from utility API endpoints',
+      '    async function startPollingCloudState() {',
+      '        try {',
+      '            const response = await fetch(`\${SYNC_URL}?code=\${SYNC_CODE}`);',
+      '            if (response.ok) {',
+      '                const data = await response.json();',
+      '                if (data.found && data.config) {',
+      '                    applyConfigurations(data.config);',
+      '                }',
+      '            }',
+      '        } catch (error) {',
+      '            console.warn("Cloud synchronization query failed:", error);',
+      '        }',
+      '    }',
+      '',
+      '    // Setup original start parameters after body loading',
+      '    function startClient() {',
+      '        if (!document.body || !document.head) {',
+      '            setTimeout(startClient, 50);',
+      '            return;',
+      '        }',
+      '        applyConfigurations({ color: activeThemeColor, crosshair: activeCrosshairDataUrl, features: features });',
+      '        setInterval(startPollingCloudState, 1500);',
+      '    }',
+      '    startClient();',
+      '',
+      '    console.log("BloxdUtility Companion Client (Dynamic Sync Model) Initiated successfully!");',
+      '})();'
+    ].join('\n');
+
+    document.getElementById("client-script-code").value = scriptText;
+  }
+
+  /* ===== VSCODIUM LOCAL DEVKIT TABS & LOADING ===== */
+  function switchSdkInfoTab(tabName) {
+    document.querySelectorAll('.sdk-tab-pane').forEach(el => el.style.display = 'none');
+    document.getElementById('sdk-tab-content-' + tabName).style.display = 'block';
+    
+    const btnStart = document.getElementById('btn-sdk-tab-start');
+    const btnCli = document.getElementById('btn-sdk-tab-cli');
+    const btnOs = document.getElementById('btn-sdk-tab-os');
+    
+    [btnStart, btnCli, btnOs].forEach(b => {
+      if (b) {
+        b.style.backgroundColor = 'var(--nav-hover)';
+        b.style.color = 'var(--text)';
+      }
+    });
+    
+    const activeBtn = document.getElementById('btn-sdk-tab-' + tabName);
+    if (activeBtn) {
+      activeBtn.style.backgroundColor = '#3b82f6';
+      activeBtn.style.color = 'white';
+    }
+  }
+
+  function switchVscTab(tabName) {
+    if (tabName === 'helper') {
+      document.getElementById('vsc-view-helper').style.display = 'block';
+      document.getElementById('vsc-view-bat').style.display = 'none';
+      document.getElementById('btn-vsc-helper').style.backgroundColor = '#3b82f6';
+      document.getElementById('btn-vsc-helper').style.color = 'white';
+      document.getElementById('btn-vsc-bat').style.backgroundColor = 'var(--nav-hover)';
+      document.getElementById('btn-vsc-bat').style.color = 'var(--text)';
+      document.getElementById('vsc-dl-link').href = './assets/local-cli/bloxd-helper.js';
+      document.getElementById('vsc-dl-link').setAttribute('download', 'bloxd-helper.js');
+    } else {
+      document.getElementById('vsc-view-helper').style.display = 'none';
+      document.getElementById('vsc-view-bat').style.display = 'block';
+      document.getElementById('btn-vsc-helper').style.backgroundColor = 'var(--nav-hover)';
+      document.getElementById('btn-vsc-helper').style.color = 'var(--text)';
+      document.getElementById('btn-vsc-bat').style.backgroundColor = '#3b82f6';
+      document.getElementById('btn-vsc-bat').style.color = 'white';
+      document.getElementById('vsc-dl-link').href = './assets/local-cli/bloxd.bat';
+      document.getElementById('vsc-dl-link').setAttribute('download', 'bloxd.bat');
+    }
+  }
+
+  function loadVscFilesContent() {
+    fetch('./assets/local-cli/bloxd-helper.js')
+      .then(res => res.text())
+      .then(text => {
+        document.getElementById('vsc-code-helper').textContent = text;
+        document.getElementById('vsc-output-helper').value = text;
+        if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
+      })
+      .catch(err => {
+        document.getElementById('vsc-code-helper').textContent = 'Error loading content. Please download direct.';
+      });
+
+    fetch('./assets/local-cli/bloxd.bat')
+      .then(res => res.text())
+      .then(text => {
+        document.getElementById('vsc-code-bat').textContent = text;
+        document.getElementById('vsc-output-bat').value = text;
+        if(typeof window.refreshSyntax === 'function') window.refreshSyntax();
+      })
+      .catch(err => {
+        document.getElementById('vsc-code-bat').textContent = 'Error loading content. Please download direct.';
+      });
+  }
+
   /* ===== ON-LOAD INITS ===== */
   window.addEventListener('DOMContentLoaded', () => {
     renderQTEParams(); generateVFXCode(); generateShopCode(); renderHUDParams();
     initPalette(); buildPaintGrid(); 
+    loadVscFilesContent();
+
+    // Client Hub Init
+    initClientLocalStorage();
+    initClientChGrid();
+    regenerateClientScript();
+    initSimulatorDragging();
+
+    // Live Keyboard Monitors for Client Sandbox Simulator
+    const activePreviewKeys = { 'W': 'preview-key-W', 'A': 'preview-key-A', 'S': 'preview-key-S', 'D': 'preview-key-D', ' ': 'preview-key-SPACE' };
+    window.addEventListener('keydown', (e) => {
+        const activeTool = document.getElementById('tool-client-hub');
+        if (!activeTool || !activeTool.classList.contains('active')) return;
+        
+        let targetKey = e.key.toUpperCase();
+        if (e.key === ' ') targetKey = ' ';
+        const elementId = activePreviewKeys[targetKey];
+        if (elementId) {
+            const btnEl = document.getElementById(elementId);
+            if (btnEl) {
+                btnEl.style.backgroundColor = activeThemeColor;
+                btnEl.style.color = '#000000';
+                btnEl.style.transform = 'translateY(1px)';
+                btnEl.style.borderBottomWidth = '1px';
+            }
+        }
+
+        // Highlight WASD Simulator strafe arrow indicators
+        if (['W','A','S','D'].includes(targetKey)) {
+            const arrowEl = document.getElementById('sim-arrow-' + targetKey);
+            if (arrowEl) arrowEl.style.color = activeThemeColor;
+        }
+
+        // Hold-C Binocular Zoom scale multiplier (1.22x zoom focus)
+        if (targetKey === 'C') {
+            const zoomActive = document.getElementById("client-feat-zoom") ? document.getElementById("client-feat-zoom").checked : true;
+            if (zoomActive) {
+                const previewMap = document.getElementById("simulator-map-box");
+                if (previewMap) {
+                    previewMap.style.transition = "transform 0.15s ease-out";
+                    previewMap.style.transform = "scale(1.22)";
+                    previewMap.style.borderColor = activeThemeColor;
+                }
+            }
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        let targetKey = e.key.toUpperCase();
+        if (e.key === ' ') targetKey = ' ';
+        const elementId = activePreviewKeys[targetKey];
+        if (elementId) {
+            const btnEl = document.getElementById(elementId);
+            if (btnEl) {
+                btnEl.style.backgroundColor = 'rgba(255,255,255,0.15)';
+                btnEl.style.color = '#e6edf3';
+                btnEl.style.transform = 'none';
+                btnEl.style.borderBottomWidth = '2px';
+            }
+        }
+
+        // Decay WASD Simulator strafe arrow indicators
+        if (['W','A','S','D'].includes(targetKey)) {
+            const arrowEl = document.getElementById('sim-arrow-' + targetKey);
+            if (arrowEl) arrowEl.style.color = 'rgba(255,255,255,0.18)';
+        }
+
+        // Reset Hold-C Binocular Zoom scaler
+        if (targetKey === 'C') {
+            const previewMap = document.getElementById("simulator-map-box");
+            if (previewMap) {
+                previewMap.style.transform = "none";
+                previewMap.style.borderColor = "var(--border)";
+            }
+        }
+    });
 
     // Dynamically inject all official Bloxd Block names into the New File autocomplete datalist!
     const autocompleteList = document.getElementById("bloxd-blocks-autocomplete");
@@ -1794,10 +3853,8 @@ api.playParticleEffect({
 
 </script>
 
-<!-- Client Support Integration -->
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="evtdw1gZsxBaNm9xBhBLQ";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
+<!-- Global Bloxd AI Agent -->
+<script src="./assets/js/global-ai-chat.js"></script>
 
   <!-- MOBILE OVERLAY -->
   <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>

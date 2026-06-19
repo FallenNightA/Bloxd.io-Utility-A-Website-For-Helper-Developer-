@@ -6,7 +6,58 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     const root = process.cwd();
-    const assets = {
+
+    // Migrate root folders to public/ to enable serving them statically
+    [
+        { srcName: 'skyBoxes', destName: 'public/skyBoxes' },
+        { srcName: 'models', destName: 'public/models' },
+        { srcName: 'textures', destName: 'public/textures' },
+        { srcName: 'textures2', destName: 'public/textures' },
+        { srcName: 'textures3', destName: 'public/textures' }
+    ].forEach(({ srcName, destName }) => {
+        const src = path.join(root, srcName);
+        const dest = path.join(root, destName);
+        if (fs.existsSync(src)) {
+            if (!fs.existsSync(dest)) {
+                fs.mkdirSync(dest, { recursive: true });
+            }
+            
+            const moveRecursive = (srcDir: string, destDir: string) => {
+                const entries = fs.readdirSync(srcDir);
+                entries.forEach(entry => {
+                    if (entry.startsWith('.')) return;
+                    const srcPath = path.join(srcDir, entry);
+                    const destPath = path.join(destDir, entry);
+                    if (fs.statSync(srcPath).isDirectory()) {
+                        if (!fs.existsSync(destPath)) {
+                            fs.mkdirSync(destPath, { recursive: true });
+                        }
+                        moveRecursive(srcPath, destPath);
+                        try {
+                            fs.rmdirSync(srcPath);
+                        } catch (e) {}
+                    } else {
+                        try {
+                            if (!fs.existsSync(destPath)) {
+                                fs.renameSync(srcPath, destPath);
+                            } else {
+                                fs.unlinkSync(srcPath);
+                            }
+                        } catch (e) {
+                            console.error(`Failed to move file ${srcPath} to ${destPath}`, e);
+                        }
+                    }
+                });
+            };
+            
+            moveRecursive(src, dest);
+            try {
+                fs.rmdirSync(src);
+            } catch (e) {}
+        }
+    });
+
+    const assets: { textures: string[]; models: string[]; skyBoxes: string[] } = {
         textures: [],
         models: [],
         skyBoxes: []
@@ -25,7 +76,9 @@ export async function GET() {
         }
 
         // De-duplicate items
-        assets[type] = Array.from(new Set(items));
+        if (type === 'textures' || type === 'models' || type === 'skyBoxes') {
+            assets[type] = Array.from(new Set(items));
+        }
     });
 
     // Write the static assets.json fallback for standalone/static environments like GitHub Pages and VS Code Live Server
@@ -37,3 +90,4 @@ export async function GET() {
 
     return NextResponse.json(assets);
 }
+
