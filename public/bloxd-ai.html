@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloxd Utility | AI Assistant</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+    <!-- Prism Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    
+    <!-- Tailwind CSS & Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        /* Theme Variable declarations */
+        :root {
+            --bg-body: #0b0f19;
+            --bg-sidebar: #0f172a;
+            --bg-main: #090d16;
+            --bg-header: #0c1220;
+            --bg-footer: #0c1220;
+            --text-primary: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --nav-hover: rgba(255, 255, 255, 0.04);
+            --msg-user: #1e293b;
+            --msg-assistant: rgba(15, 23, 42, 0.4);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.08);
+            --modal-bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+            --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+            --scrollbar-track: rgba(255, 255, 255, 0.03);
+        }
+
+        body.light-mode {
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-main: #f1f5f9;
+            --bg-header: #ffffff;
+            --bg-footer: #ffffff;
+            --text-primary: #0f172a;
+            --text-muted: #475569;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --nav-hover: rgba(0, 0, 0, 0.04);
+            --msg-user: #e2e8f0;
+            --msg-assistant: #ffffff;
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --input-border: rgba(0, 0, 0, 0.08);
+            --modal-bg: #ffffff;
+            --card-bg: rgba(0, 0, 0, 0.03);
+            --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+            --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+            --scrollbar-track: rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover);
+        }
+
+        /* Nav & Sidebar styling */
+        .sidebar {
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .nav-item:hover {
+            background-color: var(--nav-hover);
+            color: var(--text-primary);
+        }
+        .nav-item.active {
+            background-color: #3b82f6;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Chat history list styling */
+        .chat-history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .chat-history-item:hover {
+            background-color: var(--nav-hover);
+        }
+        .chat-history-item.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Message bubbles */
+        .msg-bubble-user {
+            background-color: var(--msg-user);
+            border: 1px solid var(--border-color);
+            border-bottom-right-radius: 2px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .msg-bubble-assistant {
+            background-color: var(--msg-assistant);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 2px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Markdown styling inside bubbles */
+        .msg-content b, .msg-content strong {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .msg-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--card-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #f43f5e;
+            border: 1px solid var(--border-color);
+        }
+        .msg-content pre {
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Dynamic CSS selector overrides for Light Mode */
+        body.light-mode main {
+            background-color: var(--bg-main) !important;
+        }
+        body.light-mode header {
+            background-color: var(--bg-header) !important;
+            border-color: var(--border-color) !important;
+        }
+        body.light-mode footer {
+            background-color: var(--bg-footer) !important;
+            border-color: var(--border-color) !important;
+        }
+        body.light-mode #active-chat-title {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode .text-white {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode .text-gray-400 {
+            color: var(--text-muted) !important;
+        }
+        body.light-mode .text-gray-300 {
+            color: var(--text-primary) !important;
+            opacity: 0.9;
+        }
+        body.light-mode .text-gray-200 {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode .text-gray-500 {
+            color: var(--text-muted) !important;
+        }
+        body.light-mode .bg-white\/5 {
+            background-color: var(--card-bg) !important;
+        }
+        body.light-mode .border-white\/5 {
+            border-color: var(--border-color) !important;
+        }
+        body.light-mode .border-white\/8 {
+            border-color: var(--border-color) !important;
+        }
+        body.light-mode .border-white\/10 {
+            border-color: var(--border-color) !important;
+        }
+        body.light-mode .hover\:bg-white\/5:hover {
+            background-color: var(--nav-hover) !important;
+        }
+        body.light-mode .hover\:bg-white\/10:hover {
+            background-color: rgba(0, 0, 0, 0.06) !important;
+        }
+        body.light-mode .bg-black\/40 {
+            background-color: rgba(0, 0, 0, 0.02) !important;
+        }
+        body.light-mode .hover\:text-white:hover {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode #settings-modal .bg-\[\#0f172a\] {
+            background-color: var(--modal-bg) !important;
+            color: var(--text-primary) !important;
+        }
+        body.light-mode #settings-modal input, body.light-mode #settings-modal select {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        body.light-mode #settings-modal label {
+            color: #334155 !important;
+        }
+        body.light-mode #settings-modal h3, body.light-mode #settings-modal h4 {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode #delete-modal .bg-\[\#0f172a\] {
+            background-color: var(--modal-bg) !important;
+            color: var(--text-primary) !important;
+        }
+        body.light-mode #delete-modal h3 {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode #chat-history-list i {
+            color: var(--text-muted) !important;
+        }
+        body.light-mode #chat-history-list span {
+            color: var(--text-primary) !important;
+        }
+        body.light-mode #chat-history-list .active span {
+            color: #3b82f6 !important;
+        }
+        body.light-mode #chat-history-list input {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        body.light-mode #api-keys-indicator {
+            border-color: currentColor;
+        }
+        body.light-mode .msg-content code {
+            color: #db2777 !important;
+        }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- Mobile sidebar backdrop -->
+    <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden" onclick="toggleMobileSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar-container" class="sidebar w-72 flex flex-col p-4 custom-scroll h-full flex-shrink-0 fixed lg:static z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <!-- Logo Header -->
+        <div class="flex items-center justify-between mb-8 px-2">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="location.href='index.html'">
+                <img src="/logo.png" alt="Logo" class="w-10 h-10 object-contain">
+                <h1 class="font-bold text-xl tracking-tighter">Bloxd Utility</h1>
+            </div>
+            <button onclick="toggleMobileSidebar()" class="lg:hidden text-gray-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="space-y-1 mb-6">
+            <div class="nav-item" onclick="location.href='index.html'">
+                <i class="fas fa-home mr-3 w-5 text-center"></i> Home
+            </div>
+            <div class="nav-item" onclick="location.href='docs.html'">
+                <i class="fas fa-book mr-3 w-5 text-center"></i> Documentation
+            </div>
+            <div class="nav-item" onclick="location.href='lab.html'">
+                <i class="fas fa-flask mr-3 w-5 text-center"></i> Code Lab
+            </div>
+            <div class="nav-item" onclick="location.href='tools.html'">
+                <i class="fas fa-tools mr-3 w-5 text-center"></i> Dev Tools
+            </div>
+            <div class="nav-item active" onclick="location.href='bloxd-ai.html'">
+                <i class="fas fa-robot mr-3 w-5 text-center"></i> Bloxd AI
+            </div>
+        </nav>
+
+        <!-- Divider -->
+        <div class="border-t border-white/5 my-4"></div>
+
+        <!-- Conversation History Section -->
+        <div class="flex items-center justify-between px-2 mb-3">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Conversations</span>
+            <button onclick="startNewChat()" class="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 font-semibold focus:outline-none">
+                <i class="fas fa-plus"></i> New
+            </button>
+        </div>
+
+        <!-- Chat List -->
+        <div id="chat-history-list" class="flex-1 overflow-y-auto custom-scroll space-y-1 pr-1">
+            <!-- Dynamic chats appended here -->
+        </div>
+
+        <!-- Settings & API keys at bottom -->
+        <div class="border-t border-white/5 pt-4 mt-auto">
+            <button onclick="openSettingsModal()" class="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition text-sm focus:outline-none">
+                <span class="flex items-center gap-2">
+                    <i class="fas fa-cog text-gray-400"></i> Settings & Models
+                </span>
+                <i class="fas fa-chevron-right text-xs text-gray-500"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 flex flex-col h-screen bg-[#090d16] overflow-hidden relative">
+        <!-- Top Navigation Bar -->
+        <header class="h-16 border-b border-white/5 px-6 flex items-center justify-between flex-shrink-0 bg-[#0c1220]">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMobileSidebar()" class="lg:hidden text-gray-400 hover:text-white mr-2 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex flex-col">
+                    <h2 id="active-chat-title" class="font-semibold text-white text-sm">Bloxd AI Assistant</h2>
+                    <span id="active-model-badge" class="text-[10px] text-gray-500 font-mono">Gemini 3.5 Flash</span>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2">
+                <button id="api-keys-indicator" onclick="openSettingsModal()" class="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-1.5 hover:bg-amber-500/20 transition focus:outline-none">
+                    <i class="fas fa-key text-[10px]"></i> Setup API Key
+                </button>
+                <button id="theme-toggle-btn" onclick="toggleDarkMode()" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition focus:outline-none" title="Toggle Theme">
+                    <i class="fas fa-moon text-lg" id="theme-icon"></i>
+                </button>
+                <button onclick="openSettingsModal()" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition focus:outline-none" title="Settings">
+                    <i class="fas fa-sliders text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Message List Container -->
+        <div id="messages-container" class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6 flex flex-col">
+            <!-- Empty state illustration -->
+            <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto p-4">
+                <div class="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6">
+                    <i class="fas fa-robot text-3xl text-blue-400"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Bloxd AI Companion</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Ask questions about scripting, voxel mechanics, game loops, block configurations, or mega-prompts! 
+                </p>
+                <div class="grid grid-cols-2 gap-2 w-full mt-6">
+                    <button onclick="setAiPrompt('How do I handle player jumps in Bloxd?')" class="p-3 text-xs text-left text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 hover:text-white transition focus:outline-none">
+                        "How do I handle player jumps?"
+                    </button>
+                    <button onclick="setAiPrompt('Show me a template for a Bloxd game loop')" class="p-3 text-xs text-left text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 hover:text-white transition focus:outline-none">
+                        "Create a game loop template"
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <footer class="p-4 border-t border-white/5 bg-[#0c1220] flex-shrink-0">
+            <div class="max-w-4xl mx-auto flex gap-3 items-end relative">
+                <!-- Voice AI/TTS control -->
+                <button id="voice-ai-btn" onclick="toggleVoiceOutput()" class="p-3 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition flex-shrink-0 focus:outline-none" title="Voice AI speaking toggle">
+                    <i class="fas fa-volume-mute text-lg" id="voice-icon"></i>
+                </button>
+
+                <!-- Input box wrapper -->
+                <div id="chat-input-wrapper" class="flex-1 relative bg-white/5 border border-white/8 rounded-2xl overflow-hidden focus-within:border-blue-500/40 transition">
+                    <textarea id="chat-input-field" placeholder="Type a message... (Enter to send, Shift+Enter for new line)" rows="1" class="w-full bg-transparent px-4 py-3.5 pr-12 text-sm text-white placeholder-gray-500 outline-none resize-none custom-scroll leading-relaxed" onkeydown="handleInputKeydown(event)"></textarea>
+                    
+                    <!-- Send Button -->
+                    <button id="send-message-btn" onclick="sendChatMessage()" class="absolute right-2 bottom-2 p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition duration-150 focus:outline-none disabled:opacity-50 disabled:pointer-events-none">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- ===== SETTINGS & API KEYS MODAL ===== -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden">
+        <div class="bg-[#0f172a] border border-white/10 rounded-2xl w-full max-w-lg p-6 flex flex-col shadow-2xl mx-4">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-white/5 mb-5">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-sliders text-blue-400"></i> AI Settings & Models
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-white focus:outline-none">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Scrollable Content -->
+            <div class="flex-1 overflow-y-auto custom-scroll space-y-6 max-h-[70vh] pr-1">
+                
+                <!-- API Keys Settings -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fas fa-key"></i> Provider API Keys
+                    </h4>
+                    <p class="text-[11px] text-gray-400 leading-relaxed mb-2">
+                        Keys are stored securely in your browser's local storage.
+                    </p>
+
+                    <!-- Gemini API Key -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-gray-300 flex items-center justify-between">
+                            <span>Gemini API Key</span>
+                            <span class="text-[10px] text-blue-400 uppercase">Server default available</span>
+                        </label>
+                        <input type="password" id="key-input-gemini" placeholder="Paste Gemini API Key..." class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                    </div>
+
+                    <!-- OpenAI API Key -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-gray-300">OpenAI API Key</label>
+                        <input type="password" id="key-input-openai" placeholder="Paste OpenAI API Key..." class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                    </div>
+
+                    <!-- Claude API Key -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-gray-300">Claude API Key</label>
+                        <input type="password" id="key-input-claude" placeholder="Paste Claude API Key..." class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                    </div>
+
+                    <!-- Mistral API Key -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-gray-300">Mistral API Key</label>
+                        <input type="password" id="key-input-mistral" placeholder="Paste Mistral API Key..." class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                    </div>
+                </div>
+
+                <!-- Provider & Model Configuration -->
+                <div class="space-y-4 pt-4 border-t border-white/5">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fas fa-brain"></i> Model Selection Settings
+                    </h4>
+
+                    <!-- Active Provider selection -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-gray-300">Active AI Provider</label>
+                        <select id="setting-provider" onchange="updateProviderDropdownChange()" class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                            <option value="gemini">Google Gemini</option>
+                            <option value="openai">OpenAI ChatGPT</option>
+                            <option value="claude">Anthropic Claude</option>
+                            <option value="mistral">Mistral AI</option>
+                        </select>
+                    </div>
+
+                    <!-- Model Choice for Gemini -->
+                    <div class="space-y-1.5 model-select-group" id="group-gemini">
+                        <label class="text-xs font-medium text-gray-300">Gemini Model Choice</label>
+                        <select id="select-model-gemini" class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Advanced coding & reasoning) [Paid]</option>
+                            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Fast coding & text) [Paid]</option>
+                            <option value="gemini-2.0-ultra">Gemini 2.0 Ultra (High-end coding, long context) [Paid]</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Reliable, general-purpose) [Free / Paid]</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Lightweight & fast) [Free / Paid]</option>
+                            <option value="gemini-1.0-ultra">Gemini 1.0 Ultra (Legacy high-performance) [Paid]</option>
+                            <option value="gemini-1.0-pro">Gemini 1.0 Pro (Simple coding & texting) [Free / Paid]</option>
+                        </select>
+                    </div>
+ 
+                    <!-- Model Choice for OpenAI -->
+                    <div class="space-y-1.5 model-select-group hidden" id="group-openai">
+                        <label class="text-xs font-medium text-gray-300">OpenAI Model Choice</label>
+                        <select id="select-model-openai" class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                            <option value="gpt-4o" selected>GPT-4o (Advanced coding & reasoning) [Paid]</option>
+                            <option value="gpt-4o-mini">GPT-4o-mini (Fast & cost-effective) [Paid]</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo (Optimized for coding) [Paid]</option>
+                            <option value="gpt-4">GPT-4 (General high-performance) [Paid]</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Simple coding & texting) [Free / Paid]</option>
+                        </select>
+                    </div>
+ 
+                    <!-- Model Choice for Claude -->
+                    <div class="space-y-1.5 model-select-group hidden" id="group-claude">
+                        <label class="text-xs font-medium text-gray-300">Claude Model Choice</label>
+                        <select id="select-model-claude" class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                            <option value="claude-sonnet-4.6" selected>Claude Sonnet 4.6 (Balanced coding & general) [Paid]</option>
+                            <option value="claude-fable-5">Claude Fable 5 (Most capable reasoning) [Paid]</option>
+                            <option value="claude-mythos-5">Claude Mythos 5 (Project Glasswing, deep reasoning) [Paid-Invite]</option>
+                            <option value="claude-opus-4-8">Claude Opus 4.8 (Flagship coding, long context) [Paid]</option>
+                            <option value="claude-opus-4-7">Claude Opus 4.7 (Previous flagship, complex tasks) [Paid]</option>
+                            <option value="claude-opus-4-6">Claude Opus 4.6 (General high performance) [Paid]</option>
+                            <option value="claude-opus-4-5">Claude Opus 4.5 (Coding & reasoning) [Paid]</option>
+                            <option value="claude-sonnet-4.5">Claude Sonnet 4.5 (General-purpose & fast) [Paid]</option>
+                            <option value="claude-haiku-4.5">Claude Haiku 4.5 (Fast & cost-effective) [Paid]</option>
+                            <option value="claude-mythos-preview">Claude Mythos Preview (Invitation deep reasoning) [Paid-Invite]</option>
+                        </select>
+                    </div>
+ 
+                    <!-- Model Choice for Mistral -->
+                    <div class="space-y-1.5 model-select-group hidden" id="group-mistral">
+                        <label class="text-xs font-medium text-gray-300">Mistral Model Choice</label>
+                        <select id="select-model-mistral" class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                            <option value="mistral-large-2" selected>Mistral Large 2 (Advanced reasoning & coding) [Paid]</option>
+                            <option value="mistral-small">Mistral Small (Fast & cost-effective) [Paid]</option>
+                            <option value="mistral-medium-3-5">Mistral Medium 3.5 (Balanced general use) [Paid]</option>
+                            <option value="mistral-tiny">Mistral Tiny (Lightweight & quick) [Free / Paid]</option>
+                            <option value="mixtral-8x7b">Mixtral 8x7B (Open-source reasoning) [Free / Paid]</option>
+                            <option value="mixtral-8x22b">Mixtral 8x22B (Open-source advanced reasoning) [Paid]</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Voice Selection -->
+                <div class="space-y-4 pt-4 border-t border-white/5">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fas fa-volume-high"></i> Voice AI Settings
+                    </h4>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-gray-300">Preferred Speaker Voice</label>
+                        <select id="select-voice" class="w-full bg-black/40 border border-white/8 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500/40">
+                            <option value="">Default System Voice</option>
+                        </select>
+                        <p class="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                            💡 **Note**: AI voices are retrieved dynamically from your operating system & browser (e.g., Chrome, Edge, Safari, Windows, macOS, Android, iOS). Different systems or browsers will show multiple high-quality local options!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="mt-6 pt-4 border-t border-white/5 flex gap-2 justify-end">
+                <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white text-sm font-medium transition focus:outline-none">
+                    Cancel
+                </button>
+                <button onclick="saveAllSettings()" class="px-5 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 text-sm font-semibold transition focus:outline-none shadow-lg shadow-blue-500/20">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CUSTOM DELETE CONVERSATION MODAL ===== -->
+    <div id="delete-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden">
+        <div class="bg-[#0f172a] border border-red-500/20 rounded-2xl w-full max-w-sm p-6 shadow-2xl mx-4 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-trash-can text-lg text-red-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Delete Conversation?</h3>
+            <p class="text-xs text-gray-400 leading-relaxed mb-6">
+                Are you sure you want to delete this chat history? This action is irreversible.
+            </p>
+            <div class="flex gap-2 justify-stretch">
+                <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-medium text-sm transition focus:outline-none">
+                    Cancel
+                </button>
+                <button onclick="confirmDeleteChat()" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 font-semibold text-sm transition focus:outline-none shadow-lg shadow-red-500/15">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Block -->
+    <script>
+        // Local state
+        let chats = [];
+        let activeChatId = null;
+        let activeUtterances = []; // Prevent browser garbage-collection cutting off TTS audio mid-speech
+        let voiceOutputEnabled = false;
+        let isGenerating = false;
+        let chatToDeleteId = null;
+
+        // Theme Toggle Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme_pref') || 'dark';
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                updateThemeButton(true);
+            } else {
+                document.body.classList.remove('light-mode');
+                updateThemeButton(false);
+            }
+        }
+
+        function toggleDarkMode() {
+            const isCurrentlyLight = document.body.classList.contains('light-mode');
+            if (isCurrentlyLight) {
+                document.body.classList.remove('light-mode');
+                localStorage.setItem('theme_pref', 'dark');
+                updateThemeButton(false);
+                showNotification('Dark Mode enabled!', 'success');
+            } else {
+                document.body.classList.add('light-mode');
+                localStorage.setItem('theme_pref', 'light');
+                updateThemeButton(true);
+                showNotification('Light Mode enabled! Screen background is now white.', 'success');
+            }
+        }
+
+        function updateThemeButton(isLight) {
+            const icon = document.getElementById('theme-icon');
+            const btn = document.getElementById('theme-toggle-btn');
+            if (icon) {
+                if (isLight) {
+                    icon.className = 'fas fa-sun text-lg text-amber-500';
+                    btn.title = 'Switch to Dark Mode';
+                } else {
+                    icon.className = 'fas fa-moon text-lg text-gray-400';
+                    btn.title = 'Switch to Light Mode';
+                }
+            }
+        }
+
+        // Initialize App on DOM Loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadAllSettings();
+            loadChatsFromLocalStorage();
+            loadBrowserVoices();
+            
+            // Re-check voices when speech engine prepares them
+            if (window.speechSynthesis) {
+                window.speechSynthesis.onvoiceschanged = loadBrowserVoices;
+            }
+        });
+
+        // Toggle Voice Speaking setting
+        function toggleVoiceOutput() {
+            voiceOutputEnabled = !voiceOutputEnabled;
+            const btn = document.getElementById('voice-ai-btn');
+            const icon = document.getElementById('voice-icon');
+            
+            if (btn) {
+                if (voiceOutputEnabled) {
+                    btn.classList.remove('bg-white/5', 'text-gray-400');
+                    btn.classList.add('bg-blue-500/25', 'text-blue-400', 'border', 'border-blue-500/30');
+                    if (icon) icon.className = 'fas fa-volume-high text-lg';
+                    showNotification('Voice output enabled! AI will read full responses out loud.', 'success');
+                } else {
+                    btn.classList.remove('bg-blue-500/25', 'text-blue-400', 'border', 'border-blue-500/30');
+                    btn.classList.add('bg-white/5', 'text-gray-400');
+                    if (icon) icon.className = 'fas fa-volume-mute text-lg';
+                    // Immediately cancel any active speech
+                    if (window.speechSynthesis) {
+                        window.speechSynthesis.cancel();
+                    }
+                    activeUtterances = [];
+                }
+            }
+        }
+
+        // Voice AI segment speaker to prevent the speech cut-off limits in chrome/safari
+        function speakFullText(text) {
+            if (!voiceOutputEnabled || !window.speechSynthesis) return;
+
+            // Immediate reset
+            window.speechSynthesis.cancel();
+            activeUtterances = [];
+
+            // Clean markdown blocks for cleaner listening
+            let cleanText = text
+                .replace(/```[\s\S]*?```/g, '[code block omitted]')
+                .replace(/`([^`]+)`/g, '$1')
+                .replace(/\*\*([^*]+)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/<command[^>]*>[\s\S]*?<\/command>/g, '');
+
+            // Chunk by sentence/punctuation pauses (100-150 char limits are optimal)
+            const segments = cleanText.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+(\s+|$)/g) || [cleanText];
+            const voiceName = localStorage.getItem('ai_voice_pref') || '';
+            const voices = window.speechSynthesis.getVoices();
+            const selectedVoice = voices.find(v => v.name === voiceName) || null;
+
+            let segmentIndex = 0;
+
+            function playNextSegment() {
+                if (segmentIndex >= segments.length || !voiceOutputEnabled) {
+                    activeUtterances = [];
+                    return;
+                }
+
+                const segText = segments[segmentIndex].trim();
+                if (!segText) {
+                    segmentIndex++;
+                    playNextSegment();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(segText);
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+
+                // Stash in active array to completely prevent GC collection
+                activeUtterances.push(utterance);
+
+                utterance.onend = () => {
+                    // Remove from active utterances once finished
+                    activeUtterances = activeUtterances.filter(u => u !== utterance);
+                    segmentIndex++;
+                    playNextSegment();
+                };
+
+                utterance.onerror = (e) => {
+                    console.error('Speech synthesis utterance error:', e);
+                    activeUtterances = activeUtterances.filter(u => u !== utterance);
+                    segmentIndex++;
+                    playNextSegment();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            playNextSegment();
+        }
+
+        // Toggle mobile sidebar
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar-container');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            
+            if (sidebar) {
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                    if (backdrop) backdrop.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    if (backdrop) backdrop.classList.add('hidden');
+                }
+            }
+        }
+
+        // Setup simple user toast notifications
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-2xl z-50 transform translate-y-5 opacity-0 transition-all duration-300 text-xs font-semibold flex items-center gap-2 border`;
+            
+            if (type === 'success') {
+                toast.className += ' bg-emerald-500/10 border-emerald-500/20 text-emerald-400';
+                toast.innerHTML = `<i class="fas fa-circle-check"></i> ${message}`;
+            } else if (type === 'error') {
+                toast.className += ' bg-rose-500/10 border-rose-500/20 text-rose-400';
+                toast.innerHTML = `<i class="fas fa-circle-xmark"></i> ${message}`;
+            } else {
+                toast.className += ' bg-blue-500/10 border-blue-500/20 text-blue-400';
+                toast.innerHTML = `<i class="fas fa-circle-info"></i> ${message}`;
+            }
+            
+            document.body.appendChild(toast);
+            
+            // Animation in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-5', 'opacity-0');
+            }, 10);
+            
+            // Animation out
+            setTimeout(() => {
+                toast.classList.add('translate-y-5', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Load Settings on Start
+        function loadAllSettings() {
+            document.getElementById('key-input-gemini').value = localStorage.getItem('geminiApiKey') || '';
+            document.getElementById('key-input-openai').value = localStorage.getItem('openAIApiKey') || '';
+            document.getElementById('key-input-claude').value = localStorage.getItem('claudeApiKey') || '';
+            document.getElementById('key-input-mistral').value = localStorage.getItem('mistralApiKey') || '';
+
+            const provider = localStorage.getItem('ai_provider') || 'gemini';
+            document.getElementById('setting-provider').value = provider;
+
+            document.getElementById('select-model-gemini').value = localStorage.getItem('model_gemini') || 'gemini-2.5-flash';
+            document.getElementById('select-model-openai').value = localStorage.getItem('model_openai') || 'gpt-4o';
+            document.getElementById('select-model-claude').value = localStorage.getItem('model_claude') || 'claude-sonnet-4.6';
+            document.getElementById('select-model-mistral').value = localStorage.getItem('model_mistral') || 'mistral-large-2';
+
+            updateActiveModelBadgeAndKeys();
+            updateProviderDropdownChange();
+        }
+
+        // Updates badge on header and updates indicator for missing keys
+        function updateActiveModelBadgeAndKeys() {
+            const provider = localStorage.getItem('ai_provider') || 'gemini';
+            let activeModel = 'gemini-2.5-flash';
+            
+            if (provider === 'gemini') {
+                activeModel = localStorage.getItem('model_gemini') || 'gemini-2.5-flash';
+            } else if (provider === 'openai') {
+                activeModel = localStorage.getItem('model_openai') || 'gpt-4o';
+            } else if (provider === 'claude') {
+                activeModel = localStorage.getItem('model_claude') || 'claude-sonnet-4.6';
+            } else if (provider === 'mistral') {
+                activeModel = localStorage.getItem('model_mistral') || 'mistral-large-2';
+            }
+
+            const activeModelBadge = document.getElementById('active-model-badge');
+            if (activeModelBadge) {
+                activeModelBadge.innerText = `${provider.toUpperCase()} : ${activeModel}`;
+            }
+
+            // Check if active provider key exists (or Gemini server fallback)
+            const geminiKey = localStorage.getItem('geminiApiKey');
+            const openAiKey = localStorage.getItem('openAIApiKey');
+            const claudeKey = localStorage.getItem('claudeApiKey');
+            const mistralKey = localStorage.getItem('mistralApiKey');
+
+            let keyConfigured = false;
+            if (provider === 'gemini') {
+                keyConfigured = true; // Assumed default on server side, otherwise will prompt when 400 is caught
+            } else if (provider === 'openai' && openAiKey) {
+                keyConfigured = true;
+            } else if (provider === 'claude' && claudeKey) {
+                keyConfigured = true;
+            } else if (provider === 'mistral' && mistralKey) {
+                keyConfigured = true;
+            }
+
+            const indicator = document.getElementById('api-keys-indicator');
+            if (indicator) {
+                if (keyConfigured) {
+                    indicator.classList.remove('bg-amber-500/10', 'border-amber-500/20', 'text-amber-400');
+                    indicator.classList.add('bg-emerald-500/10', 'border-emerald-500/20', 'text-emerald-400');
+                    indicator.innerHTML = `<i class="fas fa-check-circle text-[10px]"></i> Keys Ready`;
+                } else {
+                    indicator.classList.remove('bg-emerald-500/10', 'border-emerald-500/20', 'text-emerald-400');
+                    indicator.classList.add('bg-amber-500/10', 'border-amber-500/20', 'text-amber-400');
+                    indicator.innerHTML = `<i class="fas fa-key text-[10px]"></i> Setup API Key`;
+                }
+            }
+        }
+
+        // Show corresponding model choice depending on selected provider
+        function updateProviderDropdownChange() {
+            const providerEl = document.getElementById('setting-provider');
+            if (!providerEl) return;
+            const provider = providerEl.value;
+            
+            // Hide all model selectors first
+            document.querySelectorAll('.model-select-group').forEach(el => el.classList.add('hidden'));
+            
+            // Un-hide the relevant selector
+            const activeGroup = document.getElementById('group-' + provider);
+            if (activeGroup) {
+                activeGroup.classList.remove('hidden');
+            }
+        }
+
+        // Open modal
+        function openSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Save All Settings to LocalStorage
+        function saveAllSettings() {
+            const geminiKey = document.getElementById('key-input-gemini').value.trim();
+            const openaiKey = document.getElementById('key-input-openai').value.trim();
+            const claudeKey = document.getElementById('key-input-claude').value.trim();
+            const mistralKey = document.getElementById('key-input-mistral').value.trim();
+
+            if (geminiKey) localStorage.setItem('geminiApiKey', geminiKey);
+            else localStorage.removeItem('geminiApiKey');
+
+            if (openaiKey) localStorage.setItem('openAIApiKey', openaiKey);
+            else localStorage.removeItem('openAIApiKey');
+
+            if (claudeKey) localStorage.setItem('claudeApiKey', claudeKey);
+            else localStorage.removeItem('claudeApiKey');
+
+            if (mistralKey) localStorage.setItem('mistralApiKey', mistralKey);
+            else localStorage.removeItem('mistralApiKey');
+
+            const provider = document.getElementById('setting-provider').value;
+            localStorage.setItem('ai_provider', provider);
+
+            localStorage.setItem('model_gemini', document.getElementById('select-model-gemini').value);
+            localStorage.setItem('model_openai', document.getElementById('select-model-openai').value);
+            localStorage.setItem('model_claude', document.getElementById('select-model-claude').value);
+            localStorage.setItem('model_mistral', document.getElementById('select-model-mistral').value);
+
+            localStorage.setItem('ai_voice_pref', document.getElementById('select-voice').value);
+
+            updateActiveModelBadgeAndKeys();
+            closeSettingsModal();
+            showNotification('Settings and API keys saved successfully!', 'success');
+        }
+
+        // Fetch voices from SpeechSynthesis
+        function loadBrowserVoices() {
+            if (!window.speechSynthesis) return;
+            const select = document.getElementById('select-voice');
+            const voices = window.speechSynthesis.getVoices();
+            const savedVoice = localStorage.getItem('ai_voice_pref') || '';
+
+            select.innerHTML = '<option value="">Default System Voice</option>';
+            
+            voices.forEach(voice => {
+                const opt = document.createElement('option');
+                opt.value = voice.name;
+                opt.innerText = `${voice.name} (${voice.lang})`;
+                if (voice.name === savedVoice) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+        }
+
+        // Load Conversations
+        function loadChatsFromLocalStorage() {
+            const stored = localStorage.getItem('bloxd_ai_chats');
+            if (stored) {
+                try {
+                    chats = JSON.parse(stored);
+                } catch(e) {
+                    chats = [];
+                }
+            }
+
+            if (chats.length === 0) {
+                startNewChat();
+            } else {
+                activeChatId = localStorage.getItem('bloxd_ai_active_chat_id');
+                const chatExists = chats.some(c => c.id === activeChatId);
+                if (!chatExists) {
+                    activeChatId = chats[0].id;
+                }
+                renderChatHistoryList();
+                openChatSession(activeChatId);
+            }
+        }
+
+        // Save conversations list
+        function saveChatsToLocalStorage() {
+            localStorage.setItem('bloxd_ai_chats', JSON.stringify(chats));
+            localStorage.setItem('bloxd_ai_active_chat_id', activeChatId);
+        }
+
+        // Create new chat
+        function startNewChat() {
+            const newChat = {
+                id: 'chat-' + Date.now(),
+                title: 'New Conversation',
+                messages: []
+            };
+            chats.unshift(newChat);
+            activeChatId = newChat.id;
+            saveChatsToLocalStorage();
+            renderChatHistoryList();
+            openChatSession(activeChatId);
+            showNotification('Created new conversation!', 'success');
+        }
+
+        // Render Chat Sidebar list
+        function renderChatHistoryList() {
+            const list = document.getElementById('chat-history-list');
+            list.innerHTML = '';
+
+            chats.forEach(chat => {
+                const item = document.createElement('div');
+                item.className = `chat-history-item group ${chat.id === activeChatId ? 'active' : ''}`;
+                item.setAttribute('onclick', `handleChatClick('${chat.id}', event)`);
+
+                // Inline HTML markup
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5 truncate flex-1 select-none">
+                        <i class="far fa-message text-xs text-gray-400 group-hover:text-gray-300"></i>
+                        <span class="chat-title-text text-sm truncate text-gray-300 group-hover:text-white font-medium" id="title-display-${chat.id}">
+                            ${escapeHtml(chat.title)}
+                        </span>
+                        <input type="text" class="hidden bg-black/60 border border-blue-500/40 rounded px-1.5 py-0.5 text-xs text-white outline-none w-full" id="title-input-${chat.id}" value="${escapeHtml(chat.title)}" onkeydown="handleRenameKeydown('${chat.id}', event)" onclick="event.stopPropagation()">
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" id="actions-${chat.id}">
+                        <button onclick="startRenameChat('${chat.id}', event)" class="p-1 text-gray-400 hover:text-white rounded transition focus:outline-none" title="Rename Chat">
+                            <i class="fas fa-pencil-alt text-[10px]"></i>
+                        </button>
+                        <button onclick="requestDeleteChat('${chat.id}', event)" class="p-1 text-gray-400 hover:text-red-400 rounded transition focus:outline-none" title="Delete Chat">
+                            <i class="fas fa-trash-can text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-1.5 hidden" id="edit-buttons-${chat.id}">
+                        <button onclick="confirmRenameChat('${chat.id}', event)" class="p-1 text-emerald-400 hover:text-emerald-300 rounded transition focus:outline-none" title="Save">
+                            <i class="fas fa-check text-[10px]"></i>
+                        </button>
+                        <button onclick="cancelRenameChat('${chat.id}', event)" class="p-1 text-rose-400 hover:text-rose-300 rounded transition focus:outline-none" title="Cancel">
+                            <i class="fas fa-times text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+
+                list.appendChild(item);
+            });
+        }
+
+        // Route selection clicks to avoid interference with buttons
+        function handleChatClick(id, event) {
+            // Do not open if clicking input or buttons
+            if (event.target.closest('button') || event.target.closest('input')) return;
+            openChatSession(id);
+        }
+
+        // Open chat window
+        function openChatSession(id) {
+            activeChatId = id;
+            localStorage.setItem('bloxd_ai_active_chat_id', id);
+
+            // Active CSS class highlighting
+            document.querySelectorAll('.chat-history-item').forEach(el => el.classList.remove('active'));
+            const activeItem = document.querySelector(`.chat-history-item[onclick*="${id}"]`);
+            if (activeItem) activeItem.classList.add('active');
+
+            const chat = chats.find(c => c.id === id);
+            if (!chat) return;
+
+            const activeChatTitle = document.getElementById('active-chat-title');
+            if (activeChatTitle) activeChatTitle.innerText = chat.title;
+
+            // Render Messages
+            const messagesBox = document.getElementById('messages-container');
+            messagesBox.innerHTML = '';
+
+            if (chat.messages.length === 0) {
+                const emptyState = document.getElementById('empty-state');
+                if (emptyState) emptyState.classList.remove('hidden');
+            } else {
+                const emptyState = document.getElementById('empty-state');
+                if (emptyState) emptyState.classList.add('hidden');
+                chat.messages.forEach(msg => {
+                    appendUiBubble(msg.role, msg.content);
+                });
+            }
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }
+
+        // Inline renaming actions
+        function startRenameChat(id, event) {
+            event.stopPropagation();
+            const textSpan = document.getElementById(`title-display-${id}`);
+            const textInput = document.getElementById(`title-input-${id}`);
+            const actionsDiv = document.getElementById(`actions-${id}`);
+            const editBtnDiv = document.getElementById(`edit-buttons-${id}`);
+
+            textSpan.classList.add('hidden');
+            textInput.classList.remove('hidden');
+            textInput.focus();
+            textInput.select();
+
+            actionsDiv.classList.add('hidden');
+            actionsDiv.classList.remove('group-hover:opacity-100');
+            editBtnDiv.classList.remove('hidden');
+        }
+
+        function cancelRenameChat(id, event) {
+            if (event) event.stopPropagation();
+            const textSpan = document.getElementById(`title-display-${id}`);
+            const textInput = document.getElementById(`title-input-${id}`);
+            const actionsDiv = document.getElementById(`actions-${id}`);
+            const editBtnDiv = document.getElementById(`edit-buttons-${id}`);
+
+            const chat = chats.find(c => c.id === id);
+            textInput.value = chat ? chat.title : '';
+
+            textSpan.classList.remove('hidden');
+            textInput.classList.add('hidden');
+
+            actionsDiv.classList.remove('hidden');
+            actionsDiv.classList.add('group-hover:opacity-100');
+            editBtnDiv.classList.add('hidden');
+        }
+
+        function confirmRenameChat(id, event) {
+            if (event) event.stopPropagation();
+            const textInput = document.getElementById(`title-input-${id}`);
+            const newTitle = textInput.value.trim();
+
+            if (newTitle) {
+                const chat = chats.find(c => c.id === id);
+                if (chat) {
+                    chat.title = newTitle;
+                    saveChatsToLocalStorage();
+                    
+                    if (id === activeChatId) {
+                        const activeChatTitle = document.getElementById('active-chat-title');
+                        if (activeChatTitle) activeChatTitle.innerText = newTitle;
+                    }
+                }
+            }
+            renderChatHistoryList();
+            showNotification('Conversation renamed!', 'success');
+        }
+
+        function handleRenameKeydown(id, event) {
+            if (event.key === 'Enter') {
+                confirmRenameChat(id);
+            } else if (event.key === 'Escape') {
+                cancelRenameChat(id);
+            }
+        }
+
+        // Delete Chat with Custom CSS Dialog
+        function requestDeleteChat(id, event) {
+            event.stopPropagation();
+            chatToDeleteId = id;
+            const modal = document.getElementById('delete-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            if (modal) modal.classList.add('hidden');
+            chatToDeleteId = null;
+        }
+
+        function confirmDeleteChat() {
+            if (!chatToDeleteId) return;
+
+            chats = chats.filter(c => c.id !== chatToDeleteId);
+            
+            if (activeChatId === chatToDeleteId) {
+                activeChatId = chats.length > 0 ? chats[0].id : null;
+            }
+
+            saveChatsToLocalStorage();
+            closeDeleteModal();
+
+            if (chats.length === 0) {
+                startNewChat();
+            } else {
+                renderChatHistoryList();
+                openChatSession(activeChatId);
+            }
+            showNotification('Conversation deleted!', 'info');
+        }
+
+        // Fill pre-suggested prompts from buttons
+        function setAiPrompt(text) {
+            const input = document.getElementById('chat-input-field');
+            if (input) {
+                input.value = text;
+                input.focus();
+                // Auto adjust text area size
+                input.style.height = 'auto';
+                input.style.height = (input.scrollHeight) + 'px';
+            }
+        }
+
+        // Text area auto-sizing and keys handler
+        function handleInputKeydown(event) {
+            const input = document.getElementById('chat-input-field');
+            
+            // Auto size
+            setTimeout(() => {
+                input.style.height = 'auto';
+                input.style.height = (input.scrollHeight) + 'px';
+            }, 0);
+
+            // Send on Enter (Shift+Enter adds new line)
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+
+        // Message Sender
+        async function sendChatMessage() {
+            if (isGenerating) return;
+
+            const inputField = document.getElementById('chat-input-field');
+            const userText = inputField.value.trim();
+            if (!userText) return;
+
+            // Clear input & auto shrink height
+            inputField.value = '';
+            inputField.style.height = 'auto';
+
+            const activeChat = chats.find(c => c.id === activeChatId);
+            if (!activeChat) return;
+
+            // Check API Keys before sending
+            const provider = localStorage.getItem('ai_provider') || 'gemini';
+            const geminiKey = localStorage.getItem('geminiApiKey') || '';
+            const openAiKey = localStorage.getItem('openAIApiKey') || '';
+            const claudeKey = localStorage.getItem('claudeApiKey') || '';
+            const mistralKey = localStorage.getItem('mistralApiKey') || '';
+
+            let hasKey = false;
+            if (provider === 'gemini') {
+                hasKey = true; // Allowed to fallback to server-side key
+            } else if (provider === 'openai' && openAiKey) {
+                hasKey = true;
+            } else if (provider === 'claude' && claudeKey) {
+                hasKey = true;
+            } else if (provider === 'mistral' && mistralKey) {
+                hasKey = true;
+            }
+
+            if (!hasKey) {
+                openSettingsModal();
+                showNotification(`An API key is required to use the ${provider.toUpperCase()} provider!`, 'error');
+                return;
+            }
+
+            // Hide empty state if first message
+            const emptyState = document.getElementById('empty-state');
+            if (emptyState) emptyState.classList.add('hidden');
+
+            // Save user message in local history
+            activeChat.messages.push({ role: 'user', content: userText });
+            appendUiBubble('user', userText);
+            
+            // Auto update chat title on first message
+            if (activeChat.title === 'New Conversation') {
+                activeChat.title = userText.substring(0, 24) + (userText.length > 24 ? '...' : '');
+                saveChatsToLocalStorage();
+                renderChatHistoryList();
+                const activeChatTitle = document.getElementById('active-chat-title');
+                if (activeChatTitle) activeChatTitle.innerText = activeChat.title;
+            } else {
+                saveChatsToLocalStorage();
+            }
+
+            // Insert thinking bubble
+            const assistantMsgId = 'ai-msg-' + Date.now();
+            appendUiBubble('assistant', '', assistantMsgId);
+            
+            const bubbleEl = document.getElementById(assistantMsgId);
+            const contentContainer = bubbleEl ? bubbleEl.querySelector('.msg-content') : null;
+            if (contentContainer) {
+                contentContainer.innerHTML = `<span class="italic text-gray-500"><i class="fas fa-spinner fa-spin mr-1"></i> Thinking...</span>`;
+            }
+
+            isGenerating = true;
+            toggleInputs(true);
+
+            // Set specific model based on setting
+            let modelChoice = 'gemini-3.5-flash';
+            if (provider === 'gemini') modelChoice = localStorage.getItem('model_gemini') || 'gemini-3.5-flash';
+            else if (provider === 'openai') modelChoice = localStorage.getItem('model_openai') || 'gpt-4o';
+            else if (provider === 'claude') modelChoice = localStorage.getItem('model_claude') || 'claude-3-5-sonnet-latest';
+            else if (provider === 'mistral') modelChoice = localStorage.getItem('model_mistral') || 'mistral-large-latest';
+
+            try {
+                // Compile chat messages including system context
+                const reqMessages = activeChat.messages;
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: reqMessages,
+                        model: modelChoice,
+                        geminiApiKey: geminiKey,
+                        openAIApiKey: openAiKey || claudeKey || mistralKey // Route any OpenAI compatible key if custom model
+                    })
+                });
+
+                if (!response.ok) {
+                    const errRes = await response.json().catch(() => ({}));
+                    throw new Error(errRes.error || `Server responded with status ${response.status}`);
+                }
+
+                if (!response.body) throw new Error("Connection stream unavailable.");
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullContent = '';
+                let done = false;
+                let buffer = '';
+
+                if (contentContainer) contentContainer.innerHTML = '';
+
+                while (!done) {
+                    const { value, done: doneReading } = await reader.read();
+                    done = doneReading;
+                    if (value) {
+                        buffer += decoder.decode(value, { stream: !done });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('data: ')) {
+                                const data = trimmed.slice(6);
+                                if (data === '[DONE]') {
+                                    done = true;
+                                    break;
+                                } else if (data) {
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        if (parsed.delta) {
+                                            fullContent += parsed.delta;
+                                            if (contentContainer) {
+                                                contentContainer.innerHTML = formatMarkdown(fullContent);
+                                            }
+                                            const container = document.getElementById('messages-container');
+                                            container.scrollTop = container.scrollHeight;
+                                        }
+                                    } catch(e) {
+                                        console.error('SSE data parse error:', e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Append assistant message in local storage
+                activeChat.messages.push({ role: 'assistant', content: fullContent });
+                saveChatsToLocalStorage();
+
+                // Call Speech synthesis if active
+                if (voiceOutputEnabled) {
+                    speakFullText(fullContent);
+                }
+
+                // Parse XML commands if the AI requested file operations
+                handleSystemFileCommands(fullContent);
+
+            } catch (err) {
+                console.error(err);
+                if (contentContainer) {
+                    contentContainer.innerHTML = `<span class="text-rose-400 font-medium flex items-center gap-1.5"><i class="fas fa-triangle-exclamation"></i> Error: ${err.message}</span>`;
+                }
+                showNotification(err.message || 'Unable to connect to AI server.', 'error');
+            } finally {
+                isGenerating = false;
+                toggleInputs(false);
+            }
+        }
+
+        // Toggle form items
+        function toggleInputs(disabled) {
+            document.getElementById('chat-input-field').disabled = disabled;
+            document.getElementById('send-message-btn').disabled = disabled;
+        }
+
+        // XML Code parser commands from AI response
+        function handleSystemFileCommands(content) {
+            const createRegex = /<command\s+type="create_file"\s+name="([^"]+)">([\s\S]*?)<\/command>/g;
+            let match;
+            while ((match = createRegex.exec(content)) !== null) {
+                const name = match[1];
+                const fileContent = match[2];
+                console.log('AI SYSTEM COMMAND: create_file ->', name);
+                showNotification(`AI created/modified file: ${name}`, 'success');
+            }
+
+            const delRegex = /<command\s+type="delete_file"\s+name="([^"]+)"><\/command>/g;
+            while ((match = delRegex.exec(content)) !== null) {
+                const name = match[1];
+                console.log('AI SYSTEM COMMAND: delete_file ->', name);
+                showNotification(`AI deleted file: ${name}`, 'info');
+            }
+        }
+
+        // Append visual HTML bubble to message screen
+        function appendUiBubble(role, content, customId = null) {
+            const container = document.getElementById('messages-container');
+            const bubble = document.createElement('div');
+            
+            bubble.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} w-full transform translate-y-2 opacity-0 transition-all duration-300`;
+            if (customId) {
+                bubble.id = customId;
+            }
+
+            const isUser = role === 'user';
+            
+            bubble.innerHTML = `
+                <div class="max-w-[85%] lg:max-w-3xl flex gap-3 ${isUser ? 'flex-row-reverse' : ''}">
+                    <!-- Avatar circle -->
+                    <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isUser ? 'bg-blue-600' : 'bg-slate-800 border border-white/5'}">
+                        <i class="${isUser ? 'fas fa-user text-xs' : 'fas fa-robot text-xs text-blue-400'}"></i>
+                    </div>
+
+                    <!-- Speech text container -->
+                    <div class="px-4 py-3 rounded-2xl ${isUser ? 'msg-bubble-user' : 'msg-bubble-assistant'} shadow-lg">
+                        <!-- Sender meta -->
+                        <div class="text-[10px] text-gray-500 font-mono mb-1 text-left">
+                            ${isUser ? 'You' : 'AI Companion'}
+                        </div>
+                        <div class="msg-content text-sm text-gray-200 leading-relaxed text-left break-words space-y-2" style="font-size: 13.5px;">
+                            ${formatMarkdown(content)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+
+            // Trigger animation
+            setTimeout(() => {
+                bubble.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+        }
+
+        // Custom lightweight markdown syntax formatter (Bold & Code blocks & backticks)
+        function formatMarkdown(text) {
+            if (!text) return '';
+
+            // Escape HTML tags to protect script execution
+            let esc = escapeHtml(text);
+
+            // Double Backticks Inline Code logic: ``code`` -> <code>code</code>
+            esc = esc.replace(/``([^`]+)``/g, '<code>$1</code>');
+
+            // Single Backtick Inline Code logic: `code` -> <code>code</code>
+            esc = esc.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Markdown Code blocks replacement: ```javascript ... ```
+            const codeBlockRegex = /```(?:[a-zA-Z0-9]+)?\n([\s\S]*?)```/g;
+            esc = esc.replace(codeBlockRegex, (match, code) => {
+                return `<pre class="line-numbers"><code class="language-javascript">${code}</code></pre>`;
+            });
+
+            // Bold styling formatting: **text** -> <strong>text</strong>
+            esc = esc.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // Highlight syntax if newly rendered
+            setTimeout(() => {
+                if (window.Prism) {
+                    Prism.highlightAll();
+                }
+            }, 10);
+
+            return esc;
+        }
+
+        // Escape HTML values
+        function escapeHtml(string) {
+            if (!string) return '';
+            return string
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>

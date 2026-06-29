@@ -8,7 +8,7 @@ export const maxDuration = 60; // Allow longer execution time if deployed
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { messages, model, openAIApiKey, geminiApiKey, systemPrompt } = body;
+    const { messages, model, openAIApiKey, geminiApiKey, claudeApiKey, mistralApiKey, systemPrompt } = body;
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 });
@@ -57,10 +57,7 @@ Always output these command structures for any file operations so the container 
        formattedMessages[0].content = `${customSystemPrompt}\n\n${formattedMessages[0].content}`;
     }
 
-    if (finalModel === 'gemini-1.5-pro' || finalModel === 'gemini-pro') finalModel = 'gemini-3.5-flash';
-    if (finalModel === 'gemini-1.5-flash' || finalModel === 'gemini-flash' || finalModel === 'gemini-flash-latest') finalModel = 'gemini-3.5-flash';
-
-    const isGemini = finalModel.startsWith('gemini');
+    const isGemini = finalModel.startsWith('gemini') || finalModel === 'CodexMind' || finalModel === 'MindChat' || finalModel === 'AgentMind';
 
     if (isGemini) {
       if (!geminiApiKey && !process.env.GEMINI_API_KEY) {
@@ -144,6 +141,138 @@ Always output these command structures for any file operations so the container 
             controller.close();
           } catch (error: any) {
             console.error('Gemini Stream Error:', error);
+            controller.error(error);
+          }
+        }
+      });
+
+      return new NextResponse(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+
+    } else if (finalModel.startsWith('claude-')) {
+      // Claude (Anthropic)
+      const apiKey = claudeApiKey || process.env.CLAUDE_API_KEY;
+      if (!apiKey) {
+        return NextResponse.json({ error: 'Claude API key is required' }, { status: 400 });
+      }
+
+      const systemMessage = formattedMessages.find(m => m.role === 'system')?.content || '';
+      const anthropicMessages = formattedMessages.filter(m => m.role !== 'system').map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content
+      }));
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: finalModel,
+          messages: anthropicMessages,
+          system: systemMessage || undefined,
+          max_tokens: 4096,
+          stream: true
+        })
+      });
+
+      if (!response.ok) {
+        const errMsg = await response.text();
+        return NextResponse.json({ error: `Anthropic API error: ${errMsg}` }, { status: response.status });
+      }
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            const reader = response.body?.getReader();
+            if (!reader) {
+              controller.close();
+              return;
+            }
+            const decoder = new TextDecoder();
+            let buffer = '';
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('data: ')) {
+                  const dataStr = trimmed.slice(6);
+                  if (dataStr) {
+                    try {
+                      const parsed = JSON.parse(dataStr);
+                      if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                        const outData = JSON.stringify({ delta: parsed.delta.text });
+                        controller.enqueue(encoder.encode(`data: ${outData}\n\n`));
+                      }
+                    } catch (e) {
+                      // ignore parse error
+                    }
+                  }
+                }
+              }
+            }
+            controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+            controller.close();
+          } catch (error) {
+            console.error('Claude Stream Error:', error);
+            controller.error(error);
+          }
+        }
+      });
+
+      return new NextResponse(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+
+    } else if (finalModel.startsWith('mistral-') || finalModel.includes('mixtral')) {
+      // Mistral
+      const apiKey = mistralApiKey || process.env.MISTRAL_API_KEY;
+      if (!apiKey) {
+        return NextResponse.json({ error: 'Mistral API key is required' }, { status: 400 });
+      }
+
+      const mistralOpenai = new OpenAI({
+        apiKey: apiKey,
+        baseURL: 'https://api.mistral.ai/v1'
+      });
+
+      const responseStream = await mistralOpenai.chat.completions.create({
+        model: finalModel,
+        messages: formattedMessages,
+        stream: true,
+      });
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const chunk of responseStream) {
+              const content = chunk.choices[0]?.delta?.content || '';
+              if (content) {
+                const data = JSON.stringify({ delta: content });
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              }
+            }
+            controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+            controller.close();
+          } catch (error) {
+            console.error('Mistral Stream Error:', error);
             controller.error(error);
           }
         }

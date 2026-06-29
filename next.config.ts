@@ -38,6 +38,10 @@ const nextConfig: NextConfig = {
         source: '/docs',
         destination: '/docs.html',
       },
+      {
+        source: '/bloxd-ai',
+        destination: '/bloxd-ai.html',
+      },
     ];
   },
   webpack: (config, {dev}) => {
