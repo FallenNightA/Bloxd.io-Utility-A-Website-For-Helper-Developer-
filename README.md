@@ -1,3 +1,6 @@
+# Note
+We are Officially moved to the new account of github to continue the project which is you can see from this account **[www.github.com/HidayatBelajar319](HidayatBelajar319)**
+
 # 🏗️ Bloxd.io Utility
 
 ![GitHub White Style](https://img.shields.io/badge/style-GitHub_White-ffffff?style=flat-square)
