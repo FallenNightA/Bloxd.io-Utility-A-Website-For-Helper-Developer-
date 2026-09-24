@@ -1,5 +1,5 @@
 # Note
-We are Officially moved to the new account of github to continue the project which is you can see from this account **[HidayatBelajar319](www.github.com/HidayatBelajar319)**
+We are Officially moved to the new account of github to continue the project which is you can see from this account **[HidayatBelajar319](https://github.com/HidayatBelajar319)**
 
 # 🏗️ Bloxd.io Utility
 
